@@ -161,4 +161,11 @@ export type Risk = {
   method: string;
   reference_url: string;
 };
+export type PendingSignup = {
+  user_id: string;
+  membership_id: string;
+  name: string;
+  district: string;
+  role: "farmer" | "buyer";
+};
 export type Filters = Record<string, string | string[] | undefined>;

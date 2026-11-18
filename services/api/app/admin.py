@@ -12,8 +12,10 @@ from sqlalchemy import (
     String,
     Table,
     Uuid,
+    case,
     func,
     insert,
+    or_,
     select,
     update,
 )
@@ -23,10 +25,13 @@ from app.auth import (
     Actor,
     Input,
     Role,
+    VerificationStatus,
     audit,
     audit_log,
+    member_accounts,
     memberships,
     organizations,
+    record_signup_decision,
     require_role,
     users,
 )
@@ -71,6 +76,7 @@ class Verification(BaseModel):
     district: str
     role: Role
     verified: bool
+    signup_status: VerificationStatus | None = None
 
 
 class VerificationInput(Input):
@@ -121,7 +127,13 @@ class Resolution(BaseModel):
     resolved_at: datetime
 
 
-accounts = memberships.join(users).join(organizations)
+signup_status_column = case(
+    (users.c.nid.is_not(None), users.c.verification_status),
+).label("signup_status")
+pending_accounts = or_(
+    users.c.nid.is_(None) & users.c.verified.is_(False),
+    users.c.nid.is_not(None) & (users.c.verification_status == "pending"),
+)
 
 
 def count(db, table, *filters):
@@ -136,10 +148,10 @@ def overview(actor: Actor, db: DB):
     return Overview(
         unverified_accounts=count(
             db,
-            accounts,
+            member_accounts,
             organizations.c.is_demo == demo,
             memberships.c.role != Role.ADMIN,
-            users.c.verified.is_(False),
+            pending_accounts,
         ),
         unverified_lots=count(
             db, lots, lots.c.is_demo == demo, lots.c.verified_at.is_(None)
@@ -189,7 +201,7 @@ def verifications(
         memberships.c.role != Role.ADMIN,
     ]
     if pending_only:
-        filters.append(users.c.verified.is_(False))
+        filters.append(pending_accounts)
     return list(
         db.execute(
             select(
@@ -198,8 +210,9 @@ def verifications(
                 users.c.name,
                 users.c.district,
                 users.c.verified,
+                signup_status_column,
             )
-            .select_from(accounts)
+            .select_from(member_accounts)
             .where(*filters)
             .order_by(users.c.name, memberships.c.id)
             .offset(offset)
@@ -220,8 +233,9 @@ def verify_account(membership_id: UUID, body: VerificationInput, actor: Actor, d
                 users.c.name,
                 users.c.district,
                 users.c.verified,
+                signup_status_column,
             )
-            .select_from(accounts)
+            .select_from(member_accounts)
             .where(
                 memberships.c.id == membership_id,
                 organizations.c.is_demo == actor.is_demo,
@@ -234,12 +248,22 @@ def verify_account(membership_id: UUID, body: VerificationInput, actor: Actor, d
     )
     if row is None:
         raise HTTPException(404, "not_found")
-    if body.verified != row["verified"]:
-        db.execute(
-            update(users)
-            .where(users.c.id == row["user_id"])
-            .values(verified=body.verified)
-        )
+    signup_status = row["signup_status"]
+    if signup_status is not None:
+        new_status = "verified" if body.verified else "rejected"
+        changed = signup_status != new_status
+        if changed:
+            record_signup_decision(db, actor, row["user_id"], new_status)
+        signup_status = new_status
+    else:
+        changed = body.verified != row["verified"]
+        if changed:
+            db.execute(
+                update(users)
+                .where(users.c.id == row["user_id"])
+                .values(verified=body.verified)
+            )
+    if changed:
         audit(
             db,
             actor,
@@ -247,7 +271,9 @@ def verify_account(membership_id: UUID, body: VerificationInput, actor: Actor, d
             membership_id,
         )
         db.commit()
-    return Verification.model_validate({**row, "verified": body.verified})
+    return Verification.model_validate(
+        {**row, "verified": body.verified, "signup_status": signup_status}
+    )
 
 
 @router.get("/data-quality", response_model=list[DataQuality])

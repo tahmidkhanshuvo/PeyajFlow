@@ -50,14 +50,18 @@ export async function operate(
           ),
         );
         break;
-      case "verify":
+      case "verify": {
         if (!form.has("confirm")) return { error: "confirmation_required" };
+        const decision = value("verified");
+        if (decision !== "true" && decision !== "false")
+          return { error: "invalid_input" };
         await api(
           `/v1/admin/verifications/${resource}`,
-          json({ verified: value("verified") === "true" }, "PUT"),
+          json({ verified: decision === "true" }, "PUT"),
         );
         destination = "operations?view=accounts";
         break;
+      }
       case "resolve":
         if (!form.has("confirm")) return { error: "confirmation_required" };
         await api(

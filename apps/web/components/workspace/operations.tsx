@@ -40,6 +40,7 @@ type Account = {
   district: string;
   role: Role;
   verified: boolean;
+  signup_status: "pending" | "verified" | "rejected" | null;
 };
 type SeriesHealth = {
   series: string;
@@ -205,13 +206,17 @@ async function Accounts({ locale, base, filters, offset }: Page) {
               {row.district} · {local(locale, ...roles[row.role])} ·{" "}
               {row.verified
                 ? local(locale, "যাচাইকৃত", "Verified")
-                : local(locale, "যাচাই বাকি", "Unverified")}
+                : row.signup_status === "rejected"
+                  ? local(locale, "প্রত্যাখ্যাত", "Rejected")
+                  : local(locale, "যাচাই বাকি", "Unverified")}
             </span>
             <Details
               label={
-                row.verified
-                  ? local(locale, "যাচাই প্রত্যাহার করুন", "Remove verification")
-                  : local(locale, "অ্যাকাউন্ট যাচাই করুন", "Verify account")
+                row.signup_status === "pending"
+                  ? local(locale, "নিবন্ধন পর্যালোচনা করুন", "Review registration")
+                  : row.verified
+                    ? local(locale, "যাচাই প্রত্যাহার করুন", "Remove verification")
+                    : local(locale, "অ্যাকাউন্ট যাচাই করুন", "Verify account")
               }
             >
               <WorkspaceForm
@@ -223,11 +228,27 @@ async function Accounts({ locale, base, filters, offset }: Page) {
                   "Save verification status",
                 )}
               >
-                <input
-                  name="verified"
-                  type="hidden"
-                  value={String(!row.verified)}
-                />
+                {row.signup_status === "pending" ? (
+                  <Field label={local(locale, "সিদ্ধান্ত", "Decision")}>
+                    <select name="verified" defaultValue="" required>
+                      <option value="" disabled>
+                        {local(locale, "বেছে নিন", "Choose a decision")}
+                      </option>
+                      <option value="true">
+                        {local(locale, "যাচাই করুন", "Verify")}
+                      </option>
+                      <option value="false">
+                        {local(locale, "প্রত্যাখ্যান করুন", "Reject")}
+                      </option>
+                    </select>
+                  </Field>
+                ) : (
+                  <input
+                    name="verified"
+                    type="hidden"
+                    value={String(!row.verified)}
+                  />
+                )}
                 <label className="checkbox">
                   <input name="confirm" type="checkbox" required />
                   {local(

@@ -470,7 +470,7 @@ def send_offer(body: OfferInput, actor: Profile, db: Session):
         raise HTTPException(422, "demand_terms_mismatch")
     seller = db.scalar(
         select(users.c.name)
-        .select_from(memberships.join(users))
+        .select_from(memberships.join(users, memberships.c.user_id == users.c.id))
         .where(memberships.c.id == lot["owner_membership_id"])
     )
     row = (

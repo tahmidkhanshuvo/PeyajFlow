@@ -15,6 +15,7 @@ import {
   ImportsPage,
   PricePage,
 } from "../../../../components/workspace/prices";
+import { VerificationsPage } from "../../../../components/workspace/verifications";
 import { VoicePage } from "../../../../components/workspace/voice";
 import { Details, Field } from "../../../../components/workspace/fields";
 import { WorkspaceForm } from "../../../../components/workspace/form";
@@ -42,7 +43,13 @@ import {
 } from "../../../../lib/workspace-api";
 import { errorText, local, roles } from "../../../../lib/workspace-copy";
 import type { Filters } from "../../../../lib/workspace-types";
-import { mutate, passwordSignIn, signIn, signOut } from "../actions";
+import {
+  mutate,
+  passwordSignIn,
+  signIn,
+  signOut,
+  signupAction,
+} from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +77,11 @@ function destinations(locale: Locale, actor: Profile) {
   if (actor.is_demo)
     pages.push(["voice", local(locale, "বাংলা সহকারী", "Bangla assistant")]);
   pages.push(["help", local(locale, "সহায়তা", "Help")]);
+  if (actor.role === "agent" && actor.verified && !actor.is_demo)
+    pages.push([
+      "verifications",
+      local(locale, "নিবন্ধন যাচাই", "Signup verification"),
+    ]);
   if (actor.role === "farmer")
     pages.push(["agents", local(locale, "সহায়তাকারী", "Agent access")]);
   if (actor.role === "admin")
@@ -199,6 +211,7 @@ async function panel(
     if (page === "help") return AssistancePage(context);
     if (page === "agents") return AgentsPage(context);
     if (page === "operations") return OperationsPage({ ...context, filters });
+    if (page === "verifications") return VerificationsPage(context);
   }
   if (page === "imports" && !child) return ImportsPage({ ...context, id });
   if (page === "voice" && !child) return VoicePage({ ...context, id });
@@ -339,6 +352,15 @@ export default async function WorkspacePage({
             <div className="signin-photo" aria-hidden="true" />
             <div className="signin-content">
               <h1>{local(locale, "সাইন ইন", "Sign in")}</h1>
+              {filters.signed_up === "1" && (
+                <p className="work-feedback" role="status">
+                  {local(
+                    locale,
+                    "নিবন্ধন সফল। এজেন্ট যাচাই করার পর আপনি সাইন ইন করতে পারবেন।",
+                    "Registration successful. You can sign in after agent verification.",
+                  )}
+                </p>
+              )}
               {error && (
                 <p role="status" className="work-panel">
                   {errorText(locale, error)}
@@ -391,11 +413,7 @@ export default async function WorkspacePage({
               )}
               <section className="work-panel">
                 <h2>
-                  {local(
-                    locale,
-                    "অপারেটরের দেওয়া অ্যাকাউন্ট",
-                    "Operator-issued account",
-                  )}
+                  {local(locale, "পাসওয়ার্ড দিয়ে প্রবেশ", "Password sign-in")}
                 </h2>
                 <WorkspaceForm
                   locale={locale}
@@ -421,6 +439,112 @@ export default async function WorkspacePage({
                       autoComplete="current-password"
                       maxLength={256}
                       required
+                    />
+                  </Field>
+                </WorkspaceForm>
+              </section>
+              <section className="work-panel">
+                <h2>
+                  {local(locale, "নতুন অ্যাকাউন্ট খুলুন", "Create new account")}
+                </h2>
+                <WorkspaceForm
+                  locale={locale}
+                  action={signupAction.bind(null, locale)}
+                  label={local(locale, "নিবন্ধন করুন", "Sign up")}
+                >
+                  <Field label={local(locale, "পুরো নাম", "Full name")}>
+                    <input
+                      name="name"
+                      autoComplete="name"
+                      maxLength={100}
+                      required
+                    />
+                  </Field>
+                  <Field label={local(locale, "জেলা", "District")}>
+                    <input
+                      name="district"
+                      autoComplete="address-level2"
+                      maxLength={100}
+                      required
+                    />
+                  </Field>
+                  <Field label={local(locale, "ভূমিকা", "Role")}>
+                    <select name="role" required defaultValue="">
+                      <option value="" disabled>
+                        {local(locale, "বেছে নিন", "Choose a role")}
+                      </option>
+                      <option value="farmer">
+                        {local(locale, "কৃষক", "Farmer")}
+                      </option>
+                      <option value="buyer">
+                        {local(locale, "ক্রেতা", "Buyer")}
+                      </option>
+                    </select>
+                  </Field>
+                  <Field label={local(locale, "অ্যাকাউন্ট আইডি", "Account ID")}>
+                    <input
+                      name="username"
+                      autoComplete="username"
+                      maxLength={64}
+                      required
+                      pattern={String.raw`[a-zA-Z][a-zA-Z0-9_.\-]{2,63}`}
+                      title={local(
+                        locale,
+                        "ইংরেজি অক্ষর দিয়ে শুরু করুন। অক্ষর, সংখ্যা, আন্ডারস্কোর, ডট বা হাইফেন ব্যবহার করুন।",
+                        "Must start with a letter. Use letters, numbers, underscore, dot or hyphen.",
+                      )}
+                    />
+                  </Field>
+                  <Field label={local(locale, "পাসওয়ার্ড", "Password")}>
+                    <input
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      maxLength={256}
+                      required
+                      minLength={14}
+                      title={local(
+                        locale,
+                        "কমপক্ষে ১৪ অক্ষরের পাসফ্রেজ ব্যবহার করুন।",
+                        "Use a passphrase of at least 14 characters.",
+                      )}
+                    />
+                  </Field>
+                  <Field
+                    label={local(
+                      locale,
+                      "ফোন নম্বর (E.164)",
+                      "Phone number (E.164)",
+                    )}
+                  >
+                    <input
+                      name="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      maxLength={20}
+                      required
+                      placeholder="+8801XXXXXXXXX"
+                      pattern={String.raw`\+[1-9১-৯][0-9০-৯]{7,14}`}
+                      title={local(
+                        locale,
+                        "আন্তর্জাতিক বিন্যাসে ফোন নম্বর দিন। উদাহরণ: +8801XXXXXXXXX",
+                        "Enter phone in international format. Example: +8801XXXXXXXXX",
+                      )}
+                    />
+                  </Field>
+                  <Field label={local(locale, "এনআইডি নম্বর", "NID number")}>
+                    <input
+                      name="nid"
+                      inputMode="numeric"
+                      pattern="[0-9০-৯]{10,20}"
+                      maxLength={20}
+                      required
+                      minLength={10}
+                      title={local(
+                        locale,
+                        "জাতীয় পরিচয়পত্র নম্বর দিন।",
+                        "Enter your National ID number.",
+                      )}
                     />
                   </Field>
                 </WorkspaceForm>

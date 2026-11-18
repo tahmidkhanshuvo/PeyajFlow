@@ -10,6 +10,62 @@ const web = process.env.E2E_WEB_ORIGIN ?? "http://127.0.0.1:3000";
 const api = process.env.E2E_API_ORIGIN ?? "http://127.0.0.1:8000";
 const base = `${web}/en/workspace`;
 
+test("Bangla signup shows confirmation and gates password sign-in", async () => {
+  const browser = await chromium.launch({
+    channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
+  });
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 390, height: 850 },
+    });
+    const username = `signup-${randomUUID()}`;
+    const password = "  browser fixture passphrase  ";
+    const suffix = BigInt(`0x${randomUUID().replaceAll("-", "")}`)
+      .toString()
+      .slice(-12);
+    const bangla = (value) =>
+      value.replace(/[0-9]/g, (digit) => "০১২৩৪৫৬৭৮৯"[digit]);
+    await page.goto(`${web}/bn/workspace`);
+    const signup = page.locator("section").filter({
+      has: page.getByRole("heading", { name: "নতুন অ্যাকাউন্ট খুলুন" }),
+    });
+    await signup.getByLabel("পুরো নাম").fill("Signup browser fixture");
+    await signup.getByLabel("জেলা").fill("পাবনা");
+    await signup.getByLabel("ভূমিকা").selectOption("farmer");
+    const account = signup.getByLabel("অ্যাকাউন্ট আইডি");
+    await account.fill("invalid account");
+    assert.equal(
+      await account.evaluate((input) => input.validity.patternMismatch),
+      true,
+    );
+    await account.fill(username);
+    await signup.getByLabel("পাসওয়ার্ড").fill(password);
+    await signup.getByLabel("ফোন নম্বর (E.164)").fill(bangla(`+999${suffix}`));
+    await signup.getByLabel("এনআইডি নম্বর").fill(bangla(`9${suffix}`));
+    await signup.getByRole("button", { name: "নিবন্ধন করুন" }).click();
+    await page.getByText("নিবন্ধন সফল।", { exact: false }).waitFor();
+    await page.getByRole("link", { name: "English" }).click();
+    await page
+      .getByText("Registration successful.", { exact: false })
+      .waitFor();
+    const signIn = page.locator("section").filter({
+      has: page.getByRole("heading", { name: "Password sign-in" }),
+    });
+    await signIn.getByLabel("Account ID").fill(username);
+    await signIn.getByLabel("Password", { exact: true }).fill(password);
+    await signIn.getByRole("button", { name: "Sign in with password" }).click();
+    await page
+      .getByRole("alert")
+      .filter({
+        hasText: "Your account needs verification before you can sign in.",
+      })
+      .waitFor();
+    await page.getByLabel("Account", { exact: true }).waitFor();
+  } finally {
+    await browser.close();
+  }
+});
+
 async function post(route, data, token) {
   const headers = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -21,6 +77,112 @@ async function post(route, data, token) {
   assert.ok(response.ok, `${route}: ${response.status}`);
   return response.json();
 }
+
+const reviewer = process.env.E2E_AGENT_USERNAME;
+const reviewerPassword = process.env.E2E_AGENT_PASSWORD;
+
+test(
+  "verified agent approves and rejects registrations in the workspace",
+  { skip: !reviewer || !reviewerPassword },
+  async () => {
+    const password = "new account browser fixture passphrase";
+    const register = async (role) => {
+      const id = randomUUID();
+      const suffix = BigInt(`0x${id.replaceAll("-", "")}`)
+        .toString()
+        .slice(-12);
+      const name = `Browser ${role} ${id}`;
+      const username = `review-${id}`;
+      await post("auth/signup", {
+        name,
+        username,
+        password,
+        district: "Pabna",
+        phone: `+999${suffix}`,
+        nid: `9${suffix}`,
+        role,
+      });
+      return { name, username };
+    };
+    const farmer = await register("farmer");
+    const buyer = await register("buyer");
+    const browser = await chromium.launch({
+      channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
+    });
+    try {
+      const demo = await signIn(browser, "agent", 390);
+      assert.equal(
+        await demo.getByRole("link", { name: "Signup verification" }).count(),
+        0,
+      );
+      await demo.goto(`${base}/verifications`);
+      await demo
+        .getByRole("alert")
+        .filter({ hasText: "Your role does not allow this action." })
+        .waitFor();
+
+      const page = await browser.newPage();
+      await page.goto(base);
+      const signInForm = page.locator("section").filter({
+        has: page.getByRole("heading", { name: "Password sign-in" }),
+      });
+      await signInForm.getByLabel("Account ID").fill(reviewer);
+      await signInForm
+        .getByLabel("Password", { exact: true })
+        .fill(reviewerPassword);
+      await signInForm
+        .getByRole("button", { name: "Sign in with password" })
+        .click();
+      await page.getByRole("link", { name: "Signup verification" }).waitFor();
+      await page.getByRole("link", { name: "বাংলা" }).click();
+      await page.getByRole("link", { name: "নিবন্ধন যাচাই" }).click();
+      await page.getByRole("heading", { name: "নিবন্ধন যাচাই" }).waitFor();
+      const approved = page
+        .getByRole("listitem")
+        .filter({ hasText: farmer.name });
+      await approved.getByText("নিবন্ধন পর্যালোচনা করুন", { exact: true }).click();
+      await approved
+        .getByLabel("সিদ্ধান্ত", { exact: true })
+        .selectOption("true");
+      await approved.getByRole("checkbox").check();
+      await approved
+        .getByRole("button", { name: "সিদ্ধান্ত সংরক্ষণ করুন" })
+        .click();
+      await page.waitForURL(`${web}/bn/workspace/verifications?saved=1`);
+      await approved.waitFor({ state: "detached" });
+
+      await page.getByRole("link", { name: "English" }).click();
+      await page.goto(`${base}/verifications?offset=10001`);
+      const rejected = page
+        .getByRole("listitem")
+        .filter({ hasText: buyer.name });
+      await rejected.getByText("Review registration", { exact: true }).click();
+      await rejected
+        .getByLabel("Decision", { exact: true })
+        .selectOption("false");
+      await rejected
+        .getByLabel("Reason (optional)")
+        .fill("Browser rejection fixture");
+      await rejected.getByRole("checkbox").check();
+      await rejected.getByRole("button", { name: "Save decision" }).click();
+      await page.waitForURL(`${base}/verifications?saved=1`);
+      await rejected.waitFor({ state: "detached" });
+
+      await post("auth/password", { username: farmer.username, password });
+      const blocked = await fetch(`${api}/v1/auth/password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: buyer.username, password }),
+      });
+      assert.equal(blocked.status, 403);
+      assert.deepEqual(await blocked.json(), {
+        detail: "account_not_verified",
+      });
+    } finally {
+      await browser.close();
+    }
+  },
+);
 
 async function signIn(browser, identity, width) {
   const context = await browser.newContext({

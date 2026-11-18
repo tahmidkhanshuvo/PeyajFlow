@@ -73,6 +73,31 @@ export async function passwordSignIn(
   redirect(`/${locale}/workspace`);
 }
 
+export async function signupAction(
+  locale: Locale,
+  _state: FormState,
+  form: FormData,
+): Promise<FormState> {
+  if (!isLocale(locale)) return { error: "invalid_input" };
+  try {
+    await api(
+      "/v1/auth/signup",
+      json({
+        name: String(form.get("name") ?? ""),
+        district: String(form.get("district") ?? ""),
+        username: String(form.get("username") ?? ""),
+        password: String(form.get("password") ?? ""),
+        phone: String(form.get("phone") ?? ""),
+        nid: String(form.get("nid") ?? ""),
+        role: String(form.get("role") ?? ""),
+      }),
+    );
+  } catch (error) {
+    return errorState(error);
+  }
+  redirect(`/${locale}/workspace?signed_up=1`);
+}
+
 export async function signOut(locale: Locale): Promise<FormState> {
   if (!isLocale(locale)) return { error: "invalid_input" };
   try {
@@ -98,7 +123,8 @@ type Operation =
   | "offer-reply"
   | "order"
   | "inspection"
-  | "review";
+  | "review"
+  | "verify-signup";
 
 export async function mutate(
   locale: Locale,
@@ -303,6 +329,22 @@ export async function mutate(
         );
         destination = `${stock}/inspections`;
         break;
+      case "verify-signup": {
+        if (!form.has("confirm")) return { error: "confirmation_required" };
+        const decision = text("verified");
+        if (decision !== "true" && decision !== "false")
+          return { error: "invalid_input" };
+        await api(
+          "/v1/auth/verify",
+          json({
+            user_id: resource,
+            action: decision === "true" ? "verify" : "reject",
+            reason: text("reason"),
+          }),
+        );
+        destination = `${base}/verifications`;
+        break;
+      }
       default:
         return { error: "invalid_input" };
     }

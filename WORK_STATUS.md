@@ -1,6 +1,20 @@
 # PeyajFlow work status
 
-Last updated November 18, 2026 (Asia/Dhaka).
+Last updated November 19, 2026 (Asia/Dhaka).
+
+## Signup and account verification (November 19, 2026)
+
+- The Bangla and English workspaces accept farmer and buyer registrations. PostgreSQL enforces unique account IDs, NIDs and signup phone numbers. Bangla and ASCII digits are stored in the same form, and passphrases keep their exact whitespace.
+- New registrations can sign in after approval. Verified staff can process pending registrations, and demo users are isolated from the real queue. Operators can approve or reject from Operations. Rejecting a signup revokes its active sessions. Existing operator-provisioned accounts keep their access and market verification behavior.
+- Revision `0018_signup` follows the existing draft revision `0017_signup_nid`. Fresh migration, downgrade to `0016_vision`, re-upgrade and Alembic metadata checks passed on disposable PostgreSQL 16. Upgrade fixtures confirmed that a legacy farmer could still sign in and a draft signup stayed pending after its NID was normalized.
+- Ruff lint and formatting, 89 PostgreSQL API tests, both intent evaluation gates, Prettier, ESLint, TypeScript, four web unit tests, the production build, four Edge Playwright workflows and the release smoke check passed. Signup regressions cover concurrent signup and review, duplicate errors, staff permissions, session revocation and sensitive-field exclusion.
+- The local Docker database is at revision `0018_signup` and the API readiness check passed. Staff identity-evidence review remains manual.
+
+### Agent signup verification page
+
+- Verified, non-demo agents can open **Signup verification** in either workspace language. The decision form accepts an empty reason and returns to the localized queue after approval or rejection. Pagination stays within the API's offset limit.
+- The local `rofiq` account has the required agent role and verification flags. A separate Edge run against disposable PostgreSQL confirmed that an agent could approve a farmer without a reason, reject a buyer with a reason, and see both records leave the pending queue. The approved farmer could sign in, the rejected buyer was blocked, and a demo agent could not open the page.
+- Prettier, ESLint, TypeScript, four web unit tests, the production build, five Edge workflows on a fresh disposable database, and the release smoke check passed.
 
 ## Completion of existing partial features (November 18, 2026)
 

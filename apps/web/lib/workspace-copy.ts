@@ -247,6 +247,26 @@ const errors: Record<string, [string, string]> = {
     "The image exceeds the allowed size.",
   ],
   photos_required: ["দুই থেকে চারটি ছবি যোগ করুন।", "Attach two to four photos."],
+  username_taken: [
+    "এই অ্যাকাউন্ট আইডি ইতিমধ্যে ব্যবহৃত হচ্ছে।",
+    "This account ID is already in use.",
+  ],
+  nid_taken: [
+    "এই এনআইডি নম্বর ইতিমধ্যে নিবন্ধিত।",
+    "This NID number is already registered.",
+  ],
+  phone_taken: [
+    "এই ফোন নম্বর ইতিমধ্যে নিবন্ধিত।",
+    "This phone number is already registered.",
+  ],
+  account_not_verified: [
+    "সাইন ইন করতে অ্যাকাউন্ট যাচাই করা প্রয়োজন।",
+    "Your account needs verification before you can sign in.",
+  ],
+  already_processed: [
+    "এই নিবন্ধনের বিষয়ে আগেই সিদ্ধান্ত নেওয়া হয়েছে।",
+    "A decision has already been made on this registration.",
+  ],
 };
 
 export function errorText(locale: Locale, code: string) {
