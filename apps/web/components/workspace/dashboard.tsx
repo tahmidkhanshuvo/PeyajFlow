@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Locale } from "../../lib/copy";
 import { api, canUseVoice, type Profile } from "../../lib/workspace-api";
 import { local, roles } from "../../lib/workspace-copy";
-import type { Demand, Lot, Offer, Order } from "../../lib/workspace-types";
+import type { Demand, Lot, Offer, Order, Supply } from "../../lib/workspace-types";
 import { numberLabel, timeLabel } from "../../lib/workspace-values";
 import { WorkspaceIcon } from "./icon";
 import { taka } from "./market";
@@ -34,16 +34,57 @@ export async function Dashboard({
   const signupReviewer = agent && actor.verified && !actor.is_demo;
   const admin = actor.role === "admin";
 
-  const [stock, demand, offers, orders, alerts, operations] = await Promise.all(
-    [
-      farmer || agent ? api<Lot[]>("/v1/lots") : [],
+  const [stock, demand, offers, orders, alerts, operations, supply] =
+    await Promise.all([
+      farmer || agent || admin ? api<Lot[]>("/v1/lots") : [],
       buyer ? api<{ items: Demand[] }>("/v1/buyer-requests") : { items: [] },
       agent || admin ? [] : api<Offer[]>("/v1/offers"),
       agent ? [] : api<Order[]>("/v1/orders"),
       api<Alerts>("/v1/notifications"),
       admin ? api<Ops>("/v1/admin/overview") : null,
-    ],
-  );
+      buyer
+        ? api<{ items: Supply[] }>("/v1/matches").catch(() => ({ items: [] }))
+        : { items: [] },
+    ]);
+
+  // Real-time Stock Quality Analytics (100% database driven)
+  let verifiedKg = 0;
+  let unverifiedKg = 0;
+
+  if (buyer) {
+    for (const item of supply.items) {
+      const quantity = Number(item.sellable_kg || 0);
+      if (item.verification === "verified") {
+        verifiedKg += quantity;
+      } else {
+        unverifiedKg += quantity;
+      }
+    }
+  } else {
+    for (const lot of stock) {
+      const quantity = Number(lot.available_kg || 0);
+      if (lot.verified_at !== null || lot.verified_kg !== null) {
+        verifiedKg += quantity;
+      } else {
+        unverifiedKg += quantity;
+      }
+    }
+  }
+
+  verifiedKg = Math.round(verifiedKg);
+  unverifiedKg = Math.round(unverifiedKg);
+  const totalStockKg = verifiedKg + unverifiedKg;
+  const verifiedPercent =
+    totalStockKg > 0 ? Math.round((verifiedKg / totalStockKg) * 100) : 0;
+  const unverifiedPercent = totalStockKg > 0 ? 100 - verifiedPercent : 0;
+
+  // Donut chart stroke geometry
+  const donutRadius = 56;
+  const donutCircumference = 2 * Math.PI * donutRadius;
+  const verifiedArc =
+    totalStockKg > 0 ? (verifiedPercent / 100) * donutCircumference : 0;
+  const unverifiedArc =
+    totalStockKg > 0 ? donutCircumference - verifiedArc : 0;
 
   const activeOffers = offers.filter((item) =>
     ["sent", "countered"].includes(item.status),
@@ -265,8 +306,111 @@ export async function Dashboard({
         </Link>
       </div>
 
-      {/* ─── LOWER GRID: RECENT ACTIVITY & QUICK ACTIONS ─── */}
+      {/* ─── LOWER GRID: REAL-TIME ANALYTICS, RECENT ACTIVITY & QUICK ACTIONS ─── */}
       <div className="dash-lower-grid">
+        {/* Real-time Stock Quality Analytics (Verified vs Self-Reported from Database) */}
+        <section className="dash-card dash-quality-card glass-1">
+          <header className="dash-card-header">
+            <div>
+              <div className="dash-quality-eyebrow">
+                <span className="dash-pulse-dot" aria-hidden="true" />
+                <span>{t("মজুতের মান", "Stock Quality")}</span>
+              </div>
+              <h2 className="dash-card-title">
+                {t("যাচাই বনাম নিজস্ব তথ্য", "Verified vs. Self-Reported")}
+              </h2>
+            </div>
+          </header>
+
+          <div className="dash-donut-wrap">
+            <svg
+              className="dash-donut-svg"
+              viewBox="0 0 160 160"
+              width="160"
+              height="160"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              aria-label={`${t("যাচাই বনাম নিজস্ব তথ্য", "Verified vs. Self-Reported")}: ${t("যাচাইকৃত", "Verified")} ${numberLabel(locale, verifiedPercent)}%, ${t("নিজস্ব তথ্য", "Self-reported")} ${numberLabel(locale, unverifiedPercent)}%`}
+            >
+              <circle
+                cx="80"
+                cy="80"
+                r={donutRadius}
+                stroke="var(--border)"
+                strokeWidth="16"
+                opacity="0.35"
+              />
+
+              {totalStockKg > 0 ? (
+                <g transform="rotate(-90 80 80)">
+                  <circle
+                    cx="80"
+                    cy="80"
+                    r={donutRadius}
+                    stroke="var(--onion-600)"
+                    strokeWidth="16"
+                    strokeDasharray={`${verifiedArc} ${donutCircumference - verifiedArc}`}
+                    strokeDashoffset="0"
+                    strokeLinecap="round"
+                    className="dash-donut-segment dash-donut-verified"
+                  />
+                  <circle
+                    cx="80"
+                    cy="80"
+                    r={donutRadius}
+                    stroke="var(--skin-500)"
+                    strokeWidth="16"
+                    strokeDasharray={`${unverifiedArc} ${donutCircumference - unverifiedArc}`}
+                    strokeDashoffset={-verifiedArc}
+                    strokeLinecap="round"
+                    className="dash-donut-segment dash-donut-unverified"
+                  />
+                </g>
+              ) : null}
+
+              <text
+                x="80"
+                y="74"
+                textAnchor="middle"
+                className="dash-donut-center-num stat-num"
+              >
+                {numberLabel(locale, totalStockKg)} {local(locale, "কেজি", "kg")}
+              </text>
+              <text
+                x="80"
+                y="94"
+                textAnchor="middle"
+                className="dash-donut-center-sub"
+              >
+                {t("মোট মজুত", "Total stock")}
+              </text>
+            </svg>
+          </div>
+
+          <div className="dash-quality-legend">
+            <div className="dash-quality-row">
+              <div className="dash-quality-label">
+                <span className="dash-dot-verified" aria-hidden="true" />
+                <span>{t("মাঠ কর্মকর্তা যাচাইকৃত", "Field officer verified")}</span>
+              </div>
+              <strong className="dash-quality-value stat-num">
+                {numberLabel(locale, verifiedPercent)}% ({numberLabel(locale, verifiedKg)} {local(locale, "কেজি", "kg")})
+              </strong>
+            </div>
+
+            <div className="dash-quality-row">
+              <div className="dash-quality-label">
+                <span className="dash-dot-unverified" aria-hidden="true" />
+                <span>{t("নিজস্ব তথ্য (অযাচাইকৃত)", "Self-reported (Unverified)")}</span>
+              </div>
+              <strong className="dash-quality-value stat-num">
+                {numberLabel(locale, unverifiedPercent)}% ({numberLabel(locale, unverifiedKg)} {local(locale, "কেজি", "kg")})
+              </strong>
+            </div>
+          </div>
+        </section>
+
         {/* Recent lots / orders */}
         <section className="dash-card glass-1">
           <header className="dash-card-header">

@@ -128,6 +128,17 @@ export async function pilotMutate(
   redirect(destination);
 }
 
+export async function startSimulatedCall(locale: Locale): Promise<void> {
+  await pilotMutate(locale, "start-call", "", "", {}, new FormData());
+}
+
+export async function resolveVoiceTask(
+  locale: Locale,
+  taskId: string,
+): Promise<void> {
+  await pilotMutate(locale, "resolve-task", taskId, "", {}, new FormData());
+}
+
 export async function runAdvice(
   lotId: string,
   previous: AdviceState,

@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { FormState } from "../../../components/workspace/form";
 import { isLocale, type Locale } from "../../../lib/copy";
@@ -131,3 +132,29 @@ export async function operate(
     `/${locale}/workspace/${destination}${destination.includes("?") ? "&" : "?"}saved=1`,
   );
 }
+
+export async function markAlertRead(
+  locale: Locale,
+  alertId: string,
+): Promise<void> {
+  if (!isLocale(locale)) return;
+  try {
+    await api(`/v1/notifications/${encodeURIComponent(alertId)}/read`, {
+      method: "POST",
+    });
+    revalidatePath(`/${locale}/workspace`, "page");
+  } catch {
+    // Ignore error
+  }
+}
+
+export async function markAllAlertsRead(locale: Locale): Promise<void> {
+  if (!isLocale(locale)) return;
+  try {
+    await api("/v1/notifications/read-all", { method: "POST" });
+    revalidatePath(`/${locale}/workspace`, "page");
+  } catch {
+    // Ignore error
+  }
+}
+

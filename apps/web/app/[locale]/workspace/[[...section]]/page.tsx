@@ -23,6 +23,10 @@ import { QuickSearch, type SearchItem } from "../../../../components/workspace/q
 import { Details, Field } from "../../../../components/workspace/fields";
 import { WorkspaceForm } from "../../../../components/workspace/form";
 import {
+  NotificationBell,
+  type NotificationItem,
+} from "../../../../components/workspace/notification-bell";
+import {
   InspectionsPage,
   RiskPage,
 } from "../../../../components/workspace/inspection";
@@ -80,7 +84,6 @@ function destinations(locale: Locale, actor: Profile) {
       ["orders", local(locale, "অর্ডার", "Orders")],
     );
   pages.push(["prices", local(locale, "বাজারদর", "Market prices")]);
-  pages.push(["alerts", local(locale, "বিজ্ঞপ্তি", "Alerts")]);
   if (canUseVoice(actor))
     pages.push(["voice", local(locale, "বাংলা সহকারী", "Bangla assistant")]);
   if (actor.role === "agent" && actor.verified && !actor.is_demo)
@@ -126,7 +129,7 @@ async function panel(
       : 0;
   const context = { locale, actor, base, offset };
   if (!page) return <Overview {...context} />;
-  if (!destinations(locale, actor).some(([path]) => path === page)) {
+  if (page !== "alerts" && !destinations(locale, actor).some(([path]) => path === page)) {
     if (page === "verifications") {
       return (
         <section className="work-panel">
@@ -249,6 +252,9 @@ export default async function WorkspacePage({
     if (activeItem) {
       pageTitle = activeItem[1];
     }
+    if (sec0 === "alerts") {
+      pageTitle = local(locale, "বিজ্ঞপ্তি", "Alerts");
+    }
     if (sec0 === "stock" && sec1) {
       if (!sec2) pageTitle = local(locale, "মজুতের বিবরণ", "Lot details");
       else if (sec2 === "inspections") pageTitle = local(locale, "পরিদর্শন ও ছবি", "Inspections & photos");
@@ -283,18 +289,25 @@ export default async function WorkspacePage({
     const formatTaka = (val: string | number) => `৳${numberLabel(locale, val)}`;
     const formatStatus = (st: string) => local(locale, ...(orderStatuses[st] ?? [st, st]));
 
-    // Fetch live workspace entities for rich keyword searching (buyer name, order no, lot label, variety, etc.)
-    const [lotsResult, offersResult, ordersResult] = await Promise.all([
-      actor.role !== "buyer"
-        ? api<Lot[]>("/v1/lots").catch(() => [])
-        : Promise.resolve([]),
-      actor.role !== "agent"
-        ? api<Offer[]>("/v1/offers").catch(() => [])
-        : Promise.resolve([]),
-      actor.role !== "agent"
-        ? api<Order[]>("/v1/orders").catch(() => [])
-        : Promise.resolve([]),
-    ]);
+    // Fetch live workspace entities for rich keyword searching and top bar notification bell
+    const [lotsResult, offersResult, ordersResult, notificationsResult] =
+      await Promise.all([
+        actor.role !== "buyer"
+          ? api<Lot[]>("/v1/lots").catch(() => [])
+          : Promise.resolve([]),
+        actor.role !== "agent"
+          ? api<Offer[]>("/v1/offers").catch(() => [])
+          : Promise.resolve([]),
+        actor.role !== "agent"
+          ? api<Order[]>("/v1/orders").catch(() => [])
+          : Promise.resolve([]),
+        api<{ items: NotificationItem[]; unread: number }>(
+          "/v1/notifications?offset=0",
+        ).catch(() => ({
+          items: [] as NotificationItem[],
+          unread: 0,
+        })),
+      ]);
 
     const searchItems: SearchItem[] = [];
 
@@ -377,6 +390,21 @@ export default async function WorkspacePage({
         "Daily farmgate & wholesale onion price benchmark comparison",
       ),
       keywords: "পাবনা কাওরান বাজার মোকাম পাইকারি রেট দর price pabna dhaka karwan bazar benchmark",
+    });
+
+    // 6. Alerts / Notifications
+    searchItems.push({
+      id: "nav-alerts",
+      name: local(locale, "বিজ্ঞপ্তি", "Alerts"),
+      category: local(locale, "পৃষ্ঠা", "Navigation"),
+      href: `${base}/alerts`,
+      icon: "alerts",
+      detail: local(
+        locale,
+        "ইনবক্স ও সিস্টেম বিজ্ঞপ্তি দেখুন",
+        "View notifications and inbox alerts",
+      ),
+      keywords: "alerts বিজ্ঞপ্তি নোটিফিকেশন inbox notification",
     });
 
     return (
@@ -506,14 +534,12 @@ export default async function WorkspacePage({
                 locale={locale}
               />
 
-              <Link
-                className="work-icon-btn"
-                href={`${base}/alerts`}
-                title={local(locale, "বিজ্ঞপ্তি", "Alerts")}
-                aria-label={local(locale, "বিজ্ঞপ্তি", "Alerts")}
-              >
-                <WorkspaceIcon name="alerts" />
-              </Link>
+              <NotificationBell
+                locale={locale}
+                base={base}
+                initialUnread={notificationsResult.unread}
+                initialItems={notificationsResult.items}
+              />
 
               <ThemeToggle
                 labels={{
@@ -548,7 +574,7 @@ export default async function WorkspacePage({
           className="work-mobile-tabs"
           aria-label={local(locale, "মোবাইল নেভিগেশন", "Mobile navigation")}
         >
-          {navItems.slice(0, 4).map(([path, name]) => {
+          {navItems.slice(0, 5).map(([path, name]) => {
             const isCurrent = (section[0] ?? "") === path;
             return (
               <Link
@@ -562,14 +588,6 @@ export default async function WorkspacePage({
               </Link>
             );
           })}
-          <Link
-            href={`${base}/alerts`}
-            aria-current={(section[0] ?? "") === "alerts" ? "page" : undefined}
-            className={`work-mobile-tab ${(section[0] ?? "") === "alerts" ? "active" : ""}`}
-          >
-            <WorkspaceIcon name="alerts" />
-            <span>{local(locale, "বিজ্ঞপ্তি", "Alerts")}</span>
-          </Link>
         </nav>
       </div>
     );
