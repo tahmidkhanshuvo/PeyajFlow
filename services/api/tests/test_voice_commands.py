@@ -202,6 +202,53 @@ def test_guards_cancel_and_keypad_feedback_keep_stock_unchanged(pilot):
 
 
 @requires_database
+def test_quantities_said_in_words_use_the_same_check_and_confirmation(pilot):
+    client, _, _ = pilot
+    farmer, buyer = login(client, "farmer"), login(client, "buyer")
+    lot = new_lot(client, farmer, quantity="25", unit="maund", kg_per_maund="40")
+    offer = new_offer(client, buyer, lot, 60, price_bdt_kg="45")
+    params = {"offer_id": offer["id"], "lot_id": lot, "version": offer["version"]}
+
+    preview = client.post(
+        "/v1/voice/resolve",
+        headers=farmer,
+        json={"phrases": ["দেড় মণের অফার নেব", "অফার গ্রহণ দুইশো"]},
+    ).json()
+    assert (preview[0]["tool"], preview[0]["quantity"], preview[0]["unit"]) == (
+        "accept",
+        "1.5",
+        "maund",
+    )
+    assert (preview[1]["status"], preview[1]["error"]) == (
+        "unknown",
+        "voice_say_quantity",
+    )
+
+    path = start(client, farmer)
+    wrong = say(client, farmer, path, "দুইশো কেজির অফার নেব", params, "accept")
+    assert (wrong.status_code, wrong.json()["detail"]) == (
+        409,
+        "voice_quantity_mismatch",
+    )
+    # 1.5 maunds at the lot's 40 kg per maund is the offered 60 kg.
+    staged = say(client, farmer, path, "দেড় মণের অফার নেব", params, "accept")
+    assert staged.status_code == 200, staged.text
+    staged = staged.json()
+    assert "60.000 কেজি" in staged["entry"]["readback_bn"]
+    assert client.get(f"/v1/lots/{lot}", headers=farmer).json()["reserved_kg"] == (
+        "0.000"
+    )
+    confirm = {"action_id": staged["entry"]["id"], "digits": staged["demo_code"]}
+    assert (
+        client.post(f"{path}/confirm", headers=farmer, json=confirm).json()["state"]
+        == "committed"
+    )
+    assert client.get(f"/v1/lots/{lot}", headers=farmer).json()["reserved_kg"] == (
+        "60.000"
+    )
+
+
+@requires_database
 def test_spoken_quantities_are_checked_for_counter_loss_and_buyer_offer(pilot):
     client, _, _ = pilot
     farmer, buyer = login(client, "farmer"), login(client, "buyer")

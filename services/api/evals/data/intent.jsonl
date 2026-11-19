@@ -237,3 +237,23 @@
 {"id": "invalid-020", "split": "test", "lang": "en", "category": "invalid", "text": "ok", "status": "unknown", "tool": null, "quantity": null, "unit": null}
 {"id": "invalid-021", "split": "dev", "lang": "bn", "category": "invalid", "text": "হ্যাঁ", "status": "unknown", "tool": null, "quantity": null, "unit": null}
 {"id": "invalid-022", "split": "test", "lang": "bn", "category": "invalid", "text": "অফার গ্রহণ ০ কেজি", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "number-words-001", "split": "dev", "lang": "bn", "category": "number_words", "text": "দুইশো কেজির অফারটা নেব", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "number-words-002", "split": "test", "lang": "bn", "category": "number_words", "text": "দেড় মণের অফার গ্রহণ করব", "status": "resolved", "tool": "accept", "quantity": "1.5", "unit": "maund"}
+{"id": "number-words-003", "split": "dev", "lang": "bn", "category": "number_words", "text": "আড়াইশো কেজি পেঁয়াজ পচে গেছে", "status": "resolved", "tool": "movement", "quantity": "250", "unit": "kg"}
+{"id": "number-words-004", "split": "test", "lang": "bn", "category": "number_words", "text": "সাড়ে তিন মণ ওজন কম", "status": "resolved", "tool": "movement", "quantity": "3.5", "unit": "maund"}
+{"id": "number-words-005", "split": "dev", "lang": "bn", "category": "number_words", "text": "পৌনে দুই মণের অফার নেব", "status": "resolved", "tool": "accept", "quantity": "1.75", "unit": "maund"}
+{"id": "number-words-006", "split": "test", "lang": "bn", "category": "number_words", "text": "পাল্টা অফার একশো পঞ্চাশ কেজি", "status": "resolved", "tool": "counter", "quantity": "150", "unit": "kg"}
+{"id": "number-words-007", "split": "dev", "lang": "bn", "category": "number_words", "text": "নতুন লট নিবন্ধন আশি মণ", "status": "resolved", "tool": "register", "quantity": "80", "unit": "maund"}
+{"id": "number-words-008", "split": "test", "lang": "bn", "category": "number_words", "text": "দুই হাজার পাঁচশো কেজির অফার পাঠাব", "status": "resolved", "tool": "send_offer", "quantity": "2500", "unit": "kg"}
+{"id": "number-words-009", "split": "dev", "lang": "en", "category": "number_words", "text": "accept the offer for two hundred and fifty kg", "status": "resolved", "tool": "accept", "quantity": "250", "unit": "kg"}
+{"id": "number-words-010", "split": "test", "lang": "en", "category": "number_words", "text": "send an offer for twenty-five maunds", "status": "resolved", "tool": "send_offer", "quantity": "25", "unit": "maund"}
+{"id": "number-words-011", "split": "dev", "lang": "banglish", "category": "number_words", "text": "tin mon er offer ta nibo", "status": "resolved", "tool": "accept", "quantity": "3", "unit": "maund"}
+{"id": "number-words-012", "split": "test", "lang": "banglish", "category": "number_words", "text": "dusho kg er offer pathabo", "status": "resolved", "tool": "send_offer", "quantity": "200", "unit": "kg"}
+{"id": "number-words-013", "split": "dev", "lang": "en", "category": "number_words", "text": "accept offer at 200 kg", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "number-words-014", "split": "test", "lang": "bn", "category": "number_words", "text": "পঞ্চাশ টাকা দরে ২০০ কেজির অফার নেব", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "number-words-015", "split": "dev", "lang": "bn", "category": "number_words", "text": "অফার গ্রহণ দুইশো", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "number-words-016", "split": "test", "lang": "en", "category": "number_words", "text": "two three kg offer accept", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "number-words-017", "split": "dev", "lang": "bn", "category": "number_words", "text": "দুই নম্বর লটের ২০ মণের অফার নেব", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "number-words-018", "split": "test", "lang": "banglish", "category": "number_words", "text": "sare 200.5 kg offer nibo", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "number-words-019", "split": "dev", "lang": "bn", "category": "number_words", "text": "এক হাজার পনেরোশো কেজির অফার নেব", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "number-words-020", "split": "test", "lang": "bn", "category": "number_words", "text": "দুইশো কেজি ৩০০ কেজির অফার নেব", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}

@@ -123,8 +123,8 @@ const errors: Record<string, [string, string]> = {
     "More than one action or quantity was heard. Say one action and one quantity.",
   ],
   voice_say_quantity: [
-    "পরিমাণ অঙ্কে বলুন, সঙ্গে কেজি বা মণ। যেমন: অফার গ্রহণ ২০০ কেজি।",
-    "Say the quantity in digits with kg or maund, for example: accept offer 200 kg.",
+    "পরিমাণের ঠিক পরে কেজি বা মণ বলুন। যেমন: অফার গ্রহণ ২০০ কেজি, দুইশো কেজি বা দেড় মণ।",
+    "Say the quantity followed by kg or maund, for example: accept offer 200 kg or two hundred kg.",
   ],
   voice_onion_only: [
     "এই সহকারী শুধু পেঁয়াজের কাজ করে।",

@@ -97,6 +97,27 @@ The AI pilot frontend is live on Vercel and Render deployed the matching API. Pr
 
 Field validation remains open for market forecasts, photo suggestions, storage measurements, and real microphone input across Bangla dialects. The browser inference and controlled microphone tests ran locally.
 
+### Spoken quantities in words (November 20, 2026)
+
+- **What changed.** `app/intent.py` now reads quantities said in words when they come directly before kg or maund:
+  - Bangla 0 to 99.
+  - Hundreds, such as দুইশো, পনেরোশো and একশো পঞ্চাশ.
+  - Thousands and lakhs.
+  - দেড়, আড়াই, সাড়ে, সোয়া and পৌনে.
+  - English, such as "two hundred and fifty".
+  - Common Banglish, such as "tin mon" and "dusho kg".
+- **When it still abstains.** Irregular phrases and number words that are not the quantity still abstain with `number_words`. A number word next to টাকা is a price. Digit-only input uses the unchanged code path. The quantity still passes the form check, read-back and keypad confirmation.
+- **Copy.** The `voice_say_quantity` text no longer asks for digits.
+- **Checks, run on a disposable PostgreSQL 16:**
+  - Ruff lint and format passed.
+  - `alembic check` passed.
+  - The full API suite passed: 129 tests, including 39 new intent tests and one end-to-end call test in which দেড় মণ reserves 60 kg only after keypad confirmation.
+  - `evals.intent_eval --check` passed on both datasets. Main set, 259 rows (20 new number-word rows): accuracy 1.000. Challenge set: accuracy 0.948, up from 0.931, with zero wrong change commands. The results are saved as `intent-number-words` and `intent-challenge-number-words`.
+- **Open.**
+  - Row `challenge-018` now resolves to 200 kg, but its expected label has no quantity, so it is still reported as a failure. The label was not edited.
+  - The new rows were written by the same author as the rules.
+  - Spoken numbers need review by native speakers and testing on recorded speech.
+
 ## Work completed
 
 - Reviewed the master handoff, the supplied 311 × 59 transparent logo, and the existing workspace. The workspace started with those two files and no Git history or remote.
