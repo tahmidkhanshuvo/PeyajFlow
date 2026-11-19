@@ -30,6 +30,13 @@ The simulator used to recognise 30 exact phrases. `app/intent.py` now resolves n
 
 Negation and "whether" questions do not block read commands, because reading changes nothing.
 
+**A negation in an earlier clause.** "no thanks, reject it", "এই দামে দিব না, অফারটা বাদ দিন" and "আমি বুঝতে পারছি না, একজন মানুষের সাথে কথা বলতে চাই" end with a plain command, and the negation refers to something else. When a sentence would otherwise be refused as negated, the resolver splits typed text at commas, দাঁড়ি, semicolons and full stops. It uses the last clause only if all of these hold:
+
+- that clause holds a change command with no negation and no "whether" or "or" (কিনা, নাকি) of its own;
+- no earlier clause holds a change command or a quantity.
+
+So "অফার গ্রহণ করব, না", "don't accept, reject it" and "২০০ কেজি না, ৩০০ কেজির অফার নেব" stay negated. A transcript without punctuation, as browser speech usually returns, is never split. বাদ দিন and নাকচ করে দিন are read as rejecting, not as sending an offer.
+
 **Quantities said in words.** A spoken number is read only when it comes directly before kg or maund and the whole phrase follows strict rules. The resolver understands:
 
 - Bangla 0 to 99, each a single word (একুশ, পঁয়ত্রিশ, নিরানব্বই).
@@ -64,6 +71,8 @@ Run from `services/api`: `uv run --locked python -m evals.intent_eval --label <n
 | Challenge, 58 rows | New resolver after fixes (`intent-challenge-after`) | 0.931 | 0.899 | 1.000 | 0 of 18 | 0 |
 | Main, 259 rows (20 number-word rows added) | With spoken numbers (`intent-number-words`) | 1.000 | 1.000 | 1.000 | 0 of 54 | 0 |
 | Challenge, 58 rows | With spoken numbers (`intent-challenge-number-words`) | 0.948 | 0.906 | 1.000 | 0 of 18 | 0 |
+| Main, 271 rows (12 clause rows added) | With clause-scoped negation (`intent-clause-negation`) | 1.000 | 1.000 | 1.000 | 0 of 60 | 0 |
+| Challenge, 58 rows | With clause-scoped negation (`intent-challenge-clause-negation`) | 1.000 | 1.000 | 1.000 | 0 of 18 | 0 |
 
 How to read these figures:
 
@@ -72,6 +81,7 @@ How to read these figures:
 - **The two wrong change commands on the first run** were "did any buyer send me an offer", read as sending an offer, and "অফার গ্রহণ দুইশো", accepted without a checkable quantity. Both are fixed and covered by unit tests.
 - **The 5 challenge misses before spoken numbers were cautious refusals.** Examples: "no thanks, reject it" and "আমি বুঝতে পারছি না, … কথা বলতে চাই" are refused because of a negation, and "দুইশো কেজির অফারে আমি রাজি" was refused because the quantity was said in words.
 - **Spoken numbers (November 20, 2026).** "দুইশো কেজির অফারে আমি রাজি" (`challenge-018`) now resolves to accept 200 kg, so intent accuracy on the challenge set rose from 0.931 to 0.948. Its expected label had been written without a quantity, although the utterance states 200 kg. It was corrected to 200 kg in a separate commit (`intent-challenge-label-fix`: accuracy 0.948, 4 failures). This is the only expected label changed, and the correction records what the speaker said, not what the resolver returns. Four refusals caused by negation remain. The 20 added main-set rows were written by the same author as the number rules, so they test the rules, not independent wording.
+- **The challenge set is no longer an independent test.** Its last four misses were fixed by clause-scoped negation, and challenge-018 was relabelled, so 1.000 on it is an upper bound like the main set. The first run (0.603) remains the only estimate on unfamiliar wording. A new set, written by someone other than the rule author and run once, is needed for the next estimate.
 - **The datasets are AI-written.** They need review and additions from native Bangla speakers before any figure is quoted as field performance. Recorded speech has not been evaluated; browser speech recognition is a separate, untested step.
 - **CI fails the build** if any wrong change command or false action appears, if accuracy drops below 0.95 on the main set or 0.90 on the challenge set, or if quantity accuracy drops below 0.95.
 

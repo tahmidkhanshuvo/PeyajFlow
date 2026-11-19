@@ -118,6 +118,16 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - The new rows were written by the same author as the rules.
   - Spoken numbers need review by native speakers and testing on recorded speech.
 
+### Clause-scoped negation (November 20, 2026)
+
+- **What changed.** A negation in an earlier clause no longer blocks a plain final command in typed text, such as "no thanks, reject it". The last clause must hold the only change command, with no negation or doubt of its own. No earlier clause may hold a change command or a quantity. Unpunctuated transcripts are never split.
+- **Related fixes.** নাকি ("or") now marks the user as undecided, so the resolver abstains as ambiguous. বাদ দিন and নাকচ করে দিন now mean reject, not send an offer.
+- **Checks, run on a disposable PostgreSQL 16:**
+  - Ruff and `alembic check` passed.
+  - The full API suite passed: 145 tests.
+  - Both evaluations passed their gates: main set 271 rows (12 new), and challenge set 58 rows, both 1.000, with zero wrong change commands. The results are saved as `intent-clause-negation` and `intent-challenge-clause-negation`.
+- **Open.** The challenge set has now been tuned against, so it is an upper bound. The next accuracy estimate needs a new set written by someone else and run once.
+
 ## Work completed
 
 - Reviewed the master handoff, the supplied 311 × 59 transparent logo, and the existing workspace. The workspace started with those two files and no Git history or remote.

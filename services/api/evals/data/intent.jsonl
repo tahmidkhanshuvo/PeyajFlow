@@ -257,3 +257,15 @@
 {"id": "number-words-018", "split": "test", "lang": "banglish", "category": "number_words", "text": "sare 200.5 kg offer nibo", "status": "unknown", "tool": null, "quantity": null, "unit": null}
 {"id": "number-words-019", "split": "dev", "lang": "bn", "category": "number_words", "text": "এক হাজার পনেরোশো কেজির অফার নেব", "status": "unknown", "tool": null, "quantity": null, "unit": null}
 {"id": "number-words-020", "split": "test", "lang": "bn", "category": "number_words", "text": "দুইশো কেজি ৩০০ কেজির অফার নেব", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "clause-001", "split": "dev", "lang": "en", "category": "clause_negation", "text": "no thanks, I want to reject the offer", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "clause-002", "split": "test", "lang": "bn", "category": "clause_negation", "text": "দাম কম, তাই না। অফারটা বাদ দিন", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "clause-003", "split": "dev", "lang": "bn", "category": "clause_negation", "text": "জানি না, একজন এজেন্টের সাথে কথা বলব", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "clause-004", "split": "test", "lang": "bn", "category": "clause_negation", "text": "না, ৫ মণের অফার গ্রহণ করব", "status": "resolved", "tool": "accept", "quantity": "5", "unit": "maund"}
+{"id": "clause-005", "split": "dev", "lang": "bn", "category": "clause_negation", "text": "অফারটা নাকচ করে দিন", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "clause-006", "split": "test", "lang": "banglish", "category": "clause_negation", "text": "na, offer ta bad diye din", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "clause-007", "split": "dev", "lang": "bn", "category": "clause_negation", "text": "অফার গ্রহণ করব, না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "clause-008", "split": "test", "lang": "en", "category": "clause_negation", "text": "don't accept, reject it", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "clause-009", "split": "dev", "lang": "bn", "category": "clause_negation", "text": "১০০ কেজি না, ২০০ কেজির অফার নেব", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "clause-010", "split": "test", "lang": "en", "category": "clause_negation", "text": "no thanks reject it", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "clause-011", "split": "dev", "lang": "bn", "category": "clause_negation", "text": "ট্রাক লাগবে নাকি লাগবে না জানি না", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "clause-012", "split": "test", "lang": "en", "category": "clause_negation", "text": "no, accept offer kina", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}

@@ -298,6 +298,14 @@ HELP = stems("সহায়তা", "সাহায্য", "help", "sahajjo"
 AGENT = stems("এজেন্ট", "agent")
 TALK = stems("কথা", "সাথে", "talk", "speak", "kotha", "connect", "যোগাযোগ")
 PERSON = stems("মানুষ", "লোক", "person", "human", "someone", "manush")
+# "বাদ দিন", "নাকচ করে দিন": দেওয়া is the helper verb of rejecting here,
+# not "give an offer".
+REJECT_COMPOUND = re.compile(
+    nfc(
+        r"(?:^|\s)(?:বাদ|নাকচ|প্রত্যাখ্যান|bad|nakoch|protyakhan)"
+        r"(?:\s+(?:কর\S*|দিয়ে|kore|diye))?\s+(?:দি|দে|দা|di|de|da)\S*"
+    )
+)
 ACCEPT_ALONE = words("accept")
 REJECT_ALONE = words("reject", "decline")
 
@@ -326,7 +334,12 @@ NEGATION = re.compile(
     )
     + r"|\S(?:িনি|ইনি)(?=\s|$)"
 )
-UNCERTAIN = re.compile(words("কিনা", "kina") + "|" + phrase("কি না", "ki na"))
+# "whether" (কিনা) and "or" (নাকি) questions: the user has not decided.
+UNCERTAIN = re.compile(
+    words("কিনা", "kina", "নাকি", "naki") + "|" + phrase("কি না", "ki na")
+)
+# Clause boundaries in typed text. A full stop between digits is a decimal.
+CLAUSE_BREAK = re.compile(r"[,،।॥;!?]|(?<!\d)\.|\.(?!\d)")
 UNSUPPORTED_ACTION = re.compile(
     stems(
         "বাতিল",
@@ -826,6 +839,7 @@ def has(text: str, *patterns: str) -> bool:
 
 
 def matches(text: str) -> list[str]:
+    offering = REJECT_COMPOUND.sub(" ", text)
     found = {
         "prices": has(text, PRICE)
         or has(text, HOW_MUCH, MONEY)
@@ -843,7 +857,7 @@ def matches(text: str) -> list[str]:
         or has(text, STOCK, ADJUST)
         or has(text, LOSS),
         "register": has(text, REGISTER) or has(text, NEW, LOT),
-        "send_offer": (has(text, OFFER, SEND_VERB) and not has(text, RECEIVED))
+        "send_offer": (has(offering, OFFER, SEND_VERB) and not has(text, RECEIVED))
         or (has(text, I_WANT_TO_BUY) and not has(text, BUY_FROM_ME)),
         "transport": has(text, TRANSPORT),
         "inspection": has(text, INSPECTION)
@@ -928,6 +942,33 @@ def quantities(text: str) -> Quantities:
     return pairs, bare, unread
 
 
+def affirmed_clause(text: str) -> str | None:
+    """The final clause, when a negation belongs only to earlier clauses.
+
+    "no thanks, reject it" and "এই দামে দিব না, অফারটা বাদ দিন" end with a
+    plain command; the negation refers to something else. The command is
+    used only if it is the last clause and has no negation or doubt of its
+    own, and no earlier clause holds a change command or a quantity. So
+    "অফার গ্রহণ করব, না" and "don't accept, reject it" stay negated, and a
+    transcript without punctuation is never split.
+    """
+    clauses = [clause for clause in CLAUSE_BREAK.split(nfc(text)) if normalize(clause)]
+    if len(clauses) < 2:
+        return None
+    last = normalize(clauses[-1])
+    if NEGATION.search(last) or UNCERTAIN.search(last):
+        return None
+    if not any(tool in WRITES for tool in matches(last)):
+        return None
+    for clause in clauses[:-1]:
+        earlier = normalize(clause)
+        if any(tool in WRITES for tool in matches(earlier)):
+            return None
+        if number_runs(earlier.split()):
+            return None
+    return clauses[-1]
+
+
 def interpret(text: str) -> Interpretation:
     normalized = normalize(text)
     if not normalized:
@@ -948,6 +989,9 @@ def interpret(text: str) -> Interpretation:
                 "ambiguous", reason="uncertain", candidates=tuple(changes)
             )
         if NEGATION.search(normalized):
+            clause = affirmed_clause(text)
+            if clause is not None:
+                return interpret(clause)
             return Interpretation(
                 "negated", reason="negated", candidates=tuple(changes)
             )

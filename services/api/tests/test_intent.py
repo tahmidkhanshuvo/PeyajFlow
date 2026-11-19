@@ -159,6 +159,56 @@ def test_spoken_numbers_keep_the_other_quantity_rules():
     assert resolve("দেড় মণের অফার নেব") == ("accept", (Decimal("1.5"), "maund"))
 
 
+@pytest.mark.parametrize(
+    ("phrase", "tool", "quantity"),
+    [
+        ("no thanks, reject it", "reject", None),
+        ("এই দামে দিব না, অফারটা বাদ দিন", "reject", None),
+        ("আমি বুঝতে পারছি না, একজন মানুষের সাথে কথা বলতে চাই", "support", None),
+        ("না, অফার গ্রহণ ২০০ কেজি", "accept", "200"),
+        ("আমি জানি না। ট্রাক লাগবে", "transport", None),
+        ("no. accept offer 2.5 maund", "accept", "2.5"),
+    ],
+)
+def test_a_negation_in_an_earlier_clause_does_not_block_the_final_command(
+    phrase, tool, quantity
+):
+    result = interpret(phrase)
+    assert (result.status, result.tool) == ("resolved", tool)
+    assert result.quantity == (None if quantity is None else Decimal(quantity))
+
+
+@pytest.mark.parametrize(
+    ("phrase", "status"),
+    [
+        ("no thanks reject it", "negated"),  # no punctuation, never split
+        ("অফার গ্রহণ করব, না", "negated"),  # the negation follows the command
+        ("don't accept, reject it", "negated"),  # a change in the negated clause
+        ("no, don't accept", "negated"),
+        ("২০০ কেজি না, ৩০০ কেজির অফার নেব", "negated"),  # a quantity was negated
+        ("অফার গ্রহণ করব না, অফার গ্রহণ করব না", "negated"),
+        ("not now, accept offer kina", "ambiguous"),
+        ("no thanks, reject or accept it", "ambiguous"),
+        ("অফারটা নেব নাকি বাদ দেব বুঝছি না", "ambiguous"),
+    ],
+)
+def test_clause_scoping_never_acts_on_a_negated_or_uncertain_command(phrase, status):
+    result = interpret(phrase)
+    assert (result.status, result.tool) == (status, None)
+
+
+def test_reject_with_a_helper_verb_is_not_sending_an_offer():
+    for phrase in (
+        "অফারটা বাদ দিন",
+        "অফারটা নাকচ করে দিন",
+        "অফারটা বাদ দিয়ে দিন",
+        "offer ta bad diye din",
+    ):
+        assert interpret(phrase).tool == "reject", phrase
+    assert interpret("অফার দিন ২০০ কেজি").tool == "send_offer"
+    assert interpret("বাদ দিয়ে নতুন অফার পাঠান").status == "ambiguous"
+
+
 def test_prices_in_taka_are_not_quantities_and_received_offers_are_reads():
     assert interpret("counter at 40 taka per kg").tool == "counter"
     assert interpret("counter at 40 taka per kg").quantity is None
