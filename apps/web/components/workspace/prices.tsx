@@ -337,7 +337,6 @@ export async function PricePage({
     : [[], null];
   return (
     <>
-      <h1>{local(locale, "বাজারদর", "Market prices")}</h1>
       {choice ? (
         <section className="work-panel">
           <form action={`${base}/prices`} method="get" className="work-form">
@@ -413,7 +412,6 @@ export async function ImportsPage({
         <Link className="work-link" href={`${base}/imports`}>
           {local(locale, "আমদানিতে ফিরুন", "Back to imports")}
         </Link>
-        <h1>{batch.label}</h1>
         <section className="work-panel">
           <h2>{local(locale, "পর্যালোচনা", "Review")}</h2>
           <p>
@@ -500,7 +498,6 @@ export async function ImportsPage({
   const batches = await api<Batch[]>(`/v1/admin/data-imports?offset=${offset}`);
   return (
     <>
-      <h1>{local(locale, "বাজারদর আমদানি", "Market imports")}</h1>
       <section className="work-panel">
         <Details label={local(locale, "CSV জমা দিন", "Upload CSV")}>
           <p>

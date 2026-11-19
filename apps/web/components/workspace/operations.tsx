@@ -568,7 +568,6 @@ export async function OperationsPage(context: Page) {
   const content = await selected[2](context);
   return (
     <>
-      <h1>{local(locale, "পরিচালনা", "Operations")}</h1>
       <nav
         className="ops-nav"
         aria-label={local(locale, "পরিচালনার অংশ", "Operations sections")}

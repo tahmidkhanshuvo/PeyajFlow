@@ -355,7 +355,6 @@ export async function InspectionsPage({
       <Link className="work-link" href={`${base}/stock/${id}`}>
         {lot.label}
       </Link>
-      <h1>{local(locale, "পরিদর্শন ও ছবি", "Inspections and photos")}</h1>
       {actor.role === "farmer" && (
         <section className="work-panel">
           <Details
@@ -487,7 +486,6 @@ export async function RiskPage({
       <Link className="work-link" href={`${base}/stock/${id}`}>
         {lot.label}
       </Link>
-      <h1>{local(locale, "সংরক্ষণের ঝুঁকি", "Storage risk")}</h1>
       <section className="work-panel">
         <span className="work-tag">
           {local(locale, "নিয়মভিত্তিক পরামর্শ", "Checklist advisory")}

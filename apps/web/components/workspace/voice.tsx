@@ -43,7 +43,6 @@ export async function VoicePage({
         <Link className="work-link" href={`${base}/voice`}>
           {t("সিমুলেটরে ফিরুন", "Back to simulator")}
         </Link>
-        <h1>{t("বাংলা কল সিমুলেটর", "Bangla call simulator")}</h1>
         <VoiceDesk
           locale={locale}
           base={base}
@@ -61,7 +60,6 @@ export async function VoicePage({
   const tasks = await api<VoiceTask[]>("/v1/voice/tasks");
   return (
     <>
-      <h1>{t("বাংলা কল সিমুলেটর", "Bangla call simulator")}</h1>
       <section className="work-panel">
         <span className="work-tag">{t("সিমুলেশন", "Simulation")}</span>
         <p>

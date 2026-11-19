@@ -20,7 +20,6 @@ export async function AgentsPage({
   const t = (bn: string, en: string) => local(locale, bn, en);
   return (
     <>
-      <h1>{t("সহায়তাকারীর অনুমতি", "Agent access")}</h1>
       <section className="work-panel">
         <h2>{t("যাচাইকৃত সহায়তাকারী যোগ করুন", "Add a verified agent")}</h2>
         <p>

@@ -162,6 +162,133 @@ function LotBalances({ locale, lot }: { locale: Locale; lot: Lot }) {
   );
 }
 
+export function StockCard({
+  locale,
+  lot,
+  base,
+}: {
+  locale: Locale;
+  lot: Lot;
+  base: string;
+}) {
+  const t = (bn: string, en: string) => local(locale, bn, en);
+  const isVerified = Boolean(lot.verified_kg);
+
+  return (
+    <article key={lot.id} className="trade-order-card stock-card">
+      {/* Top Header: Lot ID + Variety + Grade + Verification Status */}
+      <div className="trade-card-header">
+        <div className="trade-card-id-wrap">
+          <span className="trade-card-hash">#{lot.id.slice(0, 8)}</span>
+          <span className="trade-card-variety">{lot.variety}</span>
+          {lot.grade && lot.grade !== "ungraded" && (
+            <span className="trade-card-grade-badge">
+              {t("গ্রেড", "Grade")} {lot.grade}
+            </span>
+          )}
+        </div>
+        <span
+          className={`trade-status-pill ${isVerified ? "verified" : "pending"}`}
+        >
+          <span className="trade-status-dot" aria-hidden="true" />
+          {isVerified ? t("যাচাইকৃত", "Verified") : t("স্বঘোষিত", "Self-reported")}
+        </span>
+      </div>
+
+      {/* Lot Title & Storage Location */}
+      <div className="trade-card-main-title">
+        <h2 className="trade-card-heading">
+          <Link
+            href={`${base}/stock/${lot.id}`}
+            className="trade-card-title-link"
+          >
+            {lot.label}
+          </Link>
+        </h2>
+        <div className="trade-card-meta-strip">
+          <span>📍 {lot.district}</span>
+          <span className="trade-meta-dot">•</span>
+          <span>{lot.storage_type}</span>
+        </div>
+      </div>
+
+      {/* Genuine Dates from Backend (No fake progress slider line) */}
+      {(lot.harvest_on || lot.stored_on) && (
+        <div className="trade-meta-dates">
+          {lot.harvest_on && (
+            <span>
+              <strong>{t("ফসল তোলা", "Harvest")}:</strong>{" "}
+              {timeLabel(locale, lot.harvest_on)}
+            </span>
+          )}
+          {lot.harvest_on && lot.stored_on && (
+            <span className="trade-meta-dot">•</span>
+          )}
+          {lot.stored_on && (
+            <span>
+              <strong>{t("সংরক্ষিত", "Stored")}:</strong>{" "}
+              {timeLabel(locale, lot.stored_on)}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="trade-card-divider dashed" />
+
+      {/* Real Backend Inventory Quantities */}
+      <div className="trade-receipt-body">
+        <div className="trade-receipt-row">
+          <span className="trade-receipt-label">
+            {t("বর্তমান মজুত", "Recorded stock")}
+          </span>
+          <span className="trade-receipt-val">
+            {kg(locale, lot.available_kg)}
+          </span>
+        </div>
+        <div className="trade-receipt-row">
+          <span className="trade-receipt-label">
+            {t("সংরক্ষিত", "Reserved")}
+          </span>
+          <span className="trade-receipt-val">
+            {kg(locale, lot.reserved_kg)}
+          </span>
+        </div>
+        {lot.verified_kg !== null && (
+          <div className="trade-receipt-row">
+            <span className="trade-receipt-label">
+              {t("যাচাইকৃত ওজন", "Verified weight")}
+            </span>
+            <span className="trade-receipt-val">
+              {kg(locale, lot.verified_kg)}
+            </span>
+          </div>
+        )}
+        <div className="trade-receipt-divider dashed" />
+        <div className="trade-receipt-total">
+          <span className="trade-receipt-total-label">
+            {t("খালি মজুত", "Available balance")}
+          </span>
+          <strong className="trade-receipt-total-val">
+            {kg(locale, lot.sellable_kg)}
+          </strong>
+        </div>
+      </div>
+
+      {/* Footer: Direct CTA to Lot Details (No fake actor persona/avatar) */}
+      <div className="trade-card-footer stock-card-footer">
+        <Link
+          href={`${base}/stock/${lot.id}`}
+          className="trade-card-action-btn"
+          title={t("মজুতের বিবরণ দেখুন", "View lot details")}
+        >
+          <span>{t("মজুত বিবরণ", "Lot details")}</span>
+          <span className="trade-card-circle-arrow">→</span>
+        </Link>
+      </div>
+    </article>
+  );
+}
+
 export async function StockPage({
   locale,
   actor,
@@ -183,11 +310,6 @@ export async function StockPage({
   ]);
   return (
     <>
-      <h1>
-        {actor.role === "farmer"
-          ? local(locale, "আমার মজুত", "My stock")
-          : local(locale, "মজুত", "Stock")}
-      </h1>
       {unverified && (
         <Link className="work-link" href={`${base}/stock`}>
           {local(locale, "সব মজুত দেখুন", "Show all lots")}
@@ -250,19 +372,9 @@ export async function StockPage({
           )}
         </p>
       )}
-      <div className="work-cards">
+      <div className="trade-cards-grid">
         {lots.map((lot) => (
-          <article key={lot.id} className="work-panel">
-            <h2>
-              <Link className="work-link" href={`${base}/stock/${lot.id}`}>
-                {lot.label}
-              </Link>
-            </h2>
-            <p>
-              {lot.variety} · {lot.district}
-            </p>
-            <LotBalances locale={locale} lot={lot} />
-          </article>
+          <StockCard key={lot.id} locale={locale} lot={lot} base={base} />
         ))}
       </div>
       <div className="work-row">
@@ -304,8 +416,8 @@ export async function LotPage({
       <Link className="work-link" href={`${base}/stock`}>
         {local(locale, "মজুতে ফিরুন", "Back to stock")}
       </Link>
-      <h1>{lot.label}</h1>
       <section className="work-panel">
+        <h2>{lot.label}</h2>
         <h2>{local(locale, "মজুতের পরিমাণ", "Stock balance")}</h2>
         <p>
           {lot.district} · {lot.variety} · {lot.storage_type}

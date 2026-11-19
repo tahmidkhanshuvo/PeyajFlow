@@ -44,7 +44,6 @@ export async function AssistancePage({
   const t = (bn: string, en: string) => local(locale, bn, en);
   return (
     <>
-      <h1>{t("সহায়তা", "Help")}</h1>
       {actor.role !== "admin" && (
         <section className="work-panel">
           <h2>{t("অপারেটরের সাহায্য চান", "Ask an operator")}</h2>

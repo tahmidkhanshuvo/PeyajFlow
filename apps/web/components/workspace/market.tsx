@@ -49,7 +49,6 @@ export async function DemandPage({
   const today = dhakaToday();
   return (
     <>
-      <h1>{local(locale, "ক্রয়ের চাহিদা", "Buyer demand")}</h1>
       <section className="work-panel">
         <Details label={local(locale, "নতুন চাহিদা লিখুন", "Create a demand")}>
           <WorkspaceForm
@@ -235,7 +234,6 @@ export async function SupplyPage({
   const selected = value("minimum_grade") as Grade;
   return (
     <>
-      <h1>{local(locale, "মজুত খুঁজুন", "Browse supply")}</h1>
       <section className="work-panel">
         <h2>{local(locale, "মজুত ছাঁকুন", "Filter supply")}</h2>
         {demand && (

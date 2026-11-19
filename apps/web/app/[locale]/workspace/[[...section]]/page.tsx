@@ -56,6 +56,7 @@ import {
   signOut,
   signupAction,
 } from "../actions";
+import { AuthCompleted } from "../../../../components/auth-transition-overlay";
 
 export const dynamic = "force-dynamic";
 
@@ -380,6 +381,7 @@ export default async function WorkspacePage({
 
     return (
       <div className="work-shell work-shell-signed">
+        <AuthCompleted target="signed" />
         <a className="skip-link" href="#main">
           {local(locale, "মূল অংশে যান", "Skip to main content")}
         </a>
@@ -578,6 +580,7 @@ export default async function WorkspacePage({
 
   return (
     <div className="work-shell work-shell-guest">
+      <AuthCompleted target="guest" />
       <a className="skip-link" href="#main">
         {local(locale, "মূল অংশে যান", "Skip to main content")}
       </a>

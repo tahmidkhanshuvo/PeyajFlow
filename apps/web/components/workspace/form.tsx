@@ -4,6 +4,7 @@ import {
   startTransition,
   useActionState,
   useState,
+  useEffect,
   type ReactNode,
 } from "react";
 import type { Locale } from "../../lib/copy";
@@ -21,21 +22,31 @@ export function WorkspaceForm({
   label,
   children,
   compactPhotos = false,
+  authType,
 }: {
   locale: Locale;
   action: FormAction;
   label: string;
   children?: ReactNode;
   compactPhotos?: boolean;
+  authType?: "signin" | "signout";
 }) {
   const [state, submit, pending] = useActionState(action, {});
   const [preparing, setPreparing] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const error = uploadError || state.error;
+
+  useEffect(() => {
+    if (authType && (state.error || uploadError)) {
+      window.dispatchEvent(new CustomEvent("pf-auth-end"));
+    }
+  }, [authType, state.error, uploadError]);
+
   return (
     <form
       action={submit}
       className="work-form"
+      data-auth-trigger={authType}
       onSubmit={async (event) => {
         event.preventDefault();
         if (preparing || pending) return;

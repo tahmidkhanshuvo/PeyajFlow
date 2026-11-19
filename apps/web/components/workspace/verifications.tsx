@@ -26,7 +26,6 @@ export async function VerificationsPage({
   const t = (bn: string, en: string) => local(locale, bn, en);
   return (
     <>
-      <h1>{t("নিবন্ধন যাচাই", "Signup verification")}</h1>
       <section className="work-panel">
         {!rows.length && (
           <p>

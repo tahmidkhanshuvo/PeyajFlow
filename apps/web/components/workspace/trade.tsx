@@ -157,6 +157,234 @@ function TradePagination({
   );
 }
 
+export function OfferCard({
+  locale,
+  offer,
+  base,
+  actor,
+}: {
+  locale: Locale;
+  offer: Offer;
+  base: string;
+  actor: Profile;
+}) {
+  const t = (bn: string, en: string) => local(locale, bn, en);
+  const open =
+    ["sent", "countered"].includes(offer.status) && actor.role !== "admin";
+  const proposer = actor.membership_id === offer.proposer_id;
+
+  const isExpired = new Date(offer.expires_at) < new Date();
+  const statusClass =
+    offer.status === "accepted"
+      ? "verified"
+      : offer.status === "rejected" || offer.status === "cancelled"
+        ? "rejected"
+        : isExpired
+          ? "expired"
+          : "pending";
+
+  return (
+    <article key={offer.id} className="trade-order-card offer-card">
+      {/* Top Header: Offer ID + Grade + Status */}
+      <div className="trade-card-header">
+        <div className="trade-card-id-wrap">
+          <span className="trade-card-hash">#{offer.id.slice(0, 8)}</span>
+          <span className="trade-card-variety">
+            {offer.grade ? `${t("গ্রেড", "Grade")} ${offer.grade}` : offer.variety}
+          </span>
+        </div>
+        <span className={`trade-status-pill ${statusClass}`}>
+          <span className="trade-status-dot" aria-hidden="true" />
+          {state(locale, offer.status)}
+        </span>
+      </div>
+
+      {/* Lot Name & Counterparty */}
+      <div className="trade-card-main-title">
+        <h2 className="trade-card-heading">
+          {offer.lot_label} · {offer.variety}
+        </h2>
+        <div className="trade-card-meta-strip">
+          <span>
+            {offer.buyer_name} ({offer.buyer_verified ? t("যাচাইকৃত", "Verified") : t("স্বঘোষিত", "Unverified")})
+          </span>
+          <span className="trade-meta-dot">•</span>
+          <span>📍 {offer.delivery_district}</span>
+        </div>
+      </div>
+
+      {/* Real Dates from Backend (No fake progress slider line) */}
+      <div className="trade-meta-dates">
+        <span>
+          <strong>{t("সরবরাহ", "Delivery")}:</strong>{" "}
+          {offer.delivery_from && offer.delivery_to
+            ? offer.delivery_from === offer.delivery_to
+              ? timeLabel(locale, offer.delivery_from)
+              : `${timeLabel(locale, offer.delivery_from)} – ${timeLabel(locale, offer.delivery_to)}`
+            : t("আলোচনা সাপেক্ষ", "By arrangement")}
+        </span>
+        <span className="trade-meta-dot">•</span>
+        <span>
+          <strong>{t("মেয়াদ শেষ", "Expires")}:</strong>{" "}
+          {timeLabel(locale, offer.expires_at)}
+        </span>
+      </div>
+
+      <div className="trade-card-divider dashed" />
+
+      {/* Receipt Financial Terms (All from Backend) */}
+      <div className="trade-receipt-body">
+        <div className="trade-receipt-row">
+          <span className="trade-receipt-label">{t("পরিমাণ", "Quantity")}</span>
+          <span className="trade-receipt-val">{kg(locale, offer.quantity_kg)}</span>
+        </div>
+        <div className="trade-receipt-row">
+          <span className="trade-receipt-label">{t("প্রতি কেজির দর", "Price per kg")}</span>
+          <span className="trade-receipt-val">{taka(locale, offer.price_bdt_kg)} / {t("কেজি", "kg")}</span>
+        </div>
+        <div className="trade-receipt-row">
+          <span className="trade-receipt-label">{t("পরিবহন", "Transport")}</span>
+          <span className="trade-receipt-val">
+            {offer.transport === "buyer"
+              ? t("ক্রেতার দায়িত্ব", "Buyer arranges")
+              : t("বিক্রেতার দায়িত্ব", "Seller arranges")}
+          </span>
+        </div>
+        <div className="trade-receipt-divider dashed" />
+        <div className="trade-receipt-total">
+          <span className="trade-receipt-total-label">{t("মোট মূল্য", "TOTAL VALUE")}</span>
+          <strong className="trade-receipt-total-val">{taka(locale, offer.total_bdt)}</strong>
+        </div>
+      </div>
+
+      {/* Interactive Actions for Active Negotiation */}
+      {open && (
+        <div className="trade-offer-actions-drawer">
+          {proposer ? (
+            <OfferAction
+              locale={locale}
+              offer={offer}
+              action="withdraw"
+              label={t("অফার প্রত্যাহার", "Withdraw offer")}
+            />
+          ) : (
+            <div className="trade-actions-cluster">
+              <OfferAction
+                locale={locale}
+                offer={offer}
+                action="accept"
+                label={t("অফার গ্রহণ", "Accept offer")}
+              />
+              <OfferAction
+                locale={locale}
+                offer={offer}
+                action="counter"
+                label={t("পাল্টা অফার", "Counter offer")}
+              />
+              <OfferAction
+                locale={locale}
+                offer={offer}
+                action="reject"
+                label={t("প্রত্যাখ্যান", "Reject offer")}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Footer: Direct Link to Offer History (No fake actor persona/avatar, no disconnected View orders button) */}
+      <div className="trade-card-footer offer-card-footer">
+        <Link
+          href={`${base}/offers/${offer.id}`}
+          className="trade-card-action-btn"
+          title={t("অফারের ইতিহাস দেখুন", "View offer history")}
+        >
+          <span>{t("ইতিহাস", "History")}</span>
+          <span className="trade-card-circle-arrow">→</span>
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+export function OrderCard({
+  locale,
+  order,
+  base,
+}: {
+  locale: Locale;
+  order: Order;
+  base: string;
+}) {
+  const t = (bn: string, en: string) => local(locale, bn, en);
+  const statusClass = ["delivered", "confirmed"].includes(order.status)
+    ? "verified"
+    : ["cancelled", "disputed"].includes(order.status)
+      ? "rejected"
+      : "pending";
+
+  return (
+    <article key={order.id} className="trade-order-card">
+      <div className="trade-card-header">
+        <div className="trade-card-id-wrap">
+          <span className="trade-card-hash">#{order.id.slice(0, 8)}</span>
+          <span className="trade-card-variety">{order.offer.lot_label}</span>
+        </div>
+        <span className={`trade-status-pill ${statusClass}`}>
+          <span className="trade-status-dot" aria-hidden="true" />
+          {state(locale, order.status)}
+        </span>
+      </div>
+
+      <div className="trade-card-main-title">
+        <h2 className="trade-card-heading">
+          <Link
+            href={`${base}/orders/${order.id}`}
+            className="trade-card-title-link"
+          >
+            {order.offer.lot_label}
+          </Link>
+        </h2>
+        <div className="trade-card-meta-strip">
+          <span>{order.offer.variety}</span>
+          <span className="trade-meta-dot">•</span>
+          <span>📍 {order.offer.delivery_district}</span>
+        </div>
+      </div>
+
+      <div className="trade-card-divider dashed" />
+
+      {/* Receipt Breakdown */}
+      <div className="trade-receipt-body">
+        <div className="trade-receipt-row">
+          <span className="trade-receipt-label">{t("পরিমাণ", "Quantity")}</span>
+          <span className="trade-receipt-val">{kg(locale, order.offer.quantity_kg)}</span>
+        </div>
+        <div className="trade-receipt-row">
+          <span className="trade-receipt-label">{t("দর (প্রতি কেজি)", "Price per kg")}</span>
+          <span className="trade-receipt-val">{taka(locale, order.offer.price_bdt_kg)}</span>
+        </div>
+        <div className="trade-receipt-divider dashed" />
+        <div className="trade-receipt-total">
+          <span className="trade-receipt-total-label">{t("মোট মূল্য", "TOTAL VALUE")}</span>
+          <strong className="trade-receipt-total-val">{taka(locale, order.offer.total_bdt)}</strong>
+        </div>
+      </div>
+
+      <div className="trade-card-footer order-card-footer">
+        <Link
+          href={`${base}/orders/${order.id}`}
+          className="trade-card-action-btn"
+          title={t("অর্ডারের বিবরণ দেখুন", "View order details")}
+        >
+          <span>{t("অর্ডার বিবরণ", "Order details")}</span>
+          <span className="trade-card-circle-arrow">→</span>
+        </Link>
+      </div>
+    </article>
+  );
+}
+
 export async function OffersPage({
   locale,
   actor,
@@ -171,71 +399,22 @@ export async function OffersPage({
   const offers = await api<Offer[]>(`/v1/offers?offset=${offset}`);
   return (
     <>
-      <h1>{local(locale, "অফার", "Offers")}</h1>
       {!offers.length && (
         <p className="work-panel">
           {local(locale, "এই পৃষ্ঠায় কোনো অফার নেই।", "No offers on this page.")}
         </p>
       )}
-      {offers.map((offer) => {
-        const open =
-          ["sent", "countered"].includes(offer.status) &&
-          actor.role !== "admin";
-        const proposer = actor.membership_id === offer.proposer_id;
-        return (
-          <article key={offer.id} className="work-panel">
-            <div className="work-row">
-              <h2>
-                {offer.lot_label} · {offer.variety}
-              </h2>
-              <span className="work-tag">{state(locale, offer.status)}</span>
-            </div>
-            <Terms locale={locale} offer={offer} />
-            <p>
-              {local(locale, "অফারের মেয়াদ", "Offer expires")} ·{" "}
-              {timeLabel(locale, offer.expires_at)}
-            </p>
-            {open &&
-              (proposer ? (
-                <OfferAction
-                  locale={locale}
-                  offer={offer}
-                  action="withdraw"
-                  label={local(locale, "অফার প্রত্যাহার", "Withdraw offer")}
-                />
-              ) : (
-                <>
-                  <OfferAction
-                    locale={locale}
-                    offer={offer}
-                    action="accept"
-                    label={local(locale, "অফার গ্রহণ করুন", "Accept offer")}
-                  />
-                  <OfferAction
-                    locale={locale}
-                    offer={offer}
-                    action="counter"
-                    label={local(locale, "পাল্টা অফার দিন", "Counter offer")}
-                  />
-                  <OfferAction
-                    locale={locale}
-                    offer={offer}
-                    action="reject"
-                    label={local(locale, "অফার প্রত্যাখ্যান", "Reject offer")}
-                  />
-                </>
-              ))}
-            <Link className="work-link" href={`${base}/offers/${offer.id}`}>
-              {local(locale, "অফারের ইতিহাস", "Offer history")}
-            </Link>
-            {offer.status === "accepted" && (
-              <Link className="work-link" href={`${base}/orders`}>
-                {local(locale, "অর্ডার দেখুন", "View orders")}
-              </Link>
-            )}
-          </article>
-        );
-      })}
+      <div className="trade-cards-grid">
+        {offers.map((offer) => (
+          <OfferCard
+            key={offer.id}
+            locale={locale}
+            offer={offer}
+            base={base}
+            actor={actor}
+          />
+        ))}
+      </div>
       <TradePagination
         locale={locale}
         base={`${base}/offers`}
@@ -261,7 +440,6 @@ export async function OfferHistoryPage({
       <Link className="work-link" href={`${base}/offers`}>
         {local(locale, "অফারে ফিরুন", "Back to offers")}
       </Link>
-      <h1>{local(locale, "অফারের ইতিহাস", "Offer history")}</h1>
       <section className="work-panel">
         <div className="work-row">
           <h2>{offer.lot_label}</h2>
@@ -304,28 +482,19 @@ export async function OrdersPage({
   const orders = await api<Order[]>(`/v1/orders?offset=${offset}`);
   return (
     <>
-      <h1>{local(locale, "অর্ডার", "Orders")}</h1>
       {!orders.length && (
         <p className="work-panel">
           {local(locale, "এই পৃষ্ঠায় কোনো অর্ডার নেই।", "No orders on this page.")}
         </p>
       )}
-      <div className="work-cards">
+      <div className="trade-cards-grid">
         {orders.map((order) => (
-          <article key={order.id} className="work-panel">
-            <h2>
-              <Link className="work-link" href={`${base}/orders/${order.id}`}>
-                {order.offer.lot_label}
-              </Link>
-            </h2>
-            <p>
-              {kg(locale, order.offer.quantity_kg)} ·{" "}
-              {taka(locale, order.offer.total_bdt)}
-            </p>
-            <p>
-              <span className="work-tag">{state(locale, order.status)}</span>
-            </p>
-          </article>
+          <OrderCard
+            key={order.id}
+            locale={locale}
+            order={order}
+            base={base}
+          />
         ))}
       </div>
       <TradePagination
@@ -370,7 +539,6 @@ export async function OrderPage({
       <Link className="work-link" href={`${base}/orders`}>
         {local(locale, "অর্ডারে ফিরুন", "Back to orders")}
       </Link>
-      <h1>{local(locale, "অর্ডারের রসিদ", "Order receipt")}</h1>
       <Link className="work-link" href={`${base}/orders/${id}/logistics`}>
         {local(locale, "পরিবহন ও দর", "Transport and quotes")}
       </Link>
