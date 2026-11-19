@@ -114,7 +114,7 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - The full API suite passed: 129 tests, including 39 new intent tests and one end-to-end call test in which দেড় মণ reserves 60 kg only after keypad confirmation.
   - `evals.intent_eval --check` passed on both datasets. Main set, 259 rows (20 new number-word rows): accuracy 1.000. Challenge set: accuracy 0.948, up from 0.931, with zero wrong change commands. The results are saved as `intent-number-words` and `intent-challenge-number-words`.
 - **Open.**
-  - Row `challenge-018` now resolves to 200 kg, but its expected label has no quantity, so it is still reported as a failure. The label was not edited.
+  - Row `challenge-018` states 200 kg, but its expected label had no quantity. It was corrected in a separate commit, which leaves 4 challenge failures (`intent-challenge-label-fix`).
   - The new rows were written by the same author as the rules.
   - Spoken numbers need review by native speakers and testing on recorded speech.
 
