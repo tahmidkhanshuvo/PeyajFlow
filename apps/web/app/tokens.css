@@ -1,0 +1,200 @@
+/* PeyajFlow Design Tokens */
+:root {
+  /* Canvas / Background: Pure white for light theme */
+  --canvas: #FFFFFF;
+  --canvas-2: #FAFAFA;
+  
+  /* Ink / Text */
+  --ink: #22121A;
+  --ink-2: #5E4A53;
+  --ink-3: #8D7A82;
+  
+  /* Onion ramp — cool wine-crimson primary */
+  --onion-50: #FDF3F6;
+  --onion-100: #FBE4EB;
+  --onion-200: #F5C6D4;
+  --onion-300: #EC9BB4;
+  --onion-400: #DE6A8F;
+  --onion-500: #C9416F;
+  --onion-600: #A82A55;  /* primary */
+  --onion-700: #8A2045;
+  --onion-800: #6A1835;
+  --onion-900: #4A1025;
+  --onion-950: #2C0916;
+  
+  /* Dry-skin accent */
+  --skin-300: #E9C28A;
+  --skin-500: #C98F3F;
+  --skin-700: #8A5A1E;
+  
+  /* Semantic */
+  --success: #2F7D57;
+  --warning: #B7791F;
+  --danger: #D4441C;
+  --info: #3B6EA5;
+  
+  /* Primary alias */
+  --primary: var(--onion-600);
+  --primary-hover: var(--onion-700);
+  --primary-fg: #fff;
+  
+  /* Surfaces */
+  --surface: #FFFFFF;
+  --surface-raised: #F9F4F1;
+  --border: rgba(168, 42, 85, 0.12);
+  --border-strong: rgba(168, 42, 85, 0.22);
+
+  /* Navigation Chrome: Solid (White in light theme, Black in dark theme) */
+  --nav-glass-bg: #FFFFFF;
+  --nav-glass-border: rgba(168, 42, 85, 0.12);
+  
+  /* Glass levels */
+  --glass-1-bg: linear-gradient(135deg, rgba(255,255,255,.58), rgba(255,255,255,.38));
+  --glass-1-blur: 14px;
+  --glass-1-saturate: 1.4;
+  --glass-1-border: rgba(255,255,255,.52);
+  
+  --glass-2-bg: linear-gradient(135deg, rgba(255,255,255,.66), rgba(255,255,255,.44));
+  --glass-2-blur: 24px;
+  --glass-2-saturate: 1.8;
+  --glass-2-border: rgba(255,255,255,.60);
+  
+  --glass-3-bg: linear-gradient(135deg, rgba(255,255,255,.76), rgba(255,255,255,.54));
+  --glass-3-blur: 36px;
+  --glass-3-saturate: 1.8;
+  --glass-3-border: rgba(255,255,255,.72);
+  
+  /* Radius */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-xl: 32px;
+  --r-pill: 9999px;
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 3px rgba(60,10,25,.06), 0 1px 2px rgba(60,10,25,.04);
+  --shadow-md: 0 4px 16px -2px rgba(90,15,40,.12), 0 1px 4px rgba(60,10,25,.06);
+  --shadow-lg: 0 8px 32px -4px rgba(90,15,40,.18), 0 2px 8px rgba(60,10,25,.08);
+  --shadow-glass: 0 1px 2px rgba(60,10,25,.06), 0 18px 40px -12px rgba(90,15,40,.18);
+  
+  /* Motion */
+  --ease-glass: cubic-bezier(.2,.8,.2,1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+  
+  /* Typography scale (fluid) */
+  --text-display-xl: clamp(3.2rem, 6.5vw, 6.2rem);
+  --text-display-l: clamp(2.2rem, 3.8vw, 3.8rem);
+  --text-display-m: clamp(1.6rem, 2.4vw, 2.4rem);
+  --text-title: clamp(1.2rem, 1.5vw, 1.45rem);
+  --text-body: 1rem;
+  --text-label: 0.875rem;
+  --text-caption: 0.75rem;
+
+  /* Font Families */
+  --font-display: "Inter Variable", system-ui, -apple-system, sans-serif;
+  --font-body: "Lexend Variable", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --font-bn-display: "Anek Bangla Variable", "Anek Bangla", system-ui, sans-serif;
+  --font-bn-body: "Anek Bangla Variable", "Anek Bangla", system-ui, sans-serif;
+  
+  /* Sidebar & Layout */
+  --sidebar-w: 240px;
+  --sidebar-w-collapsed: 68px;
+  --topbar-h: 64px;
+}
+
+/* Explicit Light Mode Override (forces light tokens even if OS is dark) */
+.light, html.light, html[data-theme="light"], :root.light {
+  color-scheme: light;
+  --canvas: #FFFFFF;
+  --canvas-2: #FAFAFA;
+  --ink: #22121A;
+  --ink-2: #5E4A53;
+  --ink-3: #8D7A82;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --border: rgba(168, 42, 85, 0.12);
+  --border-strong: rgba(168, 42, 85, 0.22);
+  --primary: var(--onion-600);
+  --primary-hover: var(--onion-700);
+  --primary-fg: #fff;
+  
+  --nav-glass-bg: #FFFFFF;
+  --nav-glass-border: rgba(168, 42, 85, 0.12);
+
+  --card-idle-bg: #FFFFFF;
+  --card-idle-border: rgba(168, 42, 85, 0.12);
+
+  --glass-1-bg: linear-gradient(135deg, rgba(255,255,255,.65), rgba(255,255,255,.45));
+  --glass-2-bg: linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.52));
+  --glass-3-bg: linear-gradient(135deg, rgba(255,255,255,.82), rgba(255,255,255,.64));
+  --glass-1-border: rgba(255,255,255,.60);
+  --glass-2-border: rgba(255,255,255,.70);
+  --glass-3-border: rgba(255,255,255,.80);
+  --shadow-glass: 0 1px 3px rgba(60,10,25,.06), 0 16px 36px -12px rgba(90,15,40,.18);
+}
+
+/* Dark mode fallback if system prefers dark AND not explicitly .light */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) {
+    color-scheme: dark;
+    --canvas: #000000;
+    --canvas-2: #0A0407;
+    --ink: #F8EAEE;
+    --ink-2: #C9A8B4;
+    --ink-3: #8D6B78;
+    --surface: #120509;
+    --surface-raised: #1C0B10;
+    --border: rgba(222,106,143,.15);
+    --border-strong: rgba(222,106,143,.25);
+    --primary: var(--onion-500);
+    --primary-hover: var(--onion-400);
+    
+    --nav-glass-bg: #000000;
+    --nav-glass-border: rgba(255, 255, 255, 0.12);
+
+    --card-idle-bg: rgba(28, 10, 19, 0.65);
+    --card-idle-border: rgba(222, 106, 143, 0.18);
+
+    --glass-1-bg: linear-gradient(135deg, rgba(28,10,19,.75), rgba(18,6,12,.65));
+    --glass-2-bg: linear-gradient(135deg, rgba(28,10,19,.82), rgba(18,6,12,.72));
+    --glass-3-bg: linear-gradient(135deg, rgba(28,10,19,.90), rgba(18,6,12,.80));
+    --glass-1-border: rgba(222,106,143,.18);
+    --glass-2-border: rgba(222,106,143,.24);
+    --glass-3-border: rgba(222,106,143,.28);
+    --shadow-glass: 0 1px 2px rgba(0,0,0,.3), 0 18px 40px -12px rgba(0,0,0,.5);
+  }
+}
+
+/* Explicit Dark Mode Class */
+.dark, html.dark, html[data-theme="dark"], :root.dark {
+  color-scheme: dark;
+  --canvas: #000000;
+  --canvas-2: #0A0407;
+  --ink: #F8EAEE;
+  --ink-2: #C9A8B4;
+  --ink-3: #8D6B78;
+  --surface: #120509;
+  --surface-raised: #1C0B10;
+  --border: rgba(222,106,143,.15);
+  --border-strong: rgba(222,106,143,.25);
+  --primary: var(--onion-500);
+  --primary-hover: var(--onion-400);
+  
+  --nav-glass-bg: #000000;
+  --nav-glass-border: rgba(255, 255, 255, 0.12);
+
+  --card-idle-bg: rgba(28, 10, 19, 0.65);
+  --card-idle-border: rgba(222, 106, 143, 0.18);
+
+  --glass-1-bg: linear-gradient(135deg, rgba(28,10,19,.75), rgba(18,6,12,.65));
+  --glass-2-bg: linear-gradient(135deg, rgba(28,10,19,.82), rgba(18,6,12,.72));
+  --glass-3-bg: linear-gradient(135deg, rgba(28,10,19,.90), rgba(18,6,12,.80));
+  --glass-1-border: rgba(222,106,143,.18);
+  --glass-2-border: rgba(222,106,143,.24);
+  --glass-3-border: rgba(222,106,143,.28);
+  --shadow-glass: 0 1px 2px rgba(0,0,0,.3), 0 18px 40px -12px rgba(0,0,0,.5);
+}

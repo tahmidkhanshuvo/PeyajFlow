@@ -113,6 +113,10 @@ export async function signOut(locale: Locale): Promise<FormState> {
   redirect(`/${locale}/workspace`);
 }
 
+export async function logoutAction(locale: Locale): Promise<void> {
+  await signOut(locale);
+}
+
 type Operation =
   | "profile"
   | "lot-create"
@@ -165,7 +169,7 @@ export async function mutate(
           "/v1/me",
           json(fields("name", "district", "language"), "PATCH"),
         );
-        destination = base;
+        destination = `${base}/profile`;
         break;
       case "lot-create":
       case "lot-create-delegated":

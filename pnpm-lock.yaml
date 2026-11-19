@@ -10,11 +10,29 @@ importers:
 
   apps/web:
     dependencies:
+      '@fontsource-variable/anek-bangla':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource-variable/fraunces':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource-variable/instrument-sans':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource-variable/inter':
         specifier: ^5.2.8
         version: 5.3.0
+      '@fontsource-variable/lexend':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource-variable/noto-serif-bengali':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/hind-siliguri':
         specifier: ^5.2.8
+        version: 5.3.0
+      '@fontsource/ibm-plex-mono':
+        specifier: ^5.3.0
         version: 5.3.0
       next:
         specifier: 16.4.6
@@ -186,11 +204,29 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@fontsource-variable/anek-bangla@5.3.0':
+    resolution: {integrity: sha512-OekuT8LFbA86VSfLjv6I6V2SS5owqTN+NHmhsr+3qHpCr4oqehkjvgDGuAyPH65BOIqVme0eLK7c2Ucml9gblg==}
+
+  '@fontsource-variable/fraunces@5.3.0':
+    resolution: {integrity: sha512-9BYGySn4AHEJdgp9Z28tQ3X+laJMEOITXkQarZXeloWQZDq5oOvXJ3kDA8c7MGIfpogIaZfjrQBqmda8POOCKA==}
+
+  '@fontsource-variable/instrument-sans@5.3.0':
+    resolution: {integrity: sha512-u4gKbDBTNFGkg997tfQn3eHOhHuquWUFTRT/rwzuKtrxX5P2ekfs2x+LgBPP4P32+cC+vUwF1Cr+IdRoPQbrGw==}
+
   '@fontsource-variable/inter@5.3.0':
     resolution: {integrity: sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==}
 
+  '@fontsource-variable/lexend@5.3.0':
+    resolution: {integrity: sha512-3SXtiZ8rFbT0oaPzEboCG5RM3jtyhpNxandh1jWNLqvrJRfV/eP3R+GGw+o5e3hS1uqmAGutKxSvaWG5oyrimA==}
+
+  '@fontsource-variable/noto-serif-bengali@5.3.0':
+    resolution: {integrity: sha512-YD4G49G5tXgNLbiKB/kQ6d3UJG9J64X5xFI2GozQUNBTqTo5r7NyIxoN7lU/GeKIU2j55lQefnvLvT3Pw7Yqfg==}
+
   '@fontsource/hind-siliguri@5.3.0':
     resolution: {integrity: sha512-jTxXVXLTUYpiCqQ8zGzX9gK4pHkJ6nOn05nKqFjPEpqf3VY6gGREKAIvHfHprE/6N4ittSudnHsMPT10QQfgtw==}
+
+  '@fontsource/ibm-plex-mono@5.3.0':
+    resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -2187,9 +2223,21 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
+  '@fontsource-variable/anek-bangla@5.3.0': {}
+
+  '@fontsource-variable/fraunces@5.3.0': {}
+
+  '@fontsource-variable/instrument-sans@5.3.0': {}
+
   '@fontsource-variable/inter@5.3.0': {}
 
+  '@fontsource-variable/lexend@5.3.0': {}
+
+  '@fontsource-variable/noto-serif-bengali@5.3.0': {}
+
   '@fontsource/hind-siliguri@5.3.0': {}
+
+  '@fontsource/ibm-plex-mono@5.3.0': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
