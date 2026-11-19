@@ -89,6 +89,8 @@ How to read these figures:
 
 The worker runs `Xenova/clip-vit-base-patch32` at pinned revision `6b7c523…` with q8 weights on WebAssembly. It compares the photo with five text descriptions (rot or mold, sprouting, cuts or bruises, intact dry skin, no clear view of a bulb). It abstains unless the top score is at least 0.58 and leads the next by at least 0.16 (rule `clip-margin-v1`). One model instance serves every photo on the page.
 
+The transformers.js 3.8.1 library and its ONNX runtime (`ort-wasm-simd-threaded.jsep.mjs` and `.wasm`) are served from PeyajFlow's own site, not a public CDN. At `pnpm dev` and `pnpm build`, `apps/web/scripts/vendor-photo-model.mjs` downloads the npm tarball and checks it against npm's sha512 integrity and each file against a pinned SHA-384. It writes the files to the git-ignored `public/vendor/transformers-3.8.1/`. The worker's own Content-Security-Policy allows scripts only from the site plus WebAssembly compilation, and network requests only to the site and Hugging Face. The model weights still come from Hugging Face at the pinned revision.
+
 The suggestion and human review are connected as follows:
 
 1. The browser posts the five scores, model and rule to `POST /v1/lots/{lot}/inspection-photos/{photo}/predictions`.
@@ -100,6 +102,7 @@ The suggestion and human review are connected as follows:
 
 - **No accuracy figure exists yet.** The repository holds one real onion photo and there are no reviewed pilot pairs, so an agreement rate will appear only after real reviews accumulate.
 - **One functional check passed.** On November 18, 2026 the real worker ran in Edge on `services/api/app/fixtures/onion-storage.webp`. The first run took 17 s, including the model download. The top score was 0.451, below the threshold, so the model abstained and the API stored `uncertain_or_low_quality` with the pinned model and rule.
+- **Self-hosted runtime check.** On November 20, 2026 the production build ran in Edge, served by `next start`. The worker ran under its new policy on `onion-storage.webp`, sent with no API re-encoding. It made no CDN requests and reported no policy violations, and fetched weights from `huggingface.co` and `us.aws.cdn.hf.co`. It took 25 s with a cold cache, abstained (top score 0.399), and reported the pinned model and rule. The score differs from the earlier run, which used the API's re-encoded JPEG of the same photo.
 - **The scores come from the browser.** The server checks their shape, model and rule, but it cannot prove a client ran the model honestly. The UI and Operations say that suggestions are calculated in the browser.
 
 ## Forecasts and storage loss

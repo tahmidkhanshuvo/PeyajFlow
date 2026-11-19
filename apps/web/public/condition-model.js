@@ -11,13 +11,19 @@ const candidates = [
   "a scene without a clear view of an onion bulb",
 ];
 const results = ["rot", "sprouting", "damage", "clear", "uncertain"];
+// transformers.js and its ONNX runtime are served from this site, copied and
+// hash-checked at build time by scripts/vendor-photo-model.mjs.
+const RUNTIME = new URL("/vendor/transformers-3.8.1/", self.location.origin)
+  .href;
 let loading;
 
 function load() {
   loading ??= (async () => {
-    const { env, pipeline, RawImage } =
-      await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1");
+    const { env, pipeline, RawImage } = await import(
+      `${RUNTIME}transformers.min.js`
+    );
     env.allowLocalModels = false;
+    env.backends.onnx.wasm.wasmPaths = RUNTIME;
     env.backends.onnx.wasm.numThreads = 1;
     const classify = await pipeline("zero-shot-image-classification", MODEL, {
       revision: REVISION,

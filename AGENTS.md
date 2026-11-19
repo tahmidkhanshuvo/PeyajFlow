@@ -14,7 +14,7 @@ PeyajFlow is a Bangla-first onion supply-chain workspace for the Pabna-to-Dhaka 
 | `apps/web/app/[locale]/workspace` | Workspace routes and the server actions (`actions.ts`, `pilot-actions.ts`, `operations-actions.ts`) |
 | `apps/web/components/workspace` | One file per area: stock, trade, inspection, voice desk, operations and others |
 | `apps/web/lib` | API client (`workspace-api.ts`), bilingual copy and error text (`workspace-copy.ts`), types |
-| `apps/web/public/condition-model.js` | Browser CLIP worker. It must stay in step with `PHOTO_MODEL` and `PHOTO_RULE` in `services/api/app/inspection.py` |
+| `apps/web/public/condition-model.js` | Browser CLIP worker. It must stay in step with `PHOTO_MODEL` and `PHOTO_RULE` in `services/api/app/inspection.py`. Its transformers.js runtime is copied into the git-ignored `public/vendor/` by `apps/web/scripts/vendor-photo-model.mjs` (run by `pnpm dev` and `pnpm build`). The script checks the npm integrity and per-file SHA-384, so a version change needs new hashes there |
 | `apps/web/tests` | Node unit tests and Playwright end-to-end tests (`tests/e2e`) |
 | `services/api/app` | FastAPI application. One module per domain: `lots`, `trade`, `inspection`, `forecast`, `advice`, `voice`, `intent`, `admin` and others |
 | `services/api/migrations` | Alembic revisions. Exactly one head is required at startup. |

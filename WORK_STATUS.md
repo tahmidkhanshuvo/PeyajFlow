@@ -118,6 +118,18 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - The new rows were written by the same author as the rules.
   - Spoken numbers need review by native speakers and testing on recorded speech.
 
+### Self-hosted photo-model runtime (November 20, 2026)
+
+- **What changed.** The inspection worker no longer imports transformers.js from jsDelivr. `apps/web/scripts/vendor-photo-model.mjs` runs before `pnpm dev` and `pnpm build`. It fetches the pinned 3.8.1 npm tarball, verifies npm's sha512 integrity and a SHA-384 per file, and writes the library, the ONNX runtime and the license to the git-ignored `public/vendor/`. The worker sets `wasmPaths` to that folder. `/condition-model.js` now has its own policy: `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src` limited to the site and Hugging Face. Vendored files are cached as immutable. Model weights still come from Hugging Face at the pinned revision.
+- **Checks:**
+  - Web format, lint, typecheck, unit tests (7, including 3 new) and the production build passed.
+  - `curl` against `next start` confirmed the worker policy, the `application/wasm` type and immutable caching.
+  - The real worker in Edge classified `onion-storage.webp` with zero CDN requests and no policy violations, then abstained with the pinned model and rule.
+- **Open.**
+  - Builds now need access to `registry.npmjs.org`. Without it, the build stops instead of falling back to the CDN.
+  - Playwright end-to-end tests and the hosted deployment were not run for this change.
+  - The full browser inspection flow (upload, then saved prediction) still needs an end-to-end run.
+
 ### Clause-scoped negation (November 20, 2026)
 
 - **What changed.** A negation in an earlier clause no longer blocks a plain final command in typed text, such as "no thanks, reject it". The last clause must hold the only change command, with no negation or doubt of its own. No earlier clause may hold a change command or a quantity. Unpunctuated transcripts are never split.
