@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Locale } from "../../lib/copy";
 import { api, canUseVoice, type Profile } from "../../lib/workspace-api";
-import { local } from "../../lib/workspace-copy";
+import { local, roles } from "../../lib/workspace-copy";
 import type { Demand, Lot, Offer, Order } from "../../lib/workspace-types";
 import { numberLabel, timeLabel } from "../../lib/workspace-values";
 import { WorkspaceIcon } from "./icon";
@@ -33,6 +33,7 @@ export async function Dashboard({
   const agent = actor.role === "agent";
   const signupReviewer = agent && actor.verified && !actor.is_demo;
   const admin = actor.role === "admin";
+
   const [stock, demand, offers, orders, alerts, operations] = await Promise.all(
     [
       farmer || agent ? api<Lot[]>("/v1/lots") : [],
@@ -43,6 +44,7 @@ export async function Dashboard({
       admin ? api<Ops>("/v1/admin/overview") : null,
     ],
   );
+
   const activeOffers = offers.filter((item) =>
     ["sent", "countered"].includes(item.status),
   );
@@ -55,6 +57,7 @@ export async function Dashboard({
     : admin
       ? t("পরিচালনা দেখুন", "Open operations")
       : t("মজুত দেখুন", "View stock");
+
   const subtitle = farmer
     ? t(
         "মজুত, নতুন অফার ও চালানের অবস্থা এক জায়গায় দেখুন।",
@@ -74,77 +77,87 @@ export async function Dashboard({
             "যাচাই, বাজারদর ও অর্ডারের পর্যালোচনা করুন।",
             "Review verifications, market data, and orders that need attention.",
           );
+
   const count = (n: number) => numberLabel(locale, n);
+
   const metrics =
     admin && operations
       ? [
-          [
-            "stock",
-            t("যাচাই বাকি মজুত", "Lots to verify"),
-            count(operations.unverified_lots),
-            "stock?unverified=1",
-          ],
-          [
-            "imports",
-            t("বাজারদর পর্যালোচনা", "Imports to review"),
-            count(operations.pending_imports),
-            "imports",
-          ],
-          [
-            "operations",
-            t("অমীমাংসিত বিরোধ", "Open disputes"),
-            count(operations.open_disputes),
-            "operations?view=disputes",
-          ],
+          {
+            icon: "stock",
+            label: t("যাচাই বাকি মজুত", "Lots to verify"),
+            value: count(operations.unverified_lots),
+            path: "stock?unverified=1",
+            badge: t("কার্যক্রম", "Action"),
+          },
+          {
+            icon: "imports",
+            label: t("বাজারদর পর্যালোচনা", "Imports to review"),
+            value: count(operations.pending_imports),
+            path: "imports",
+            badge: t("তথ্য", "Data"),
+          },
+          {
+            icon: "operations",
+            label: t("অমীমাংসিত বিরোধ", "Open disputes"),
+            value: count(operations.open_disputes),
+            path: "operations?view=disputes",
+            badge: operations.open_disputes > 0 ? t("জরুরি", "Urgent") : t("স্বাভাবিক", "Normal"),
+          },
         ]
       : [
           buyer
-            ? [
-                "demand",
-                t("চলমান চাহিদা", "Open requirements"),
-                count(
-                  demand.items.filter((row) => row.status === "open").length,
-                ),
-                "demand",
-              ]
-            : [
-                "stock",
-                t("সাম্প্রতিক মজুতের খালি পরিমাণ", "Unreserved in recent lots"),
-                kg(
+            ? {
+                icon: "demand",
+                label: t("চলমান চাহিদা", "Open requirements"),
+                value: count(demand.items.filter((row) => row.status === "open").length),
+                path: "demand",
+                badge: t("চাহিদা", "Active"),
+              }
+            : {
+                icon: "stock",
+                label: t("সাম্প্রতিক খালি মজুত", "Unreserved stock"),
+                value: kg(
                   locale,
                   stock
                     .reduce((sum, lot) => sum + Number(lot.sellable_kg), 0)
-                    .toFixed(3),
+                    .toFixed(1),
                 ),
-                "stock",
-              ],
+                path: "stock",
+                badge: t("মজুত", "Inventory"),
+              },
           agent
-            ? [
-                "stock",
-                t("যাচাই বাকি মজুত", "Lots to verify"),
-                count(stock.filter((row) => row.verified_kg === null).length),
-                "stock?unverified=1",
-              ]
-            : [
-                "offers",
-                t("সক্রিয় অফার", "Active offers"),
-                count(activeOffers.length),
-                "offers",
-              ],
+            ? {
+                icon: "stock",
+                label: t("যাচাই বাকি মজুত", "Lots to verify"),
+                value: count(stock.filter((row) => row.verified_kg === null).length),
+                path: "stock?unverified=1",
+                badge: t("যাচাই", "Pending"),
+              }
+            : {
+                icon: "offers",
+                label: t("সক্রিয় অফার", "Active offers"),
+                value: count(activeOffers.length),
+                path: "offers",
+                badge: t("দরদাম", "Negotiating"),
+              },
           agent
-            ? [
-                "help",
-                t("পরিদর্শন ও সহায়তা", "Inspection requests"),
-                t("দেখুন", "View"),
-                "help",
-              ]
-            : [
-                "orders",
-                t("চলমান অর্ডার", "Open orders"),
-                count(activeOrders.length),
-                "orders",
-              ],
+            ? {
+                icon: "help",
+                label: t("পরিদর্শন ও সহায়তা", "Inspection queue"),
+                value: t("দেখুন", "View"),
+                path: "help",
+                badge: t("সহায়তা", "Field"),
+              }
+            : {
+                icon: "orders",
+                label: t("চলমান অর্ডার", "Open orders"),
+                value: count(activeOrders.length),
+                path: "orders",
+                badge: t("সরবরাহ", "In progress"),
+              },
         ];
+
   const rows =
     agent || farmer
       ? stock.slice(0, 5).map((lot) => ({
@@ -155,6 +168,7 @@ export async function Dashboard({
           label: lot.verified_at
             ? t("যাচাইকৃত", "Verified")
             : t("নিজস্ব তথ্য", "Self-reported"),
+          verified: Boolean(lot.verified_at),
           href: `${base}/stock/${lot.id}`,
         }))
       : orders.slice(0, 5).map((order) => ({
@@ -171,109 +185,159 @@ export async function Dashboard({
               cancelled: t("বাতিল", "Cancelled"),
               expired: t("মেয়াদ শেষ", "Expired"),
             }[order.status] ?? order.status,
+          verified: order.status === "delivered",
           href: `${base}/orders/${order.id}`,
         }));
 
   return (
-    <>
+    <div className="dash-container">
+      {/* ─── WELCOME BANNER (Colored Hero Card) ─── */}
       <section className="dash-welcome">
-        <div>
-          <p className="dash-location">
-            {local(locale, "আপনার কাজের স্থান", "Your workspace")} ·{" "}
-            {actor.district}
-          </p>
-          <h1>{t("ওয়ার্কস্পেস", "Workspace")}</h1>
-          <p>{subtitle}</p>
+        <div className="dash-welcome-text">
+          <div className="dash-welcome-eyebrow">
+            <span className="dash-pulse-dot" aria-hidden="true" />
+            <span>
+              {local(locale, "আপনার কাজের স্থান", "Active workspace")} ·{" "}
+              <strong>{actor.district}</strong>
+            </span>
+          </div>
+          <h1 className="dash-welcome-h1">
+            <span className="headline-primary">{actor.name}</span>
+            <span className="headline-secondary"> · {local(locale, ...roles[actor.role])}</span>
+          </h1>
+          <p className="dash-welcome-sub">{subtitle}</p>
         </div>
-        <div className="dash-actions">
+
+        <div className="dash-welcome-actions">
           <Link
-            className="dash-cta"
+            className="dash-primary-btn"
             href={`${base}/${signupReviewer ? "verifications" : primary}`}
           >
-            {signupReviewer
-              ? t("যাচাই বাকি নিবন্ধন দেখুন", "Review pending registrations")
-              : primaryLabel}
-            <WorkspaceIcon name="arrow" />
+            <span>
+              {signupReviewer
+                ? t("যাচাই বাকি নিবন্ধন দেখুন", "Review pending registrations")
+                : primaryLabel}
+            </span>
+            <span className="dash-btn-chip" aria-hidden="true">
+              <WorkspaceIcon name="arrow" />
+            </span>
           </Link>
           {canUseVoice(actor) && (
-            <Link className="dash-cta" href={`${base}/voice`}>
+            <Link className="dash-ghost-btn" href={`${base}/voice`}>
               <WorkspaceIcon name="voice" />
-              {t("বাংলা সহকারী", "Bangla assistant")}
+              <span>{t("বাংলা সহকারী", "Bangla assistant")}</span>
             </Link>
           )}
         </div>
       </section>
-      <div className="dash-metrics">
-        {metrics.map(([icon, label, value, path]) => (
-          <Link className="dash-stat" key={label} href={`${base}/${path}`}>
-            <span className="dash-icon">
-              <WorkspaceIcon name={icon} />
-            </span>
-            <span className="dash-stat-label">{label}</span>
-            <strong>{value}</strong>
+
+      {/* ─── KPI METRIC CARDS (Glass-1) ─── */}
+      <div className="dash-kpi-grid">
+        {metrics.map((m) => (
+          <Link className="dash-kpi-card glass-1" key={m.label} href={`${base}/${m.path}`}>
+            <div className="dash-kpi-header">
+              <span className="dash-kpi-icon">
+                <WorkspaceIcon name={m.icon} />
+              </span>
+              <span className="dash-kpi-badge">{m.badge}</span>
+            </div>
+            <div className="dash-kpi-body">
+              <span className="dash-kpi-label">{m.label}</span>
+              <strong className="dash-kpi-value stat-num">{m.value}</strong>
+            </div>
           </Link>
         ))}
-        <Link className="dash-stat" href={`${base}/alerts`}>
-          <span className="dash-icon">
-            <WorkspaceIcon name="alerts" />
-          </span>
-          <span className="dash-stat-label">
-            {t("অপঠিত বিজ্ঞপ্তি", "Unread alerts")}
-          </span>
-          <strong>{count(alerts.unread)}</strong>
+
+        {/* Alerts KPI */}
+        <Link className="dash-kpi-card glass-1" href={`${base}/alerts`}>
+          <div className="dash-kpi-header">
+            <span className="dash-kpi-icon">
+              <WorkspaceIcon name="alerts" />
+            </span>
+            <span className={`dash-kpi-badge ${alerts.unread > 0 ? "dash-badge-alert" : ""}`}>
+              {alerts.unread > 0 ? t("নতুন", "New") : t("সব পঠিত", "Cleared")}
+            </span>
+          </div>
+          <div className="dash-kpi-body">
+            <span className="dash-kpi-label">{t("অপঠিত বিজ্ঞপ্তি", "Unread alerts")}</span>
+            <strong className="dash-kpi-value stat-num">{count(alerts.unread)}</strong>
+          </div>
         </Link>
       </div>
-      <div className="dash-grid">
-        <section className="dash-card">
-          <header>
-            <h2>
-              {agent || farmer
-                ? t("সাম্প্রতিক মজুত", "Recent stock")
-                : t("সাম্প্রতিক অর্ডার", "Recent orders")}
-            </h2>
+
+      {/* ─── LOWER GRID: RECENT ACTIVITY & QUICK ACTIONS ─── */}
+      <div className="dash-lower-grid">
+        {/* Recent lots / orders */}
+        <section className="dash-card glass-1">
+          <header className="dash-card-header">
+            <div>
+              <h2 className="dash-card-title">
+                {agent || farmer
+                  ? t("সাম্প্রতিক মজুত", "Recent stock lots")
+                  : t("সাম্প্রতিক অর্ডার", "Recent orders")}
+              </h2>
+              <p className="dash-card-sub">
+                {agent || farmer
+                  ? t("নিবন্ধিত মজুত ও গুণমান সনদ", "Registered inventory and verification state")
+                  : t("চলমান ক্রয়-বিক্রয় ও চালান", "Active purchases and deliveries")}
+              </p>
+            </div>
             <Link
               className="work-link"
               href={`${base}/${agent || farmer ? "stock" : "orders"}`}
             >
-              {t("সব দেখুন", "View all")}
+              {t("সব দেখুন", "View all")} →
             </Link>
           </header>
+
           {rows.length ? (
-            <ul className="dash-list">
+            <ul className="dash-activity-list">
               {rows.map((row) => (
-                <li key={row.id}>
-                  <Link href={row.href}>
-                    <span>
-                      <strong>{row.title}</strong>
-                      <small>{row.detail}</small>
-                    </span>
-                    <span className="dash-list-value">
-                      <strong>{row.value}</strong>
-                      <span className="work-tag">{row.label}</span>
-                    </span>
+                <li key={row.id} className="dash-activity-item">
+                  <Link href={row.href} className="dash-activity-link">
+                    <div className="dash-activity-info">
+                      <strong className="dash-activity-title">{row.title}</strong>
+                      <span className="dash-activity-detail">{row.detail}</span>
+                    </div>
+                    <div className="dash-activity-meta">
+                      <span className="dash-activity-value stat-num">{row.value}</span>
+                      <span className={`work-tag ${row.verified ? "work-tag-verified" : ""}`}>
+                        {row.label}
+                      </span>
+                    </div>
                   </Link>
                 </li>
               ))}
             </ul>
           ) : (
             <div className="dash-empty">
-              <WorkspaceIcon name={agent || farmer ? "stock" : "orders"} />
+              <div className="dash-empty-rings" aria-hidden="true">
+                <WorkspaceIcon name={agent || farmer ? "stock" : "orders"} />
+              </div>
               <p>
                 {agent || farmer
-                  ? t("এখনও মজুত নেই।", "No lots yet.")
-                  : t("এখনও অর্ডার নেই।", "No orders yet.")}
+                  ? t("এখনও কোনো মজুত তালিকাভুক্ত নেই।", "No lots registered yet.")
+                  : t("এখনও কোনো অর্ডার নেই।", "No active orders yet.")}
               </p>
               <Link className="work-link" href={`${base}/${primary}`}>
-                {primaryLabel}
+                {primaryLabel} →
               </Link>
             </div>
           )}
         </section>
-        <section className="dash-card">
-          <header>
-            <h2>{t("দ্রুত কাজ", "Quick actions")}</h2>
+
+        {/* Quick actions & Alerts summary */}
+        <section className="dash-card glass-1">
+          <header className="dash-card-header">
+            <div>
+              <h2 className="dash-card-title">{t("দ্রুত কাজ", "Quick actions")}</h2>
+              <p className="dash-card-sub">
+                {t("জরুরি নেভিগেশন ও শর্টকাট", "Common workflows and shortcuts")}
+              </p>
+            </div>
           </header>
-          <ul className="dash-quick">
+
+          <ul className="dash-quick-list">
             {(buyer
               ? [
                   ["demand", t("চাহিদা পরিচালনা", "Manage demand")],
@@ -287,13 +351,13 @@ export async function Dashboard({
                     ],
                     [
                       "operations?view=quality",
-                      t("তথ্যের মান", "Review data quality"),
+                      t("তথ্যের মান পর্যালোচনা", "Review data quality"),
                     ],
                   ]
                 : agent
                   ? [
-                      ["stock?unverified=1", t("মজুত যাচাই", "Verify stock")],
-                      ["help", t("সহায়তার অনুরোধ", "Assistance queue")],
+                      ["stock?unverified=1", t("মজুত পরিদর্শন ও যাচাই", "Verify stock")],
+                      ["help", t("সহায়তার অনুরোধ সারি", "Assistance queue")],
                     ]
                   : [
                       ["offers", t("অফার পর্যালোচনা", "Review offers")],
@@ -301,29 +365,38 @@ export async function Dashboard({
                     ]
             )
               .concat([
-                ["prices", t("বাজারদর দেখুন", "Explore market prices")],
-                ["alerts", t("বিজ্ঞপ্তি দেখুন", "View alerts")],
+                ["prices", t("বাজারদর ও বিশ্লেষণ", "Explore market prices")],
+                ["alerts", t("সকল বিজ্ঞপ্তি", "View all notifications")],
               ])
               .map(([path, label]) => (
                 <li key={path}>
-                  <Link href={`${base}/${path}`}>
-                    <span className="dash-icon">
+                  <Link href={`${base}/${path}`} className="dash-quick-link">
+                    <span className="dash-quick-icon">
                       <WorkspaceIcon name={path.split("?")[0]} />
                     </span>
-                    <span>{label}</span>
-                    <WorkspaceIcon name="arrow" />
+                    <span className="dash-quick-text">{label}</span>
+                    <span className="dash-quick-arrow">
+                      <WorkspaceIcon name="arrow" />
+                    </span>
                   </Link>
                 </li>
               ))}
           </ul>
+
           {alerts.items[0] && (
-            <p className="dash-latest">
-              {t("সর্বশেষ বিজ্ঞপ্তি", "Latest alert")} ·{" "}
-              {timeLabel(locale, alerts.items[0].created_at)}
-            </p>
+            <div className="dash-latest-banner">
+              <span className="dash-latest-dot" aria-hidden="true" />
+              <div>
+                <strong>{t("সর্বশেষ বিজ্ঞপ্তি", "Latest alert")}</strong>
+                <p>{timeLabel(locale, alerts.items[0].created_at)}</p>
+              </div>
+              <Link className="work-link" href={`${base}/alerts`}>
+                {t("দেখুন", "View")}
+              </Link>
+            </div>
           )}
         </section>
       </div>
-    </>
+    </div>
   );
 }
