@@ -14,6 +14,13 @@ export type Profile = {
 };
 export type DemoIdentity = { identity: string; name: string; role: Role };
 
+export function canUseVoice(actor: Profile) {
+  return (
+    actor.is_demo ||
+    (actor.verified && (actor.role === "farmer" || actor.role === "buyer"))
+  );
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,

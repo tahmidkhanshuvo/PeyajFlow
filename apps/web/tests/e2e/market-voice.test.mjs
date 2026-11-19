@@ -103,6 +103,20 @@ test(
         signIn(browser, "buyer", { width: 1280, height: 900 }),
         signIn(browser, "admin", { width: 1280, height: 900 }),
       ]);
+      await buyer
+        .locator(".dash-welcome")
+        .getByRole("link", { name: "Bangla assistant" })
+        .click();
+      await buyer.getByRole("button", { name: "Start simulated call" }).click();
+      await buyer.getByRole("heading", { name: "Enter a command" }).waitFor();
+      await buyer.getByRole("button", { name: "End call" }).click();
+      await admin
+        .locator(".dash-welcome")
+        .getByRole("link", { name: "Bangla assistant" })
+        .click();
+      await admin.getByRole("button", { name: "Start simulated call" }).click();
+      await admin.getByRole("heading", { name: "Enter a command" }).waitFor();
+      await admin.getByRole("button", { name: "End call" }).click();
       const [farmerLogin, buyerLogin] = await Promise.all([
         request("/v1/auth/demo", { identity: "farmer" }),
         request("/v1/auth/demo", { identity: "buyer" }),

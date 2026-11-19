@@ -9,9 +9,10 @@ from sqlalchemy.orm import Session
 from test_market_and_voice import batch_payload, observation
 from test_pilot import login, new_lot, new_offer
 from test_pilot import pilot as pilot
+from test_signup import bearer, password_login, registration, staff
 
 from app import advice
-from app.auth import audit_log
+from app.auth import Role, audit_log
 from app.forecast import ForecastView
 from app.lots import lot_events, today
 from app.trade import now
@@ -39,6 +40,79 @@ def cancel(client, headers, path, staged):
     return client.post(
         f"{path}/actions/{staged['entry']['id']}/cancel", headers=headers
     )
+
+
+@requires_database
+def test_verified_traders_use_simulator_without_demo_or_showcase(pilot, monkeypatch):
+    client, engine, _ = pilot
+    demo = login(client, "farmer")
+    demo_call = start(client, demo)
+    for identity in ("buyer", "agent", "admin"):
+        headers = login(client, identity)
+        assert client.delete(start(client, headers), headers=headers).status_code == 204
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("DEMO_MODE", "false")
+    monkeypatch.delenv("SHOWCASE_ACCESS_KEY", raising=False)
+
+    reviewer = staff(client, engine, Role.AGENT)
+    unverified_farmer = staff(client, engine, Role.FARMER)
+    unverified_buyer = staff(client, engine, Role.BUYER)
+    operator = staff(client, engine, Role.ADMIN)
+
+    def verified_signup(role):
+        entry = registration(role=role)
+        created = client.post("/v1/auth/signup", json=entry)
+        assert created.status_code == 201, created.text
+        member = created.json()["membership_id"]
+        queue = client.get("/v1/auth/verifications", headers=reviewer).json()
+        signup = next(row for row in queue if row["membership_id"] == member)
+        decision = client.post(
+            "/v1/auth/verify",
+            headers=reviewer,
+            json={"user_id": signup["user_id"], "action": "verify"},
+        )
+        assert decision.status_code == 204, decision.text
+        return bearer(password_login(client, entry))
+
+    farmer = verified_signup("farmer")
+    buyer = verified_signup("buyer")
+    for actor in (unverified_farmer, unverified_buyer, reviewer, operator):
+        assert client.post("/v1/voice/calls", headers=actor).status_code == 403
+        assert (
+            client.post(
+                "/v1/voice/resolve", headers=actor, json={"phrases": ["আমার মজুত"]}
+            ).status_code
+            == 403
+        )
+
+    assert client.get(demo_call, headers=demo).status_code == 401
+    assert client.get(demo_call, headers=farmer).status_code == 404
+    for actor, phrase, tool in (
+        (farmer, "আমার মজুত", "stock"),
+        (buyer, "অর্ডার", "orders"),
+    ):
+        path = start(client, actor)
+        preview = client.post(
+            "/v1/voice/resolve", headers=actor, json={"phrases": [phrase]}
+        )
+        assert preview.json()[0]["tool"] == tool
+        assert say(client, actor, path, phrase).json()["entry"]["state"] == "answered"
+
+        note = "Fictional production voice support request"
+        staged = say(client, actor, path, "সহায়তা", {"note": note}).json()
+        assert staged["entry"]["state"] == "pending"
+        tasks = "/v1/voice/tasks"
+        assert client.get(tasks, headers=actor).json() == []
+        confirmed = client.post(
+            f"{path}/confirm",
+            headers=actor,
+            json={"action_id": staged["entry"]["id"], "digits": staged["demo_code"]},
+        )
+        assert confirmed.json()["state"] == "committed"
+        assert [row["note"] for row in client.get(tasks, headers=actor).json()] == [
+            note
+        ]
+        assert client.delete(path, headers=actor).status_code == 204
 
 
 @requires_database

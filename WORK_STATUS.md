@@ -2,19 +2,46 @@
 
 Last updated November 19, 2026 (Asia/Dhaka).
 
+## Bangla assistant access for farmers and buyers (November 19, 2026)
+
+- The workspace and API allow verified farmers and buyers and all enabled demo and showcase roles to use **বাংলা সহকারী**. Command preview, call start, and call history and actions share the same rule.
+- On disposable PostgreSQL, all 90 API tests passed, including both verified roles with demo and showcase disabled and the keypad confirmation flow. Alembic and Ruff passed. Prettier, ESLint, TypeScript, web unit tests, and the production build passed. Edge also verified Bangla navigation and call start for newly registered, approved farmer and buyer accounts.
+- After the owner selected all demo roles, the rebuilt local API verified call start and end for the demo farmer, buyer, agent, and operator. All 90 API tests and the Edge market and voice workflow passed with the expanded demo access. Web format, lint, typecheck, unit tests, and the production build passed.
+- Added a **বাংলা সহকারী** shortcut to the dashboard header so the feature is visible on phones. The running local app showed the shortcut in the initial Edge viewport at 390 px. All five Edge workflows passed, including signing in as a newly approved farmer and starting a call from the shortcut at that viewport. Web format, lint, typecheck, unit tests, and the production build passed. The local `shanto` farmer account is approved, while `farmer1` has password access and still requires farmer verification.
+
+## Verified farmer access to Bangla assistant (November 19, 2026)
+
+- Verified farmers can open **Bangla assistant** and use the call simulator with demo and showcase disabled. Enabled demo and showcase sessions keep access. The API checks permission on command preview, call start, and existing call routes.
+- Confirmed requests use the same read-back, keypad challenge, and workspace services. The simulator explains that confirmed changes are saved to a farmer's workspace.
+- On disposable PostgreSQL, 90 API tests, Alembic metadata, Ruff, and both intent evaluation gates passed. Prettier, ESLint, TypeScript, four web unit tests, the web production build, five Edge workflows, and release smoke passed. In a separate Edge run with demo and showcase disabled, a newly registered and approved farmer opened the Bangla voice route, confirmed a support request by keypad, and saw the saved request.
+- The running local Docker database was observed at `0016_vision` during this review. Its `farmer1` account had the farmer role and was unverified. The tests used the current schema on disposable PostgreSQL.
+
 ## Signup and account verification (November 19, 2026)
 
 - The Bangla and English workspaces accept farmer and buyer registrations. PostgreSQL enforces unique account IDs, NIDs and signup phone numbers. Bangla and ASCII digits are stored in the same form, and passphrases keep their exact whitespace.
 - New registrations can sign in after approval. Verified staff can process pending registrations, and demo users are isolated from the real queue. Operators can approve or reject from Operations. Rejecting a signup revokes its active sessions. Existing operator-provisioned accounts keep their access and market verification behavior.
 - Revision `0018_signup` follows the existing draft revision `0017_signup_nid`. Fresh migration, downgrade to `0016_vision`, re-upgrade and Alembic metadata checks passed on disposable PostgreSQL 16. Upgrade fixtures confirmed that a legacy farmer could still sign in and a draft signup stayed pending after its NID was normalized.
 - Ruff lint and formatting, 89 PostgreSQL API tests, both intent evaluation gates, Prettier, ESLint, TypeScript, four web unit tests, the production build, four Edge Playwright workflows and the release smoke check passed. Signup regressions cover concurrent signup and review, duplicate errors, staff permissions, session revocation and sensitive-field exclusion.
-- The local Docker database is at revision `0018_signup` and the API readiness check passed. Staff identity-evidence review remains manual.
+- The agent verification review confirmed API readiness on revision `0018_signup`. Staff identity-evidence review remains manual.
+
+### Local signup recheck
+
+- The local Docker API was serving the `0016_vision` build, which lacked the signup and verification routes. The database backup restored successfully into disposable PostgreSQL 16, and the restored database upgraded to `0018_signup` with no metadata drift.
+- Rebuilt the local API and migrated the live local database to `0018_signup`. All eight users and two password credentials were preserved. The running API exposes the signup and verification routes, the local workspace renders the signup form, and demo sign-in and session revocation passed.
+- Ruff, the migration rollback and re-upgrade, 90 PostgreSQL API tests, web format, lint, typecheck, unit tests, the production build, and all five Edge workflows passed. The browser workflows used disposable accounts and covered pending sign-in, staff approval and rejection, and sign-in after approval. The pre-upgrade backup is in the Git-ignored `.tools/local-db-backups` directory.
 
 ### Agent signup verification page
 
 - Verified, non-demo agents can open **Signup verification** in either workspace language. The decision form accepts an empty reason and returns to the localized queue after approval or rejection. Pagination stays within the API's offset limit.
-- The local `rofiq` account has the required agent role and verification flags. A separate Edge run against disposable PostgreSQL confirmed that an agent could approve a farmer without a reason, reject a buyer with a reason, and see both records leave the pending queue. The approved farmer could sign in, the rejected buyer was blocked, and a demo agent could not open the page.
+- An earlier local check found `rofiq` with the required agent role and verification flags. A separate Edge run against disposable PostgreSQL confirmed that an agent could approve a farmer without a reason, reject a buyer with a reason, and see both records leave the pending queue. The approved farmer could sign in, the rejected buyer was blocked, and a demo agent could not open the page.
 - Prettier, ESLint, TypeScript, four web unit tests, the production build, five Edge workflows on a fresh disposable database, and the release smoke check passed.
+
+#### Local agent access recheck
+
+- The local `0018_signup` database has a manually provisioned, verified `rofiq` agent. Password sign-in and review-queue access passed. Reviewer verification was also enabled for the existing `agent1` account after the owner confirmed the account. The API confirmed that `agent1` could access the queue, which contained one pending registration.
+- The verification link opens password sign-in and returns a verified agent directly to the review queue. An ineligible signed-in account gets a reviewer-specific message and a sign-out control.
+- Confirmed the new sign-in entry point on the running local web app. All five Edge workflows on a disposable database passed, including direct reviewer sign-in and approval and rejection in both locales. Prettier, ESLint, TypeScript, web unit tests, the production build, and release smoke also passed.
+- Added **Review pending registrations** as the main dashboard action for verified agents. In Edge at a mobile viewport, `rofiq` opened the Bangla queue from the live dashboard and saw one pending registration. The dashboard link and both review actions passed the disposable Edge regression. Web format, lint, typecheck, unit tests, and the production build passed.
 
 ## Completion of existing partial features (November 18, 2026)
 
@@ -195,7 +222,7 @@ Field validation remains open for market forecasts, photo suggestions, storage m
 - Early screens use the supplied raster. The owner vector master and field review of Bangla wording remain pending.
 - Market forecasts use approved observations and original publication dates. The supplied sample is fictional and isolated by series. Forecast metrics are retrospective and real-series field validation is pending.
 - Matching uses explicit buyer assumptions and operators record quotes received from transporters. Booking is recorded in PeyajFlow. Carrier-side confirmation and tracking remain external.
-- The simulator accepts typed commands or browser-transcribed Bangla speech and has optional browser-provided Bangla playback. Web and simulated confirmations share the same transaction, and the simulator requires a demo or showcase session.
+- The simulator accepts typed commands or browser-transcribed Bangla speech and has optional browser-provided Bangla playback. Web and simulated confirmations share the same transaction. Verified farmers and buyers and all enabled demo and showcase roles can use the simulator.
 - The carrier adapter exposes a public keypad menu. The live caller identity link, Bangla prompts and speech recognition require carrier and language validation. SMS stores generic delivery state and is disabled until provider and consent setup is complete.
 - The release uses Render Free in Singapore, Supabase Free in Singapore, and Vercel Hobby. Render can sleep after inactivity, which delays the next workspace request. The Supabase S3 key serves the private bucket in the dedicated project.
 - Update this file after each feature with what changed, checks that ran, remaining work, and confirmed PR or deployment evidence when available.

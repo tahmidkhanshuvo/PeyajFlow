@@ -370,7 +370,13 @@ def test_hosted_account_chooser_requires_code_for_simulated_calls(pilot, monkeyp
     headers = {"Authorization": f"Bearer {signed_in.json()['token']}"}
     assert client.get("/v1/admin/overview", headers=headers).status_code == 200
     assert client.post("/v1/voice/calls").status_code == 401
-    simulated = client.post("/v1/voice/calls", headers=headers)
+    assert client.post("/v1/voice/calls", headers=headers).status_code == 201
+    signed_in = client.post(
+        "/v1/auth/demo", json={"identity": "buyer", "access_key": code}
+    )
+    assert signed_in.status_code == 201
+    buyer = {"Authorization": f"Bearer {signed_in.json()['token']}"}
+    simulated = client.post("/v1/voice/calls", headers=buyer)
     assert simulated.status_code == 201
     assert simulated.json()["mode"] == "simulation"
     monkeypatch.delenv("SHOWCASE_ACCESS_KEY")

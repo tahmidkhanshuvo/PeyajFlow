@@ -118,11 +118,19 @@ test(
       await demo.goto(`${base}/verifications`);
       await demo
         .getByRole("alert")
-        .filter({ hasText: "Your role does not allow this action." })
+        .filter({
+          hasText:
+            "Sign in with a verified agent account to review registrations.",
+        })
         .waitFor();
+      await demo.getByRole("button", { name: "Sign out" }).waitFor();
 
       const page = await browser.newPage();
-      await page.goto(base);
+      await page.goto(`${base}/verifications`);
+      assert.equal(
+        await page.getByLabel("Account", { exact: true }).count(),
+        0,
+      );
       const signInForm = page.locator("section").filter({
         has: page.getByRole("heading", { name: "Password sign-in" }),
       });
@@ -134,6 +142,18 @@ test(
         .getByRole("button", { name: "Sign in with password" })
         .click();
       await page.getByRole("link", { name: "Signup verification" }).waitFor();
+      assert.equal(page.url(), `${base}/verifications`);
+      await page
+        .getByRole("heading", { name: "Signup verification" })
+        .waitFor();
+      await page
+        .getByRole("navigation")
+        .getByRole("link", { name: "Overview" })
+        .click();
+      await page
+        .getByRole("link", { name: "Review pending registrations" })
+        .click();
+      await page.waitForURL(`${base}/verifications`);
       await page.getByRole("link", { name: "বাংলা" }).click();
       await page.getByRole("link", { name: "নিবন্ধন যাচাই" }).click();
       await page.getByRole("heading", { name: "নিবন্ধন যাচাই" }).waitFor();
@@ -168,7 +188,30 @@ test(
       await page.waitForURL(`${base}/verifications?saved=1`);
       await rejected.waitFor({ state: "detached" });
 
-      await post("auth/password", { username: farmer.username, password });
+      const farmerPage = await browser.newPage({
+        viewport: { width: 390, height: 844 },
+      });
+      await farmerPage.goto(`${web}/bn/workspace`);
+      const farmerSignIn = farmerPage.locator("form").filter({
+        has: farmerPage.locator('input[autocomplete="current-password"]'),
+      });
+      await farmerSignIn.getByLabel("অ্যাকাউন্ট আইডি").fill(farmer.username);
+      await farmerSignIn.getByLabel("পাসওয়ার্ড", { exact: true }).fill(password);
+      await farmerSignIn
+        .getByRole("button", { name: "পাসওয়ার্ড দিয়ে সাইন ইন" })
+        .click();
+      const assistant = farmerPage
+        .locator(".dash-welcome")
+        .getByRole("link", { name: "বাংলা সহকারী" });
+      await assistant.waitFor();
+      const button = await assistant.boundingBox();
+      assert.ok(button && button.x >= 0 && button.x + button.width <= 390);
+      assert.ok(button.y >= 0 && button.y + button.height <= 844);
+      await assistant.click();
+      await farmerPage
+        .getByRole("button", { name: "সিমুলেটেড কল শুরু করুন" })
+        .click();
+      await farmerPage.getByRole("heading", { name: "কথা লিখুন" }).waitFor();
       const blocked = await fetch(`${api}/v1/auth/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

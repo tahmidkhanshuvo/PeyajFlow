@@ -38,6 +38,7 @@ import { isLocale, type Locale } from "../../../../lib/copy";
 import {
   api,
   ApiError,
+  canUseVoice,
   type DemoIdentity,
   type Profile,
 } from "../../../../lib/workspace-api";
@@ -74,7 +75,7 @@ function destinations(locale: Locale, actor: Profile) {
     );
   pages.push(["prices", local(locale, "বাজারদর", "Market prices")]);
   pages.push(["alerts", local(locale, "বিজ্ঞপ্তি", "Alerts")]);
-  if (actor.is_demo)
+  if (canUseVoice(actor))
     pages.push(["voice", local(locale, "বাংলা সহকারী", "Bangla assistant")]);
   pages.push(["help", local(locale, "সহায়তা", "Help")]);
   if (actor.role === "agent" && actor.verified && !actor.is_demo)
@@ -184,10 +185,19 @@ async function panel(
       : 0;
   const context = { locale, actor, base, offset };
   if (!page) return <Overview {...context} />;
-  if (
-    !(page === "voice" && actor.is_demo) &&
-    !destinations(locale, actor).some(([path]) => path === page)
-  ) {
+  if (!destinations(locale, actor).some(([path]) => path === page)) {
+    if (page === "verifications") {
+      return (
+        <section className="work-panel">
+          <p role="alert">{errorText(locale, "signup_review_access")}</p>
+          <WorkspaceForm
+            locale={locale}
+            action={signOut.bind(null, locale)}
+            label={local(locale, "সাইন আউট", "Sign out")}
+          />
+        </section>
+      );
+    }
     return (
       <p className="work-panel" role="alert">
         {errorText(locale, "role_forbidden")}
@@ -236,6 +246,8 @@ export default async function WorkspacePage({
   const { locale, section = [] } = await params;
   if (!isLocale(locale)) notFound();
   const base = `/${locale}/workspace`;
+  const reviewingSignups =
+    section.length === 1 && section[0] === "verifications";
   const alternative = locale === "bn" ? "en" : "bn";
   let actor: Profile | undefined;
   let error: string | undefined;
@@ -246,7 +258,7 @@ export default async function WorkspacePage({
     if (!(exception instanceof ApiError)) throw exception;
     if (exception.status !== 401) error = exception.code;
   }
-  if (!actor && !error) {
+  if (!actor && !error && !reviewingSignups) {
     try {
       identities = await api<DemoIdentity[]>("/v1/auth/demo");
     } catch (exception) {
@@ -415,9 +427,16 @@ export default async function WorkspacePage({
                 <h2>
                   {local(locale, "পাসওয়ার্ড দিয়ে প্রবেশ", "Password sign-in")}
                 </h2>
+                {reviewingSignups && (
+                  <p>{errorText(locale, "signup_review_access")}</p>
+                )}
                 <WorkspaceForm
                   locale={locale}
-                  action={passwordSignIn.bind(null, locale)}
+                  action={passwordSignIn.bind(
+                    null,
+                    locale,
+                    reviewingSignups ? "verifications" : "",
+                  )}
                   label={local(
                     locale,
                     "পাসওয়ার্ড দিয়ে সাইন ইন",

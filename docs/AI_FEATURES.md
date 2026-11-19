@@ -81,6 +81,6 @@ Spoken hold/sell advice now uses the verified-weight loss trend when at least th
 ## Known limitations
 
 - The voice grammar covers the command set of the simulator, not open conversation. It does not understand numbers said in words. Dialect coverage is limited to what the datasets contain.
-- The call simulator is limited to demo and showcase accounts. Live carrier calls, carrier speech recognition and OTP are not enabled.
+- Verified farmers and buyers can use the workspace call simulator. All enabled demo and showcase roles can also use it. Live carrier calls, carrier speech recognition and OTP are not enabled.
 - Photo suggestions are experimental and uncalibrated. A labelled photo dataset is needed to measure them.
 - Field validation with real farmers, market series and storage measurements remains open for every feature.

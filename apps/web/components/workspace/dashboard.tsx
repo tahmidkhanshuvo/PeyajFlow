@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Locale } from "../../lib/copy";
-import { api, type Profile } from "../../lib/workspace-api";
+import { api, canUseVoice, type Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
 import type { Demand, Lot, Offer, Order } from "../../lib/workspace-types";
 import { numberLabel, timeLabel } from "../../lib/workspace-values";
@@ -31,6 +31,7 @@ export async function Dashboard({
   const farmer = actor.role === "farmer";
   const buyer = actor.role === "buyer";
   const agent = actor.role === "agent";
+  const signupReviewer = agent && actor.verified && !actor.is_demo;
   const admin = actor.role === "admin";
   const [stock, demand, offers, orders, alerts, operations] = await Promise.all(
     [
@@ -184,10 +185,23 @@ export async function Dashboard({
           <h1>{t("ওয়ার্কস্পেস", "Workspace")}</h1>
           <p>{subtitle}</p>
         </div>
-        <Link className="dash-cta" href={`${base}/${primary}`}>
-          {primaryLabel}
-          <WorkspaceIcon name="arrow" />
-        </Link>
+        <div className="dash-actions">
+          <Link
+            className="dash-cta"
+            href={`${base}/${signupReviewer ? "verifications" : primary}`}
+          >
+            {signupReviewer
+              ? t("যাচাই বাকি নিবন্ধন দেখুন", "Review pending registrations")
+              : primaryLabel}
+            <WorkspaceIcon name="arrow" />
+          </Link>
+          {canUseVoice(actor) && (
+            <Link className="dash-cta" href={`${base}/voice`}>
+              <WorkspaceIcon name="voice" />
+              {t("বাংলা সহকারী", "Bangla assistant")}
+            </Link>
+          )}
+        </div>
       </section>
       <div className="dash-metrics">
         {metrics.map(([icon, label, value, path]) => (

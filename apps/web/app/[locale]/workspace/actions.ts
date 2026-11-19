@@ -54,6 +54,7 @@ export async function signIn(
 
 export async function passwordSignIn(
   locale: Locale,
+  returnTo: "" | "verifications",
   _state: FormState,
   form: FormData,
 ): Promise<FormState> {
@@ -70,7 +71,9 @@ export async function passwordSignIn(
   } catch (error) {
     return errorState(error);
   }
-  redirect(`/${locale}/workspace`);
+  redirect(
+    `/${locale}/workspace${returnTo === "verifications" ? "/verifications" : ""}`,
+  );
 }
 
 export async function signupAction(

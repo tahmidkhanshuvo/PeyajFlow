@@ -215,6 +215,10 @@ const errors: Record<string, [string, string]> = {
     "এই কাজ করার অনুমতি নেই।",
     "Your role does not allow this action.",
   ],
+  signup_review_access: [
+    "নিবন্ধন পর্যালোচনা করতে যাচাইকৃত এজেন্ট অ্যাকাউন্ট দিয়ে সাইন ইন করুন।",
+    "Sign in with a verified agent account to review registrations.",
+  ],
   demo_disabled: [
     "এই পরিবেশে ডেমো সাইন-ইন বন্ধ।",
     "Demo sign-in is disabled in this environment.",

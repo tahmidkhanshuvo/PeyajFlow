@@ -37,9 +37,7 @@ from app.auth import (
     Role,
     ShortText,
     audit,
-    demo_enabled,
     require_role,
-    showcase_access_key,
 )
 from app.database import DB, metadata
 
@@ -243,8 +241,11 @@ def check_spoken(
 
 
 def gate(actor: Profile) -> None:
-    if not actor.is_demo or not (demo_enabled() or showcase_access_key()):
-        raise HTTPException(404, "demo_disabled")
+    if actor.is_demo:
+        return
+    require_role(actor, Role.FARMER, Role.BUYER)
+    if not actor.verified:
+        raise HTTPException(403, "role_forbidden")
 
 
 def call_for(db: Session, actor: Profile, call_id: UUID, *, lock=False):

@@ -70,6 +70,14 @@ export async function VoicePage({
             "Speak or type your request in Bangla, review the read-back and confirm with the keypad.",
           )}
         </p>
+        {!actor.is_demo && (
+          <p>
+            {t(
+              "নিশ্চিত করা পরিবর্তন আপনার ওয়ার্কস্পেসে সংরক্ষিত হবে।",
+              "Confirmed changes are saved to your workspace.",
+            )}
+          </p>
+        )}
         <WorkspaceForm
           locale={locale}
           action={pilotMutate.bind(null, locale, "start-call", "", "")}

@@ -575,7 +575,9 @@ export function VoiceDesk({
               <input type="hidden" name="mode" value="confirm" />
               <input type="hidden" name="action_id" value={pending.id} />
               <p>
-                {t("ডেমো কোড", "Demo keypad code")}{" "}
+                {actor.is_demo
+                  ? t("ডেমো কোড", "Demo keypad code")
+                  : t("কিপ্যাড কোড", "Keypad code")}{" "}
                 <strong>{state.code}</strong>
               </p>
               <label>

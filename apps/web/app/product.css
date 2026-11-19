@@ -273,6 +273,11 @@
 .dash-welcome > div {
   max-width: 57ch;
 }
+.dash-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 .dash-cta {
   background: white;
   color: var(--deep);
