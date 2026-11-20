@@ -104,14 +104,14 @@ test(
         signIn(browser, "admin", { width: 1280, height: 900 }),
       ]);
       await buyer
-        .locator(".dash-welcome")
+        .locator(".workspace-nav, nav")
         .getByRole("link", { name: "Bangla assistant" })
         .click();
       await buyer.getByRole("button", { name: "Start simulated call" }).click();
       await buyer.getByRole("heading", { name: "Enter a command" }).waitFor();
       await buyer.getByRole("button", { name: "End call" }).click();
       await admin
-        .locator(".dash-welcome")
+        .locator(".workspace-nav, nav")
         .getByRole("link", { name: "Bangla assistant" })
         .click();
       await admin.getByRole("button", { name: "Start simulated call" }).click();

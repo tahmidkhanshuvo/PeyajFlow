@@ -1,32 +1,47 @@
 import Link from "next/link";
 import type { Locale } from "../../lib/copy";
 import type { Observation } from "../../lib/pilot-types";
-import { api, canUseVoice, type Profile } from "../../lib/workspace-api";
+import { api, type Profile } from "../../lib/workspace-api";
 import { local, roles } from "../../lib/workspace-copy";
-import type { Demand, Lot, Offer, Order, Supply } from "../../lib/workspace-types";
+import type {
+  Demand,
+  Lot,
+  Offer,
+  Order,
+  Supply,
+  Filters,
+} from "../../lib/workspace-types";
 import { numberLabel, timeLabel } from "../../lib/workspace-values";
+import { ContactModal } from "./contact-modal";
 import { WorkspaceIcon } from "./icon";
 import { taka } from "./market";
 import { kg } from "./stock";
+import { OperationsNav, OperationsView } from "./operations";
 
 type Alerts = {
   unread: number;
   items: { id: string; kind: string; created_at: string }[];
 };
 type Ops = {
+  unverified_accounts: number;
   unverified_lots: number;
   pending_imports: number;
   open_disputes: number;
+  pending_sms: number;
+  attention_sms: number;
+  carrier_events_24h: number | null;
 };
 
 export async function Dashboard({
   locale,
   actor,
   base,
+  filters,
 }: {
   locale: Locale;
   actor: Profile;
   base: string;
+  filters?: Filters;
 }) {
   const t = (bn: string, en: string) => local(locale, bn, en);
   const farmer = actor.role === "farmer";
@@ -35,19 +50,27 @@ export async function Dashboard({
   const signupReviewer = agent && actor.verified && !actor.is_demo;
   const admin = actor.role === "admin";
 
-  const [stock, demand, offers, orders, alerts, operations, supply, marketPrices] =
-    await Promise.all([
-      farmer || agent || admin ? api<Lot[]>("/v1/lots") : [],
-      buyer ? api<{ items: Demand[] }>("/v1/buyer-requests") : { items: [] },
-      agent || admin ? [] : api<Offer[]>("/v1/offers"),
-      agent ? [] : api<Order[]>("/v1/orders"),
-      api<Alerts>("/v1/notifications"),
-      admin ? api<Ops>("/v1/admin/overview") : null,
-      buyer
-        ? api<{ items: Supply[] }>("/v1/matches").catch(() => ({ items: [] }))
-        : { items: [] },
-      api<Observation[]>("/v1/market/prices?limit=100").catch(() => []),
-    ]);
+  const [
+    stock,
+    demand,
+    offers,
+    orders,
+    alerts,
+    operations,
+    supply,
+    marketPrices,
+  ] = await Promise.all([
+    farmer || agent || admin ? api<Lot[]>("/v1/lots") : [],
+    buyer ? api<{ items: Demand[] }>("/v1/buyer-requests") : { items: [] },
+    agent || admin ? [] : api<Offer[]>("/v1/offers"),
+    agent ? [] : api<Order[]>("/v1/orders"),
+    api<Alerts>("/v1/notifications"),
+    admin ? api<Ops>("/v1/admin/overview") : null,
+    buyer
+      ? api<{ items: Supply[] }>("/v1/matches").catch(() => ({ items: [] }))
+      : { items: [] },
+    api<Observation[]>("/v1/market/prices?limit=100").catch(() => []),
+  ]);
 
   // Real-time Stock Quality Analytics (100% database driven)
   let verifiedKg = 0;
@@ -85,8 +108,7 @@ export async function Dashboard({
   const donutCircumference = 2 * Math.PI * donutRadius;
   const verifiedArc =
     totalStockKg > 0 ? (verifiedPercent / 100) * donutCircumference : 0;
-  const unverifiedArc =
-    totalStockKg > 0 ? donutCircumference - verifiedArc : 0;
+  const unverifiedArc = totalStockKg > 0 ? donutCircumference - verifiedArc : 0;
 
   // Real-time Market Price Comparison (100% database driven from market_prices & offers)
   const pabnaByMonth: Record<string, number[]> = {};
@@ -100,30 +122,62 @@ export async function Dashboard({
   }
 
   const sortedObservedMonths = Object.keys(pabnaByMonth).sort().slice(-6);
-  const fallbackMonths = ["2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11"];
-  const displayMonths = sortedObservedMonths.length >= 4 ? sortedObservedMonths : fallbackMonths;
+  const fallbackMonths = [
+    "2026-06",
+    "2026-07",
+    "2026-08",
+    "2026-09",
+    "2026-10",
+    "2026-11",
+  ];
+  const displayMonths =
+    sortedObservedMonths.length >= 4 ? sortedObservedMonths : fallbackMonths;
 
   const dhakaOffers = offers.filter(
-    (o) => o.delivery_district && o.delivery_district.toLowerCase().includes("dhaka"),
+    (o) =>
+      o.delivery_district &&
+      o.delivery_district.toLowerCase().includes("dhaka"),
   );
   const currentDhakaAvg =
     dhakaOffers.length > 0
-      ? dhakaOffers.reduce((sum, o) => sum + Number(o.price_bdt_kg), 0) / dhakaOffers.length
+      ? dhakaOffers.reduce((sum, o) => sum + Number(o.price_bdt_kg), 0) /
+        dhakaOffers.length
       : 46.5;
 
   const monthNamesEn: Record<string, string> = {
-    "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr", "05": "May", "06": "Jun",
-    "07": "Jul", "08": "Aug", "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec",
+    "01": "Jan",
+    "02": "Feb",
+    "03": "Mar",
+    "04": "Apr",
+    "05": "May",
+    "06": "Jun",
+    "07": "Jul",
+    "08": "Aug",
+    "09": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec",
   };
   const monthNamesBn: Record<string, string> = {
-    "01": "জানু", "02": "ফেব", "03": "মার্চ", "04": "এপ্রিল", "05": "মে", "06": "জুন",
-    "07": "জুলাই", "08": "আগস্ট", "09": "সেপ্টে", "10": "অক্টো", "11": "নভে", "12": "ডিসে",
+    "01": "জানু",
+    "02": "ফেব",
+    "03": "মার্চ",
+    "04": "এপ্রিল",
+    "05": "মে",
+    "06": "জুন",
+    "07": "জুলাই",
+    "08": "আগস্ট",
+    "09": "সেপ্টে",
+    "10": "অক্টো",
+    "11": "নভে",
+    "12": "ডিসে",
   };
 
   const trendData = displayMonths.map((m, idx) => {
     const isLast = idx === displayMonths.length - 1;
     const pVals = pabnaByMonth[m] ?? [];
-    const pAvg = pVals.length > 0 ? pVals.reduce((a, b) => a + b, 0) / pVals.length : 40;
+    const pAvg =
+      pVals.length > 0 ? pVals.reduce((a, b) => a + b, 0) / pVals.length : 40;
     const dAvg = isLast ? currentDhakaAvg : pAvg + 6.5;
     const monthNum = m.split("-")[1] || "01";
     const label = isLast
@@ -201,11 +255,11 @@ export async function Dashboard({
   const activeOrders = orders.filter((item) =>
     ["confirmed", "dispatched", "disputed"].includes(item.status),
   );
-  const primary = buyer ? "supply" : admin ? "operations" : "stock";
+  const primary = buyer ? "supply" : admin ? "?view=accounts" : "stock";
   const primaryLabel = buyer
     ? t("মজুত খুঁজুন", "Browse supply")
     : admin
-      ? t("পরিচালনা দেখুন", "Open operations")
+      ? t("নিবন্ধন যাচাই দেখুন", "Review accounts")
       : t("মজুত দেখুন", "View stock");
 
   const subtitle = farmer
@@ -234,11 +288,18 @@ export async function Dashboard({
     admin && operations
       ? [
           {
+            icon: "profile",
+            label: t("যাচাই বাকি অ্যাকাউন্ট", "Accounts to verify"),
+            value: count(operations.unverified_accounts),
+            path: "?view=accounts",
+            badge: t("যাচাই", "Accounts"),
+          },
+          {
             icon: "stock",
             label: t("যাচাই বাকি মজুত", "Lots to verify"),
             value: count(operations.unverified_lots),
             path: "stock?unverified=1",
-            badge: t("কার্যক্রম", "Action"),
+            badge: t("মজুত", "Lots"),
           },
           {
             icon: "imports",
@@ -251,8 +312,11 @@ export async function Dashboard({
             icon: "operations",
             label: t("অমীমাংসিত বিরোধ", "Open disputes"),
             value: count(operations.open_disputes),
-            path: "operations?view=disputes",
-            badge: operations.open_disputes > 0 ? t("জরুরি", "Urgent") : t("স্বাভাবিক", "Normal"),
+            path: "?view=disputes",
+            badge:
+              operations.open_disputes > 0
+                ? t("জরুরি", "Urgent")
+                : t("স্বাভাবিক", "Normal"),
           },
         ]
       : [
@@ -260,7 +324,9 @@ export async function Dashboard({
             ? {
                 icon: "demand",
                 label: t("চলমান চাহিদা", "Open requirements"),
-                value: count(demand.items.filter((row) => row.status === "open").length),
+                value: count(
+                  demand.items.filter((row) => row.status === "open").length,
+                ),
                 path: "demand",
                 badge: t("চাহিদা", "Active"),
               }
@@ -280,7 +346,9 @@ export async function Dashboard({
             ? {
                 icon: "stock",
                 label: t("যাচাই বাকি মজুত", "Lots to verify"),
-                value: count(stock.filter((row) => row.verified_kg === null).length),
+                value: count(
+                  stock.filter((row) => row.verified_kg === null).length,
+                ),
                 path: "stock?unverified=1",
                 badge: t("যাচাই", "Pending"),
               }
@@ -339,6 +407,52 @@ export async function Dashboard({
           href: `${base}/orders/${order.id}`,
         }));
 
+  if (admin && filters?.view) {
+    return (
+      <div className="dash-container">
+        {/* ─── WELCOME BANNER (Colored Hero Card) ─── */}
+        <section className="dash-welcome">
+          <div className="dash-welcome-text">
+            <div className="dash-welcome-eyebrow">
+              <span className="dash-pulse-dot" aria-hidden="true" />
+              <span>
+                {local(locale, "আপনার কাজের স্থান", "Active workspace")} ·{" "}
+                <strong>{actor.district}</strong>
+              </span>
+            </div>
+            <h1 className="dash-welcome-h1">
+              <span className="headline-primary">{actor.name}</span>
+              <span className="headline-secondary">
+                {" "}
+                · {local(locale, ...roles[actor.role])}
+              </span>
+            </h1>
+            <p className="dash-welcome-sub">{subtitle}</p>
+          </div>
+
+          <div className="dash-welcome-actions">
+            <ContactModal locale={locale} base={base} />
+          </div>
+        </section>
+
+        {/* ─── OPERATIONS NAVIGATION TABS ─── */}
+        <OperationsNav
+          locale={locale}
+          base={base}
+          activeView={filters.view}
+        />
+
+        {/* ─── ACTIVE OPERATIONS SUB-VIEW ─── */}
+        <OperationsView
+          locale={locale}
+          base={base}
+          filters={filters}
+          offset={Number(filters.offset ?? 0)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="dash-container">
       {/* ─── WELCOME BANNER (Colored Hero Card) ─── */}
@@ -353,7 +467,10 @@ export async function Dashboard({
           </div>
           <h1 className="dash-welcome-h1">
             <span className="headline-primary">{actor.name}</span>
-            <span className="headline-secondary"> · {local(locale, ...roles[actor.role])}</span>
+            <span className="headline-secondary">
+              {" "}
+              · {local(locale, ...roles[actor.role])}
+            </span>
           </h1>
           <p className="dash-welcome-sub">{subtitle}</p>
         </div>
@@ -361,7 +478,7 @@ export async function Dashboard({
         <div className="dash-welcome-actions">
           <Link
             className="dash-primary-btn"
-            href={`${base}/${signupReviewer ? "verifications" : primary}`}
+            href={`${base}${signupReviewer ? "/verifications" : primary.startsWith("?") ? primary : `/${primary}`}`}
             prefetch={true}
           >
             <span>
@@ -373,19 +490,28 @@ export async function Dashboard({
               <WorkspaceIcon name="arrow" />
             </span>
           </Link>
-          {canUseVoice(actor) && (
-            <Link className="dash-ghost-btn" href={`${base}/voice`} prefetch={true}>
-              <WorkspaceIcon name="voice" />
-              <span>{t("বাংলা সহকারী", "Bangla assistant")}</span>
-            </Link>
-          )}
+          <ContactModal locale={locale} base={base} />
         </div>
       </section>
+
+      {/* ─── OPERATIONS NAVIGATION TABS (For Operator) ─── */}
+      {admin && (
+        <OperationsNav
+          locale={locale}
+          base={base}
+          activeView=""
+        />
+      )}
 
       {/* ─── KPI METRIC CARDS (Glass-1) ─── */}
       <div className="dash-kpi-grid">
         {metrics.map((m) => (
-          <Link className="dash-kpi-card glass-1" key={m.label} href={`${base}/${m.path}`} prefetch={true}>
+          <Link
+            className="dash-kpi-card glass-1"
+            key={m.label}
+            href={`${base}${m.path.startsWith("?") ? m.path : `/${m.path}`}`}
+            prefetch={true}
+          >
             <div className="dash-kpi-header">
               <span className="dash-kpi-icon">
                 <WorkspaceIcon name={m.icon} />
@@ -400,32 +526,98 @@ export async function Dashboard({
         ))}
 
         {/* Alerts KPI */}
-        <Link className="dash-kpi-card glass-1" href={`${base}/alerts`} prefetch={true}>
+        <Link
+          className="dash-kpi-card glass-1"
+          href={`${base}/alerts`}
+          prefetch={true}
+        >
           <div className="dash-kpi-header">
             <span className="dash-kpi-icon">
               <WorkspaceIcon name="alerts" />
             </span>
-            <span className={`dash-kpi-badge ${alerts.unread > 0 ? "dash-badge-alert" : ""}`}>
+            <span
+              className={`dash-kpi-badge ${alerts.unread > 0 ? "dash-badge-alert" : ""}`}
+            >
               {alerts.unread > 0 ? t("নতুন", "New") : t("সব পঠিত", "Cleared")}
             </span>
           </div>
           <div className="dash-kpi-body">
-            <span className="dash-kpi-label">{t("অপঠিত বিজ্ঞপ্তি", "Unread alerts")}</span>
-            <strong className="dash-kpi-value stat-num">{count(alerts.unread)}</strong>
+            <span className="dash-kpi-label">
+              {t("অপঠিত বিজ্ঞপ্তি", "Unread alerts")}
+            </span>
+            <strong className="dash-kpi-value stat-num">
+              {count(alerts.unread)}
+            </strong>
           </div>
         </Link>
       </div>
+
+      {/* ─── DELIVERY SERVICE ACTIVITY (Transferred from Operations) ─── */}
+      {admin && operations && (
+        <section className="dash-card glass-1 ops-delivery-section">
+          <div className="dash-card-header">
+            <div>
+              <div
+                className="dash-quality-eyebrow"
+                style={{ marginBottom: "6px" }}
+              >
+                <span className="dash-pulse-dot" aria-hidden="true" />
+                <span>{t("সেবা কার্যক্রম", "SMS & Delivery Logistics")}</span>
+              </div>
+              <h2 className="dash-card-title">
+                {t("সরবরাহ সেবার অবস্থা", "Delivery service activity")}
+              </h2>
+            </div>
+          </div>
+          <div className="ops-delivery-metrics-grid">
+            <div className="ops-delivery-box">
+              <span className="ops-delivery-label">
+                {t("অপেক্ষমাণ এসএমএস", "Pending SMS")}
+              </span>
+              <strong className="ops-delivery-val stat-num">
+                {count(operations.pending_sms)}
+              </strong>
+            </div>
+            <div className="ops-delivery-box">
+              <span className="ops-delivery-label">
+                {t("পর্যালোচনা প্রয়োজন এমন এসএমএস", "SMS needing review")}
+              </span>
+              <strong className="ops-delivery-val stat-num">
+                {count(operations.attention_sms)}
+              </strong>
+            </div>
+            {operations.carrier_events_24h !== null && (
+              <div className="ops-delivery-box">
+                <span className="ops-delivery-label">
+                  {t("গত ২৪ ঘণ্টার ক্যারিয়ার ঘটনা", "Carrier callbacks in 24 hours")}
+                </span>
+                <strong className="ops-delivery-val stat-num">
+                  {count(operations.carrier_events_24h)}
+                </strong>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ─── REAL-TIME MARKET PRICE COMPARISON ANALYTICS (100% Database Driven) ─── */}
       <section className="dash-analysis-section glass-1">
         <div className="dash-analysis-header">
           <div>
-            <div className="dash-quality-eyebrow" style={{ marginBottom: "6px" }}>
+            <div
+              className="dash-quality-eyebrow"
+              style={{ marginBottom: "6px" }}
+            >
               <span className="dash-pulse-dot" aria-hidden="true" />
-              <span>{t("বাজারদর ও পর্যবেক্ষণ", "Market Outlook & Analytics")}</span>
+              <span>
+                {t("বাজারদর ও পর্যবেক্ষণ", "Market Outlook & Analytics")}
+              </span>
             </div>
             <h2 className="dash-analysis-title">
-              {t("পাবনা ও কাওরান বাজার দর তুলনা", "Pabna Farmgate vs. Dhaka Wholesale")}
+              {t(
+                "পাবনা ও কাওরান বাজার দর তুলনা",
+                "Pabna Farmgate vs. Dhaka Wholesale",
+              )}
             </h2>
           </div>
           <div className="dash-analysis-legend">
@@ -433,8 +625,12 @@ export async function Dashboard({
               <span className="dash-dot-pabna" aria-hidden="true" />
               <span>
                 {t("পাবনা মোকাম", "Pabna Mokam")}:{" "}
-                <strong className="stat-num" style={{ color: "var(--onion-600)", marginLeft: "4px" }}>
-                  ৳{numberLabel(locale, latestPabna)}/{local(locale, "কেজি", "kg")}
+                <strong
+                  className="stat-num"
+                  style={{ color: "var(--onion-600)", marginLeft: "4px" }}
+                >
+                  ৳{numberLabel(locale, latestPabna)}/
+                  {local(locale, "কেজি", "kg")}
                 </strong>
               </span>
             </span>
@@ -442,35 +638,94 @@ export async function Dashboard({
               <span className="dash-dot-dhaka" aria-hidden="true" />
               <span>
                 {t("কাওরান বাজার", "Karwan Bazar")}:{" "}
-                <strong className="stat-num" style={{ color: "var(--skin-500)", marginLeft: "4px" }}>
-                  ৳{numberLabel(locale, latestDhaka)}/{local(locale, "কেজি", "kg")}
+                <strong
+                  className="stat-num"
+                  style={{ color: "var(--skin-500)", marginLeft: "4px" }}
+                >
+                  ৳{numberLabel(locale, latestDhaka)}/
+                  {local(locale, "কেজি", "kg")}
                 </strong>
               </span>
             </span>
             <Link className="work-link" href={`${base}/prices`} prefetch={true}>
-              {t("বিস্তারিত দরদরজা", "Explore prices")} →
+              <span>{t("বিস্তারিত দরদরজা", "Explore prices")}</span>
+              <span className="work-link-circle-arrow" aria-hidden="true">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14m-6-6 6 6-6 6" />
+                </svg>
+              </span>
             </Link>
           </div>
         </div>
 
         {/* Pure CSS/SVG Financial Chart in Onion Crimson & Gold */}
-        <div className="dash-chart-wrap" aria-label={t("বাজারদর চার্ট", "Market price trends chart")}>
-          <svg viewBox="0 0 800 220" className="dash-chart-svg" preserveAspectRatio="none">
+        <div
+          className="dash-chart-wrap"
+          aria-label={t("বাজারদর চার্ট", "Market price trends chart")}
+        >
+          <svg
+            viewBox="0 0 800 220"
+            className="dash-chart-svg"
+            preserveAspectRatio="none"
+          >
             <defs>
               <linearGradient id="onionGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--onion-500)" stopOpacity="0.32" />
-                <stop offset="100%" stopColor="var(--onion-600)" stopOpacity="0.0" />
+                <stop
+                  offset="0%"
+                  stopColor="var(--onion-500)"
+                  stopOpacity="0.32"
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--onion-600)"
+                  stopOpacity="0.0"
+                />
               </linearGradient>
               <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--skin-500)" stopOpacity="0.28" />
-                <stop offset="100%" stopColor="var(--skin-500)" stopOpacity="0.0" />
+                <stop
+                  offset="0%"
+                  stopColor="var(--skin-500)"
+                  stopOpacity="0.28"
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--skin-500)"
+                  stopOpacity="0.0"
+                />
               </linearGradient>
             </defs>
 
             {/* Horizontal Guide Grid Lines */}
-            <line x1="40" y1="65" x2="760" y2="65" className="dash-chart-grid-line" />
-            <line x1="40" y1="110" x2="760" y2="110" className="dash-chart-grid-line" />
-            <line x1="40" y1="155" x2="760" y2="155" className="dash-chart-grid-line" />
+            <line
+              x1="40"
+              y1="65"
+              x2="760"
+              y2="65"
+              className="dash-chart-grid-line"
+            />
+            <line
+              x1="40"
+              y1="110"
+              x2="760"
+              y2="110"
+              className="dash-chart-grid-line"
+            />
+            <line
+              x1="40"
+              y1="155"
+              x2="760"
+              y2="155"
+              className="dash-chart-grid-line"
+            />
 
             {/* Dhaka Wholesale curve (Skin ramp) */}
             <path d={dhakaArea} fill="url(#skinGrad)" />
@@ -635,7 +890,8 @@ export async function Dashboard({
                 textAnchor="middle"
                 className="dash-donut-center-num stat-num"
               >
-                {numberLabel(locale, totalStockKg)} {local(locale, "কেজি", "kg")}
+                {numberLabel(locale, totalStockKg)}{" "}
+                {local(locale, "কেজি", "kg")}
               </text>
               <text
                 x="120"
@@ -652,20 +908,27 @@ export async function Dashboard({
             <div className="dash-quality-row">
               <div className="dash-quality-label">
                 <span className="dash-dot-verified" aria-hidden="true" />
-                <span>{t("মাঠ কর্মকর্তা যাচাইকৃত", "Field officer verified")}</span>
+                <span>
+                  {t("মাঠ কর্মকর্তা যাচাইকৃত", "Field officer verified")}
+                </span>
               </div>
               <strong className="dash-quality-value stat-num">
-                {numberLabel(locale, verifiedPercent)}% ({numberLabel(locale, verifiedKg)} {local(locale, "কেজি", "kg")})
+                {numberLabel(locale, verifiedPercent)}% (
+                {numberLabel(locale, verifiedKg)} {local(locale, "কেজি", "kg")})
               </strong>
             </div>
 
             <div className="dash-quality-row">
               <div className="dash-quality-label">
                 <span className="dash-dot-unverified" aria-hidden="true" />
-                <span>{t("নিজস্ব তথ্য (অযাচাইকৃত)", "Self-reported (Unverified)")}</span>
+                <span>
+                  {t("নিজস্ব তথ্য (অযাচাইকৃত)", "Self-reported (Unverified)")}
+                </span>
               </div>
               <strong className="dash-quality-value stat-num">
-                {numberLabel(locale, unverifiedPercent)}% ({numberLabel(locale, unverifiedKg)} {local(locale, "কেজি", "kg")})
+                {numberLabel(locale, unverifiedPercent)}% (
+                {numberLabel(locale, unverifiedKg)}{" "}
+                {local(locale, "কেজি", "kg")})
               </strong>
             </div>
           </div>
@@ -682,8 +945,14 @@ export async function Dashboard({
               </h2>
               <p className="dash-card-sub">
                 {agent || farmer
-                  ? t("নিবন্ধিত মজুত ও গুণমান সনদ", "Registered inventory and verification state")
-                  : t("চলমান ক্রয়-বিক্রয় ও চালান", "Active purchases and deliveries")}
+                  ? t(
+                      "নিবন্ধিত মজুত ও গুণমান সনদ",
+                      "Registered inventory and verification state",
+                    )
+                  : t(
+                      "চলমান ক্রয়-বিক্রয় ও চালান",
+                      "Active purchases and deliveries",
+                    )}
               </p>
             </div>
             <Link
@@ -691,7 +960,21 @@ export async function Dashboard({
               href={`${base}/${agent || farmer ? "stock" : "orders"}`}
               prefetch={true}
             >
-              {t("সব দেখুন", "View all")} →
+              <span>{t("সব দেখুন", "View all")}</span>
+              <span className="work-link-circle-arrow" aria-hidden="true">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14m-6-6 6 6-6 6" />
+                </svg>
+              </span>
             </Link>
           </header>
 
@@ -699,14 +982,24 @@ export async function Dashboard({
             <ul className="dash-activity-list">
               {rows.map((row) => (
                 <li key={row.id} className="dash-activity-item">
-                  <Link href={row.href} className="dash-activity-link" prefetch={true}>
+                  <Link
+                    href={row.href}
+                    className="dash-activity-link"
+                    prefetch={true}
+                  >
                     <div className="dash-activity-info">
-                      <strong className="dash-activity-title">{row.title}</strong>
+                      <strong className="dash-activity-title">
+                        {row.title}
+                      </strong>
                       <span className="dash-activity-detail">{row.detail}</span>
                     </div>
                     <div className="dash-activity-meta">
-                      <span className="dash-activity-value stat-num">{row.value}</span>
-                      <span className={`work-tag ${row.verified ? "work-tag-verified" : ""}`}>
+                      <span className="dash-activity-value stat-num">
+                        {row.value}
+                      </span>
+                      <span
+                        className={`work-tag ${row.verified ? "work-tag-verified" : ""}`}
+                      >
                         {row.label}
                       </span>
                     </div>
@@ -724,8 +1017,26 @@ export async function Dashboard({
                   ? t("এখনও কোনো মজুত তালিকাভুক্ত নেই।", "No lots registered yet.")
                   : t("এখনও কোনো অর্ডার নেই।", "No active orders yet.")}
               </p>
-              <Link className="work-link" href={`${base}/${primary}`} prefetch={true}>
-                {primaryLabel} →
+              <Link
+                className="work-link"
+                href={`${base}/${primary}`}
+                prefetch={true}
+              >
+                <span>{primaryLabel}</span>
+                <span className="work-link-circle-arrow" aria-hidden="true">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14m-6-6 6 6-6 6" />
+                  </svg>
+                </span>
               </Link>
             </div>
           )}
@@ -735,7 +1046,9 @@ export async function Dashboard({
         <section className="dash-card glass-1">
           <header className="dash-card-header">
             <div>
-              <h2 className="dash-card-title">{t("দ্রুত কাজ", "Quick actions")}</h2>
+              <h2 className="dash-card-title">
+                {t("দ্রুত কাজ", "Quick actions")}
+              </h2>
               <p className="dash-card-sub">
                 {t("জরুরি নেভিগেশন ও শর্টকাট", "Common workflows and shortcuts")}
               </p>
@@ -761,7 +1074,10 @@ export async function Dashboard({
                   ]
                 : agent
                   ? [
-                      ["stock?unverified=1", t("মজুত পরিদর্শন ও যাচাই", "Verify stock")],
+                      [
+                        "stock?unverified=1",
+                        t("মজুত পরিদর্শন ও যাচাই", "Verify stock"),
+                      ],
                       ["help", t("সহায়তার অনুরোধ সারি", "Assistance queue")],
                     ]
                   : [
@@ -775,7 +1091,11 @@ export async function Dashboard({
               ])
               .map(([path, label]) => (
                 <li key={path}>
-                  <Link href={`${base}/${path}`} className="dash-quick-link" prefetch={true}>
+                  <Link
+                    href={`${base}/${path}`}
+                    className="dash-quick-link"
+                    prefetch={true}
+                  >
                     <span className="dash-quick-icon">
                       <WorkspaceIcon name={path.split("?")[0]} />
                     </span>
@@ -795,7 +1115,11 @@ export async function Dashboard({
                 <strong>{t("সর্বশেষ বিজ্ঞপ্তি", "Latest alert")}</strong>
                 <p>{timeLabel(locale, alerts.items[0].created_at)}</p>
               </div>
-              <Link className="work-link" href={`${base}/alerts`} prefetch={true}>
+              <Link
+                className="work-link"
+                href={`${base}/alerts`}
+                prefetch={true}
+              >
                 {t("দেখুন", "View")}
               </Link>
             </div>

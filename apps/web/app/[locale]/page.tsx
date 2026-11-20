@@ -18,7 +18,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       icon: "stock",
       title: t("মজুত ও গুণমান", "Market Access Support"),
       desc: t(
-        "সরাসরি কৃষকের মজুত ওজন ও সংরক্ষণ অবস্থা যাচাই করে বড় ক্রেতাদের কাছে পৌঁছান।",
+        "যাচাইকৃত পণ্যের ওজন ও সংরক্ষণের প্রমাণের মাধ্যমে কৃষকদের আরও বেশি ক্রেতার কাছে পৌঁছাতে সহায়তা করা",
         "Helping farmers reach wider buyers with verified stock weights and storage evidence.",
       ),
     },
@@ -26,7 +26,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       icon: "prices",
       title: t("বাজারদর ও বিশ্লেষণ", "Real-Time Analysis"),
       desc: t(
-        "দৈনিক কাওরান বাজার ও মোকামের দর তুলনা করে মজুত রাখা বা বিক্রির সঠিক সিদ্ধান্ত নিন।",
+        "বাজারদর পর্যবেক্ষণ এবং পণ্য মজুত রাখা নাকি বিক্রি করা—সে সিদ্ধান্ত গ্রহণে নতুন উদ্ভাবন।।",
         "Fresh innovations in market price tracking and holding-versus-selling decision models.",
       ),
     },
@@ -34,7 +34,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
       icon: "orders",
       title: t("অফার ও সরবরাহ", "Agri-Supply Solutions"),
       desc: t(
-        "অফার তৈরি থেকে পরিবহন বুকিং, ডেলিভারি রসিদ ও নিরাপদ অর্থপ্রদান রেকর্ড এক প্ল্যাটফর্মে।",
+        "কৃষক ও ক্রেতাদের জন্য সহজ বাণিজ্য, পণ্য পরিবহন ব্যবস্থাপনা ও নিরাপদ লেনদেন নিশ্চিত করা।।",
         "Providing farmers and buyers essential trade, transport dispatch, and payment security.",
       ),
     },
@@ -148,7 +148,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             <span className="hero-dot" aria-hidden="true" />
             <span>
               {t(
-                "পাবনা থেকে ঢাকা পেঁয়াজ সরবরাহ শৃঙ্খলা",
+                "সতেজ কৃষির অগ্রযাত্রায়, টেকসই সমৃদ্ধির প্রত্যয়",
                 "FRESH FARMING TOWARD STEADY GROWTH",
               )}
             </span>
@@ -160,8 +160,8 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
 
           <p className="hero-subtext">
             {t(
-              "ওজন, আর্দ্রতা, সংরক্ষণ অবস্থা এবং প্রকৃত বাজারদরের স্বচ্ছ হিসাব। কৃষক, পাইকারি ক্রেতা ও মাঠ সহকারীদের নির্ভরযোগ্য জাতীয় পেঁয়াজ প্ল্যাটফর্ম।",
-              "Promoting fresh farming practices that ensure steady growth, verified weights, and lasting prosperity from farm storage to Karwan Bazar.",
+              "সতেজ কৃষির প্রসার, সঠিক ওজন ও টেকসই সমৃদ্ধি - খামার থেকে বাজার পর্যন্ত",
+              "Promoting fresh farming, fair weights, and lasting prosperity - from farm to Market.",
             )}
           </p>
 
@@ -242,10 +242,10 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             {/* Right Column: Display Copy + Paragraph + Pill Button */}
             <div className="home-about-right">
               <h2 className="about-display-heading">
-                <strong>{t("PeyajFlow কৃষকদের সহায়তা করে", "PeyajFlow Agriculture supports farmers with")}</strong>{" "}
+                <strong>{t("সরাসরি বাজার সংযোগ, সঠিক ওজন ও ন্যায্য অর্থপ্রদানের মাধ্যমে", "PeyajFlow Agriculture supports farmers with")}</strong>{" "}
                 <span>
                   {t(
-                    "সরাসরি বাজার সংযোগ, সঠিক ওজন ও ন্যায্য অর্থপ্রদানের মাধ্যমে।",
+                    "PeyajFlow কৃষকদের সহায়তা করে।",
                     "innovation, sustainability, and trusted guidance for long-term growth.",
                   )}
                 </span>

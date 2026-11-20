@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { BrandLogo } from "../../../../components/brand-logo";
 import { AdvicePage } from "../../../../components/workspace/advice";
@@ -8,6 +8,7 @@ import { AlertsPage } from "../../../../components/workspace/alerts";
 import { AssistancePage } from "../../../../components/workspace/assistance";
 import { Dashboard } from "../../../../components/workspace/dashboard";
 import { WorkspaceIcon } from "../../../../components/workspace/icon";
+import { ChatbotWidget } from "../../../../components/workspace/chatbot-widget";
 import { LogisticsPage } from "../../../../components/workspace/logistics";
 import { OfflineNotice } from "../../../../components/workspace/offline";
 import { OperationsPage } from "../../../../components/workspace/operations";
@@ -86,8 +87,6 @@ function destinations(locale: Locale, actor: Profile) {
       ["orders", local(locale, "অর্ডার", "Orders")],
     );
   pages.push(["prices", local(locale, "বাজারদর", "Market prices")]);
-  if (canUseVoice(actor))
-    pages.push(["voice", local(locale, "বাংলা সহকারী", "Bangla assistant")]);
   if (actor.role === "agent" && actor.verified && !actor.is_demo)
     pages.push([
       "verifications",
@@ -95,8 +94,6 @@ function destinations(locale: Locale, actor: Profile) {
     ]);
   if (actor.role === "farmer")
     pages.push(["agents", local(locale, "সহায়তাকারী", "Agent access")]);
-  if (actor.role === "admin")
-    pages.push(["operations", local(locale, "পরিচালনা", "Operations")]);
   if (actor.role === "admin")
     pages.push(["imports", local(locale, "দর আমদানি", "Market imports")]);
   pages.push(["profile", local(locale, "প্রোফাইল", "Profile")]);
@@ -108,12 +105,14 @@ function Overview({
   locale,
   actor,
   base,
+  filters,
 }: {
   locale: Locale;
   actor: Profile;
   base: string;
+  filters: Filters;
 }) {
-  return <Dashboard locale={locale} actor={actor} base={base} />;
+  return <Dashboard locale={locale} actor={actor} base={base} filters={filters} />;
 }
 
 async function panel(
@@ -130,8 +129,15 @@ async function panel(
       ? rawOffset
       : 0;
   const context = { locale, actor, base, offset };
-  if (!page) return <Overview {...context} />;
-  if (page !== "alerts" && !destinations(locale, actor).some(([path]) => path === page)) {
+  if (page === "operations") {
+    redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
+  }
+  if (!page) return <Overview {...context} filters={filters} />;
+  if (
+    page !== "alerts" &&
+    !(page === "voice" && canUseVoice(actor)) &&
+    !destinations(locale, actor).some(([path]) => path === page)
+  ) {
     if (page === "verifications") {
       return (
         <section className="work-panel">
@@ -194,6 +200,10 @@ export default async function WorkspacePage({
   const { locale, section = [] } = await params;
   if (!isLocale(locale)) notFound();
   const base = `/${locale}/workspace`;
+  if (section[0] === "operations") {
+    const filters = await searchParams;
+    redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
+  }
   const reviewingSignups =
     section.length === 1 && section[0] === "verifications";
   const alternative = locale === "bn" ? "en" : "bn";
@@ -603,6 +613,8 @@ export default async function WorkspacePage({
             );
           })}
         </nav>
+        {/* Floating Chatbot Widget (Bottom Right) */}
+        <ChatbotWidget locale={locale} base={base} actor={actor} />
       </div>
     );
   }

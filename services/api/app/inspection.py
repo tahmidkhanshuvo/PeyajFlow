@@ -308,7 +308,7 @@ def create_inspection(
         raise HTTPException(422, "invalid_input") from error
     if not lot["stored_on"] <= body.observed_on <= today():
         raise HTTPException(422, "inspection_date_invalid")
-    if not 2 <= len(images) <= 4:
+    if not 1 <= len(images) <= 4:
         raise HTTPException(422, "photos_required")
     if not consent:
         raise HTTPException(422, "confirmation_required")

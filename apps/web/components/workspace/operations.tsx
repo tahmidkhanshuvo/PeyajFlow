@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { operate } from "../../app/[locale]/workspace/operations-actions";
 import type { Locale } from "../../lib/copy";
 import { api, type Role } from "../../lib/workspace-api";
@@ -102,7 +103,7 @@ async function Summary({ locale, base }: Page) {
   const counts = await api<Overview>("/v1/admin/overview");
   const links = [
     [
-      "operations?view=accounts",
+      "?view=accounts",
       local(locale, "যাচাই বাকি অ্যাকাউন্ট", "Accounts awaiting verification"),
       counts.unverified_accounts,
     ],
@@ -117,7 +118,7 @@ async function Summary({ locale, base }: Page) {
       counts.pending_imports,
     ],
     [
-      "operations?view=disputes",
+      "?view=disputes",
       local(locale, "খোলা বিরোধ", "Open disputes"),
       counts.open_disputes,
     ],
@@ -128,7 +129,10 @@ async function Summary({ locale, base }: Page) {
         {links.map(([path, title, count]) => (
           <article className="work-panel" key={path}>
             <h2>
-              <Link className="work-link" href={`${base}/${path}`}>
+              <Link
+                className="work-link"
+                href={`${base}${path.startsWith("?") ? path : `/${path}`}`}
+              >
                 {title}
               </Link>
             </h2>
@@ -547,42 +551,72 @@ async function AuditPage({ locale, base, filters, offset }: Page) {
         locale={locale}
         offset={offset}
         next={data.next_offset}
-        href={(n) => `${base}/operations?view=audit&${query}&offset=${n}`}
+        href={(n) => `${base}?view=audit&${query}&offset=${n}`}
       />
     </section>
   );
 }
 
+export function OperationsNav({
+  locale,
+  base,
+  activeView,
+}: {
+  locale: Locale;
+  base: string;
+  activeView?: string;
+}) {
+  const pages = [
+    ["", local(locale, "পরিচালনা", "Overview")],
+    ["accounts", local(locale, "যাচাই", "Verifications")],
+    ["quality", local(locale, "তথ্যের মান", "Data quality")],
+    ["vision", local(locale, "ছবির মডেল", "Photo model")],
+    ["disputes", local(locale, "বিরোধ", "Disputes")],
+    ["settlements", local(locale, "অর্থপ্রদান", "Settlements")],
+    ["audit", local(locale, "নিরীক্ষা", "Audit")],
+  ] as const;
+  const current = activeView ?? "";
+  return (
+    <nav
+      className="ops-nav glass-1"
+      aria-label={local(locale, "পরিচালনার অংশ", "Operations sections")}
+    >
+      {pages.map(([id, name]) => (
+        <Link
+          className="work-link"
+          key={id}
+          aria-current={id === current ? "page" : undefined}
+          href={`${base}${id ? `?view=${id}` : ""}`}
+        >
+          {name}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export async function OperationsView(context: Page) {
+  const { filters } = context;
+  const views: Record<string, (ctx: Page) => Promise<ReactNode>> = {
+    accounts: Accounts,
+    quality: Quality,
+    vision: PhotoModel,
+    disputes: Disputes,
+    settlements: SettlementQueue,
+    audit: AuditPage,
+  };
+  const viewFn = filters.view ? views[filters.view] : null;
+  if (!viewFn) return null;
+  return await viewFn(context);
+}
+
 export async function OperationsPage(context: Page) {
   const { locale, base, filters } = context;
-  const pages = [
-    ["", local(locale, "পরিচালনা", "Overview"), Summary],
-    ["accounts", local(locale, "যাচাই", "Verifications"), Accounts],
-    ["quality", local(locale, "তথ্যের মান", "Data quality"), Quality],
-    ["vision", local(locale, "ছবির মডেল", "Photo model"), PhotoModel],
-    ["disputes", local(locale, "বিরোধ", "Disputes"), Disputes],
-    ["settlements", local(locale, "অর্থপ্রদান", "Settlements"), SettlementQueue],
-    ["audit", local(locale, "নিরীক্ষা", "Audit"), AuditPage],
-  ] as const;
-  const selected = pages.find(([id]) => id === filters.view) ?? pages[0];
-  const content = await selected[2](context);
+  const selected = filters.view;
+  const content = selected ? await OperationsView(context) : await Summary(context);
   return (
     <>
-      <nav
-        className="ops-nav"
-        aria-label={local(locale, "পরিচালনার অংশ", "Operations sections")}
-      >
-        {pages.map(([id, name]) => (
-          <Link
-            className="work-link"
-            key={id}
-            aria-current={id === selected[0] ? "page" : undefined}
-            href={`${base}/operations${id ? `?view=${id}` : ""}`}
-          >
-            {name}
-          </Link>
-        ))}
-      </nav>
+      <OperationsNav locale={locale} base={base} activeView={selected} />
       {content}
     </>
   );

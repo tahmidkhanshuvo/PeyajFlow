@@ -1,6 +1,12 @@
 import Link from "next/link";
+import {
+  OfferRowItem,
+  OrderActionModal,
+  OrderLogisticsModal,
+} from "./trade-client";
 import { mutate } from "../../app/[locale]/workspace/actions";
 import type { Locale } from "../../lib/copy";
+import type { Logistics } from "../../lib/pilot-types";
 import { api, type Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
 import type {
@@ -303,7 +309,20 @@ export function OfferCard({
           title={t("অফারের ইতিহাস দেখুন", "View offer history")}
         >
           <span>{t("ইতিহাস", "History")}</span>
-          <span className="trade-card-circle-arrow">→</span>
+          <span className="trade-card-circle-arrow" aria-hidden="true">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14m-6-6 6 6-6 6" />
+            </svg>
+          </span>
         </Link>
       </div>
     </article>
@@ -383,7 +402,20 @@ export function OrderCard({
           title={t("অর্ডারের বিবরণ দেখুন", "View order details")}
         >
           <span>{t("অর্ডার বিবরণ", "Order details")}</span>
-          <span className="trade-card-circle-arrow">→</span>
+          <span className="trade-card-circle-arrow" aria-hidden="true">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14m-6-6 6 6-6 6" />
+            </svg>
+          </span>
         </Link>
       </div>
     </article>
@@ -402,6 +434,14 @@ export async function OffersPage({
   offset: number;
 }) {
   const offers = await api<Offer[]>(`/v1/offers?offset=${offset}`);
+  const offersWithDetails = await Promise.all(
+    offers.map((offer) =>
+      api<OfferDetail>(`/v1/offers/${offer.id}`).catch(() => ({
+        ...offer,
+        activity: [],
+      })),
+    ),
+  );
   return (
     <>
       {!offers.length && (
@@ -409,13 +449,12 @@ export async function OffersPage({
           {local(locale, "এই পৃষ্ঠায় কোনো অফার নেই।", "No offers on this page.")}
         </p>
       )}
-      <div className="trade-cards-grid">
-        {offers.map((offer) => (
-          <OfferCard
+      <div className="offer-cards-list offer-rows-container">
+        {offersWithDetails.map((offer) => (
+          <OfferRowItem
             key={offer.id}
             locale={locale}
             offer={offer}
-            base={base}
             actor={actor}
           />
         ))}
@@ -523,85 +562,245 @@ export async function OrderPage({
   id: string;
   actor: Profile;
 }) {
-  const [order, settlement] = await Promise.all([
+  const [order, settlement, logistics] = await Promise.all([
     api<OrderDetail>(`/v1/orders/${id}`),
     api<Settlement>(`/v1/orders/${id}/settlement`),
+    api<Logistics>(`/v1/orders/${id}/logistics`).catch(() => null),
   ]);
-  const actions = [];
+
+  const actions: {
+    action: "dispatch" | "receive" | "cancel" | "dispute";
+    bn: string;
+    en: string;
+    btnClass?: string;
+  }[] = [];
+
   if (actor.role === "farmer" && order.status === "confirmed")
-    actions.push(["dispatch", "পাঠানো নিশ্চিত করুন", "Confirm dispatch"]);
+    actions.push({
+      action: "dispatch",
+      bn: "পাঠানো নিশ্চিত করুন",
+      en: "Confirm dispatch",
+      btnClass: "order-btn-dispatch",
+    });
   if (actor.role === "buyer" && order.status === "dispatched")
-    actions.push(["receive", "পণ্য গ্রহণ নিশ্চিত করুন", "Confirm receipt"]);
+    actions.push({
+      action: "receive",
+      bn: "পণ্য গ্রহণ নিশ্চিত করুন",
+      en: "Confirm receipt",
+      btnClass: "order-btn-receive",
+    });
   if (actor.role !== "admin" && order.status === "confirmed")
-    actions.push(["cancel", "অর্ডার বাতিল করুন", "Cancel order"]);
+    actions.push({
+      action: "cancel",
+      bn: "অর্ডার বাতিল করুন",
+      en: "Cancel order",
+      btnClass: "order-btn-cancel",
+    });
   if (
     actor.role !== "admin" &&
     ["dispatched", "delivered"].includes(order.status)
   )
-    actions.push(["dispute", "বিরোধ জানান", "Report dispute"]);
+    actions.push({
+      action: "dispute",
+      bn: "বিরোধ জানান",
+      en: "Report dispute",
+      btnClass: "order-btn-dispute",
+    });
+
+  const statusClass = ["delivered", "confirmed"].includes(order.status)
+    ? "verified"
+    : ["cancelled", "disputed"].includes(order.status)
+      ? "rejected"
+      : "pending";
+
   return (
-    <>
-      <Link className="work-link" href={`${base}/orders`}>
-        {local(locale, "অর্ডারে ফিরুন", "Back to orders")}
-      </Link>
-      <Link className="work-link" href={`${base}/orders/${id}/logistics`}>
-        {local(locale, "পরিবহন ও দর", "Transport and quotes")}
-      </Link>
-      <section className="work-panel">
-        <div className="work-row">
-          <h2>{order.offer.lot_label}</h2>
-          <span className="work-tag">{state(locale, order.status)}</span>
-        </div>
-        <p>{id}</p>
-        <Terms locale={locale} offer={order.offer} />
-        {order.status === "confirmed" && (
-          <p>
-            {local(locale, "সংরক্ষণের শেষ সময়", "Reservation expires")} ·{" "}
-            {timeLabel(locale, order.expires_at)}
-          </p>
-        )}
-        {actions.map(([action, bn, en]) => (
-          <Details key={action} label={local(locale, bn, en)}>
-            <WorkspaceForm
-              locale={locale}
-              action={mutate.bind(null, locale, "order", id, action)}
-              label={local(locale, bn, en)}
+    <div className="lot-page-wrap">
+      {/* Top Bar with circular back arrow and popup action buttons */}
+      <div className="lot-page-top-bar">
+        <Link className="work-link lot-back-link" href={`${base}/orders`}>
+          <span className="lot-back-arrow" aria-hidden="true">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <RequestKey />
-              <label className="checkbox">
-                <input type="checkbox" name="confirm" required />
-                {local(
-                  locale,
-                  "আমি এই পরিবর্তন নিশ্চিত করছি।",
-                  "I confirm this change.",
-                )}
-              </label>
-            </WorkspaceForm>
-          </Details>
-        ))}
+              <path d="M19 12H5m6-6-6 6 6 6" />
+            </svg>
+          </span>
+          <span>{local(locale, "সব অর্ডারে ফিরুন", "Back to orders")}</span>
+        </Link>
+
+        {/* Top Action Modal Buttons */}
+        <div className="lot-page-actions-group">
+          <OrderLogisticsModal
+            locale={locale}
+            orderId={id}
+            orderLabel={order.offer.lot_label}
+            logistics={logistics}
+            actor={actor}
+            quantityKg={order.offer.quantity_kg}
+            goodsTotal={order.offer.total_bdt}
+            orderStatus={order.status}
+          />
+
+          {actions.map(({ action, bn, en, btnClass }) => (
+            <OrderActionModal
+              key={action}
+              locale={locale}
+              orderId={id}
+              orderLabel={order.offer.lot_label}
+              action={action}
+              label={local(locale, bn, en)}
+              btnClass={btnClass}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Main Order Details Panel (Lot Details Tabular Style) */}
+      <section className="work-panel lot-details-page-panel">
+        <div className="lot-page-header-row">
+          <div>
+            <h1 className="lot-page-title">{order.offer.lot_label}</h1>
+            <div className="lot-page-meta-strip">
+              <span className="lot-page-location">
+                <LocationIcon size={14} /> {order.offer.delivery_district}
+              </span>
+              <span className="trade-meta-dot">•</span>
+              <span>#{order.id.slice(0, 8)}</span>
+              <span className="trade-meta-dot">•</span>
+              <span>
+                {order.offer.grade
+                  ? `${local(locale, "গ্রেড", "Grade")} ${order.offer.grade}`
+                  : local(locale, "অনির্ধারিত", "Ungraded")}
+              </span>
+            </div>
+          </div>
+          <span className={`trade-status-pill ${statusClass}`}>
+            <span className="trade-status-dot" aria-hidden="true" />
+            {state(locale, order.status)}
+          </span>
+        </div>
+
+        {/* Tabular Specification List */}
+        <div className="lot-table-container">
+          <table className="lot-tabular-list">
+            <tbody>
+              <tr>
+                <th scope="row">{local(locale, "অর্ডার আইডি", "Order ID")}</th>
+                <td><code>#{order.id}</code></td>
+              </tr>
+              <tr>
+                <th scope="row">{local(locale, "ক্রেতা", "Buyer")}</th>
+                <td>
+                  <strong>{order.offer.buyer_name}</strong> · {order.offer.delivery_district}{" "}
+                  {order.offer.buyer_verified ? (
+                    <span className="stock-verified-badge" title="Verified">✓ {local(locale, "যাচাইকৃত", "Verified")}</span>
+                  ) : (
+                    <span className="stock-unverified-tag">{local(locale, "যাচাই হয়নি", "Unverified")}</span>
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{local(locale, "বিক্রেতা", "Seller")}</th>
+                <td><strong>{order.offer.seller_name}</strong></td>
+              </tr>
+              <tr className="row-highlight">
+                <th scope="row">{local(locale, "মোট মূল্য", "Total value")}</th>
+                <td><strong className="stock-highlight-kg">{taka(locale, order.offer.total_bdt)}</strong></td>
+              </tr>
+              <tr>
+                <th scope="row">{local(locale, "পরিমাণ", "Quantity")}</th>
+                <td><strong>{kg(locale, order.offer.quantity_kg)}</strong></td>
+              </tr>
+              <tr>
+                <th scope="row">{local(locale, "প্রতি কেজির দর", "Price per kg")}</th>
+                <td>{taka(locale, order.offer.price_bdt_kg)} / {local(locale, "কেজি", "kg")}</td>
+              </tr>
+              <tr>
+                <th scope="row">{local(locale, "সরবরাহের জেলা", "Delivery district")}</th>
+                <td>{order.offer.delivery_district}</td>
+              </tr>
+              <tr>
+                <th scope="row">{local(locale, "সরবরাহের সময়সীমা", "Delivery window")}</th>
+                <td>
+                  {order.offer.delivery_from && order.offer.delivery_to
+                    ? order.offer.delivery_from === order.offer.delivery_to
+                      ? timeLabel(locale, order.offer.delivery_from)
+                      : `${timeLabel(locale, order.offer.delivery_from)} – ${timeLabel(locale, order.offer.delivery_to)}`
+                    : local(locale, "আলোচনা সাপেক্ষ", "By arrangement")}
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{local(locale, "পরিবহন ব্যবস্থা", "Transport responsibility")}</th>
+                <td>
+                  {order.offer.transport === "buyer"
+                    ? local(locale, "ক্রেতার দায়িত্ব", "Buyer arranges")
+                    : local(locale, "বিক্রেতার দায়িত্ব", "Seller arranges")}
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{local(locale, "গ্রেড", "Grade")}</th>
+                <td>
+                  {order.offer.grade
+                    ? `${local(locale, "গ্রেড", "Grade")} ${order.offer.grade}`
+                    : local(locale, "অনির্ধারিত", "Ungraded")}
+                </td>
+              </tr>
+              {order.status === "confirmed" && order.expires_at && (
+                <tr>
+                  <th scope="row">{local(locale, "সংরক্ষণের শেষ সময়", "Reservation expires")}</th>
+                  <td>{timeLabel(locale, order.expires_at)}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
+
+      {/* Settlement Section */}
       <OrderSettlement
         locale={locale}
         id={id}
         data={settlement}
         mayReport={actor.role === "buyer" && order.status === "delivered"}
       />
-      <section className="work-panel">
-        <h2>{local(locale, "অর্ডারের ইতিহাস", "Order history")}</h2>
-        <ul className="work-history">
-          {order.activity.map((event, index) => (
-            <li key={`${event.recorded_at}-${index}`}>
-              <strong>{state(locale, event.action)}</strong>
-              <time dateTime={event.recorded_at}>
-                {timeLabel(locale, event.recorded_at)}
-              </time>
-              {event.by_system && (
-                <span>{local(locale, "স্বয়ংক্রিয়", "Automatic")}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-    </>
+
+      {/* Order History Timeline Panel */}
+      {order.activity && order.activity.length > 0 && (
+        <section className="work-panel lot-details-page-panel order-history-panel">
+          <div className="lot-page-header-row">
+            <h2 className="lot-page-title">{local(locale, "অর্ডারের ইতিহাস", "Order history")}</h2>
+          </div>
+          <ul className="offer-history-timeline order-history-timeline">
+            {order.activity.map((event, index) => (
+              <li key={`${event.recorded_at}-${index}`} className="offer-history-timeline-item">
+                <span className="offer-history-timeline-dot" />
+                <div className="offer-history-timeline-content">
+                  <div className="offer-history-timeline-row">
+                    <span className="offer-history-action-tag">
+                      {state(locale, event.action)}
+                    </span>
+                    <span className="offer-history-time">
+                      {timeLabel(locale, event.recorded_at)}
+                    </span>
+                  </div>
+                  {event.by_system && (
+                    <div className="offer-history-by-line">
+                      <span className="offer-history-muted">{local(locale, "স্বয়ংক্রিয় প্রক্রিয়া", "Automated system")}</span>
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
   );
 }

@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { cloneElement, useId, type ReactElement, type ReactNode } from "react";
 import Link from "next/link";
 import type { Locale } from "../../lib/copy";
@@ -45,8 +44,23 @@ export function DecimalField({
   );
 }
 
+function generateRequestKey(): string {
+  if (
+    typeof globalThis !== "undefined" &&
+    globalThis.crypto &&
+    typeof globalThis.crypto.randomUUID === "function"
+  ) {
+    return globalThis.crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function RequestKey() {
-  return <input type="hidden" name="request_key" value={randomUUID()} />;
+  return <input type="hidden" name="request_key" value={generateRequestKey()} />;
 }
 
 export function GradeField({

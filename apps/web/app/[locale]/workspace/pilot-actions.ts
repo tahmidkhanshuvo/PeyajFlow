@@ -81,7 +81,7 @@ export async function pilotMutate(
             ...fields(form, "pickup_on", "handling", "request_key"),
           }),
         );
-        destination = `${base}/orders/${resource}/logistics`;
+        destination = `${base}/orders/${resource}`;
         break;
       case "quote":
         await api(

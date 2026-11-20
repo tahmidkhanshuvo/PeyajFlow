@@ -116,11 +116,15 @@ const visible = [
   "uncertain_or_low_quality",
 ];
 
-function label(locale: Locale, key: string) {
+export function riskLabel(locale: Locale, key: string) {
   return local(locale, ...(labels[key] ?? [key, key]));
 }
 
-function VisibleFields({ locale }: { locale: Locale }) {
+function label(locale: Locale, key: string) {
+  return riskLabel(locale, key);
+}
+
+export function VisibleFields({ locale }: { locale: Locale }) {
   return (
     <fieldset className="work-options">
       <legend>
@@ -143,7 +147,7 @@ function VisibleFields({ locale }: { locale: Locale }) {
   );
 }
 
-function StorageFields({ locale }: { locale: Locale }) {
+export function StorageFields({ locale }: { locale: Locale }) {
   const options = {
     curing: ["cured", "uncured"],
     ventilation: ["good", "poor"],
@@ -183,7 +187,7 @@ function StorageFields({ locale }: { locale: Locale }) {
   );
 }
 
-function InspectionRecord({
+export function InspectionRecord({
   locale,
   actor,
   base,

@@ -297,33 +297,32 @@ export async function mutate(
           .filter(
             (value): value is File => value instanceof File && value.size > 0,
           );
-        if (images.length < 2 || images.length > 4)
+        if (images.length < 1 || images.length > 4)
           return { error: "photos_required" };
         if (images.some((file) => file.size > 3 * 1024 * 1024))
           return { error: "image_too_large" };
         if (!form.has("consent")) return { error: "confirmation_required" };
+        const visibleFlags = form.getAll("visible_flags");
         const payload = new FormData();
         payload.set("consent", "true");
         payload.set(
           "observations",
           JSON.stringify({
-            ...fields(
-              "observed_on",
-              "curing",
-              "ventilation",
-              "moisture",
-              "odor",
-              "notes",
-            ),
+            observed_on: text("observed_on") || new Date().toISOString().split("T")[0],
+            curing: text("curing") || "unknown",
+            ventilation: text("ventilation") || "unknown",
+            moisture: text("moisture") || "unknown",
+            odor: text("odor") || "unknown",
+            notes: text("notes") || "",
             temperature_c: decimal("temperature_c") || null,
             humidity_pct: decimal("humidity_pct") || null,
             sample_kg: decimal("sample_kg") || null,
-            visible_flags: form.getAll("visible_flags"),
+            visible_flags: visibleFlags.length > 0 ? visibleFlags : ["no_obvious_defect"],
           }),
         );
         for (const file of images) payload.append("images", file, file.name);
         await api(`${lot}/inspections`, { method: "POST", body: payload });
-        destination = `${stock}/inspections`;
+        destination = stock;
         break;
       }
       case "review":
@@ -334,7 +333,7 @@ export async function mutate(
             reason: text("reason"),
           }),
         );
-        destination = `${stock}/inspections`;
+        destination = stock;
         break;
       case "verify-signup": {
         if (!form.has("confirm")) return { error: "confirmation_required" };

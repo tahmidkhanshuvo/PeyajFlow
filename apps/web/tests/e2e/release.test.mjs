@@ -201,7 +201,7 @@ test(
         .getByRole("button", { name: "পাসওয়ার্ড দিয়ে সাইন ইন" })
         .click();
       const assistant = farmerPage
-        .locator(".dash-welcome")
+        .locator(".workspace-nav, nav")
         .getByRole("link", { name: "বাংলা সহকারী" });
       await assistant.waitFor();
       const button = await assistant.boundingBox();

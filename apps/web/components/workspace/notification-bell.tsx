@@ -296,7 +296,7 @@ export function NotificationBell({
                 checked={soundEnabled}
                 onChange={(e) => handleSoundToggle(e.target.checked)}
               />
-              <span>{t("শব্দে বিজ্ঞপ্তি", "Sound Notifications")}</span>
+              <span>{t("শব্দ সংকেত", "Sound")}</span>
             </label>
           </div>
 
