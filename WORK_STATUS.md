@@ -118,6 +118,17 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - The new rows were written by the same author as the rules.
   - Spoken numbers need review by native speakers and testing on recorded speech.
 
+### Optional model fallback for unmatched voice commands (November 20, 2026)
+
+- **What changed.** `app/intent_model.py` asks a language model only when the grammar matched nothing. It is off by default. Providers are Meta `muse-spark-1.3`, Gemini `gemini-3.5-flash-lite`, or both (they must agree). It never overturns a refusal, never sees a negated or uncertain phrase, and cannot introduce a quantity. Results carry `match: "model"`, with the same read-back and confirmation. `AGENTS.md` rule 2 was updated with the owner's approval. Keys are read from the git-ignored `services/api/.env`.
+- **Checks:**
+  - 179 API tests passed, including 24 for the fallback with the model mocked.
+  - The deterministic evaluation gates still pass at 1.000.
+  - Live evaluation, with every row checked on all three providers: Meta 0.900, Gemini 0.650 and both 0.800 on the 20 unmatched phrasings, and 1.000 on the main and challenge sets, with zero wrong change commands. Meta is the default.
+- **Open.**
+  - Gemini transcription for browsers without speech recognition: the owner chose fallback only; not built yet.
+  - A phrase naming another crop next to onion ("আলুর ৫ কেজি পেঁয়াজ পচে গেছে") still resolves; the hard-test fuzz found this.
+
 ### Voice PIN, SMS sign-in, NID format, loss sign and quantity joiners (November 20, 2026)
 
 **What changed:**

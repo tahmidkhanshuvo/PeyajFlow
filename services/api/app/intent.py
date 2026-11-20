@@ -885,7 +885,9 @@ class Interpretation:
     tool: str | None = None
     quantity: Decimal | None = None
     unit: Unit | None = None
-    match: Literal["exact", "pattern"] | None = None
+    # "model": the grammar found nothing and the optional model fallback
+    # (app.intent_model) chose a command; see that module for its limits.
+    match: Literal["exact", "pattern", "model"] | None = None
     reason: str | None = None
     candidates: tuple[str, ...] = field(default=())
     # A stock movement described as a loss ("পচে গেছে"), so the form and the

@@ -97,6 +97,40 @@ How to read these figures:
 - **The datasets are AI-written.** They need review and additions from native Bangla speakers before any figure is quoted as field performance. Recorded speech has not been evaluated; browser speech recognition is a separate, untested step.
 - **CI fails the build** if any wrong change command or false action appears, if accuracy drops below 0.95 on the main set or 0.90 on the challenge set, or if quantity accuracy drops below 0.95.
 
+## Optional model fallback for unmatched commands
+
+`app/intent_model.py` asks a language model only when the grammar matched nothing (`no_match`). It is off unless `VOICE_MODEL_FALLBACK=true`. `VOICE_MODEL_PROVIDER` selects the model:
+
+- `meta`: Meta Model API, `muse-spark-1.3`;
+- `gemini`: Gemini API, `gemini-3.5-flash-lite`;
+- `both`: the two models must agree.
+
+Rules:
+
+- The model returns JSON with one command from the fixed list, or none.
+- Refusals are never sent to the model: negated, uncertain, ambiguous, other crop, unsupported action or unreadable quantity.
+- A phrase containing a negation or "whether" is never sent.
+- A quantity is used only if the grammar read the same amount from the user's words. Otherwise the result is `model_quantity`, which asks the user to say the quantity.
+- Results are marked `match: "model"`. Read-back, form check and PIN or code confirmation are unchanged.
+- Only the phrase is sent. Calls are limited to 30 per account per 10 minutes, and any failure leaves the grammar's result.
+
+### Measured results (November 20, 2026)
+
+Run with `uv run --env-file .env python -m evals.intent_eval --fallback --dataset <file> --label <name>`, with the model settings in `.env`. Results are in `evals/results/intent-fallback-<provider>-<dataset>`.
+
+| Provider | Main, 277 rows | Challenge, 58 rows | Unmatched phrasings, 20 rows | Wrong change commands |
+| --- | --- | --- | --- | --- |
+| Meta `muse-spark-1.3` | 1.000 | 1.000 | **0.900** | 0 |
+| Gemini `gemini-3.5-flash-lite` | 1.000 | 1.000 | 0.650 (quantity 0.000) | 0 |
+| Both must agree | 1.000 | 1.000 | 0.800 | 0 |
+
+How to read these figures:
+
+- **Meta is the default.** It scored best on the unmatched phrasings.
+- **The unmatched-phrasings set (`intent-fallback.jsonl`) is small and author-written.** It was written by the same author as the fallback rules, so it shows that the fallback helps, not field accuracy.
+- **Most fallback-set rows the model got wrong are cautious abstentions.** The negation guard blocks "আমি আর পারছি না, অফিসের কারো সাথে আলাপ করিয়ে দিন" on purpose.
+- **These are live model calls.** Results can vary between runs, and CI does not run them. CI gates only the deterministic grammar.
+
 ## Photo condition suggestions and human review
 
 The worker runs `Xenova/clip-vit-base-patch32` at pinned revision `6b7c523…` with q8 weights on WebAssembly. It compares the photo with five text descriptions (rot or mold, sprouting, cuts or bruises, intact dry skin, no clear view of a bulb). It abstains unless the top score is at least 0.58 and leads the next by at least 0.16 (rule `clip-margin-v1`). One model instance serves every photo on the page.

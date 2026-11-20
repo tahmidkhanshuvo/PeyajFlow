@@ -36,7 +36,7 @@ from sqlalchemy import (
 from sqlalchemy.engine import RowMapping
 from sqlalchemy.orm import Session
 
-from app import advice, credentials, logistics, lots, market_data, trade
+from app import advice, credentials, intent_model, logistics, lots, market_data, trade
 from app import intent as grammar
 from app.auth import (
     Actor,
@@ -135,7 +135,7 @@ class Resolution(BaseModel):
     tool: str | None
     quantity: Decimal | None
     unit: Literal["kg", "maund"] | None
-    match: Literal["exact", "pattern"] | None
+    match: Literal["exact", "pattern", "model"] | None
     candidates: list[str]
     error: str | None
     loss: bool = False
@@ -228,6 +228,7 @@ ERRORS = {
     "unit_missing": "voice_say_quantity",
     "number_words": "voice_say_quantity",
     "invalid_quantity": "voice_say_quantity",
+    "model_quantity": "voice_say_quantity",
     "unsupported_product": "voice_onion_only",
     "unsupported_action": "voice_unsupported",
 }
@@ -315,6 +316,29 @@ def entry_view(row) -> Entry:
 
 def code_hash(action_id: UUID, code: str) -> str:
     return hashlib.sha256(f"{action_id}:{code}".encode()).hexdigest()
+
+
+def understand(db: Session, actor: Profile, phrase: str) -> grammar.Interpretation:
+    """The grammar's reading, with the optional model fallback for phrases it
+    did not match. Model calls are limited per account; over the limit the
+    grammar's own result is used."""
+
+    def ask(text: str) -> dict | None:
+        # A separate session, so the limit's commit never releases row locks.
+        with Session(db.get_bind()) as limits:
+            try:
+                enforce(
+                    limits,
+                    "voice-model",
+                    str(actor.membership_id),
+                    limit=30,
+                    seconds=600,
+                )
+            except HTTPException:
+                return None
+        return intent_model.ask_model(text)
+
+    return intent_model.understand(phrase, ask if intent_model.enabled() else None)
 
 
 def weak_pin(pin: str) -> bool:
@@ -717,13 +741,13 @@ def queue_task(db: Session, actor: Profile, kind: str, body: TaskInput) -> UUID:
 
 
 @router.post("/resolve", response_model=list[Resolution])
-def resolve_phrases(body: ResolveInput, actor: Actor):
+def resolve_phrases(body: ResolveInput, actor: Actor, db: DB):
     """Interpret transcripts without staging anything, so the form can show
     what was understood before the user sends it."""
     gate(actor)
     results = []
     for phrase in body.phrases:
-        result = grammar.interpret(phrase)
+        result = understand(db, actor, phrase)
         results.append(
             Resolution(
                 phrase=phrase,
@@ -790,7 +814,7 @@ def intent(call_id: UUID, body: Intent, actor: Actor, db: DB):
     call = call_for(db, actor, call_id, lock=True)
     if not active(call):
         raise HTTPException(409, "voice_call_expired")
-    result = grammar.interpret(body.phrase)
+    result = understand(db, actor, body.phrase)
     tool, spoken = accepted(result)
     if body.tool is not None and body.tool != tool:
         raise HTTPException(422, "voice_tool_mismatch")

@@ -1,0 +1,286 @@
+{
+  "label": "fallback-gemini-intent-fallback",
+  "resolver": "rules+gemini:gemini-3.5-flash-lite",
+  "commit": "100dab3",
+  "dataset": "evals/data/intent-fallback.jsonl",
+  "run_at": "2026-11-20T12:23:12+00:00",
+  "rows": 20,
+  "intent": {
+    "total": 20,
+    "accuracy": 0.65,
+    "labels": [
+      "abstain",
+      "accept",
+      "inspection",
+      "movement",
+      "offers",
+      "prices",
+      "register",
+      "reject",
+      "stock",
+      "support"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "support": 7
+      },
+      "accept": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1": 0.5,
+        "support": 3
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "movement": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "offers": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "prices": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "support": 3
+      },
+      "register": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "reject": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "support": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      }
+    },
+    "macro": {
+      "precision": 0.55,
+      "recall": 0.5,
+      "f1": 0.4966666666666667
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 7
+      },
+      "accept": {
+        "abstain": 2,
+        "accept": 1
+      },
+      "inspection": {
+        "inspection": 1
+      },
+      "movement": {
+        "abstain": 1
+      },
+      "offers": {
+        "abstain": 1
+      },
+      "prices": {
+        "abstain": 1,
+        "prices": 2
+      },
+      "register": {
+        "abstain": 1
+      },
+      "reject": {
+        "reject": 1
+      },
+      "stock": {
+        "stock": 1
+      },
+      "support": {
+        "abstain": 1
+      }
+    }
+  },
+  "status_accuracy": 0.65,
+  "quantity": {
+    "rows": 1,
+    "exact_accuracy": 0.0,
+    "unit_accuracy": 0.0
+  },
+  "abstention": {
+    "rows": 7,
+    "false_action_rate": 0.0,
+    "false_actions": []
+  },
+  "wrong_write_actions": [],
+  "accuracy_by": {
+    "split": {
+      "fallback": {
+        "rows": 20,
+        "accuracy": 0.65
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 2,
+        "accuracy": 0.5
+      },
+      "bn": {
+        "rows": 15,
+        "accuracy": 0.6
+      },
+      "en": {
+        "rows": 3,
+        "accuracy": 1.0
+      }
+    },
+    "category": {
+      "fallback": {
+        "rows": 20,
+        "accuracy": 0.65
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "fallback-001",
+      "text": "ওরা যা দিতে চাইল ওটাই রেখে দেন",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-003",
+      "text": "আজকে পাবনার হাটে পেঁয়াজ কেমন যাচ্ছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-005",
+      "text": "কেউ কি কিছু কিনতে খবর দিয়েছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-008",
+      "text": "মাচার নিচের বস্তাগুলো ফুটো হয়ে ৩০ কেজি পড়ে গেছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": "30",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-009",
+      "text": "নতুন তোলা পেঁয়াজগুলো খাতায় তুলে রাখেন",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-011",
+      "text": "আমি আর পারছি না, অফিসের কারো সাথে আলাপ করিয়ে দিন",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-012",
+      "text": "oder dewa ta mene nilam",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    }
+  ]
+}
