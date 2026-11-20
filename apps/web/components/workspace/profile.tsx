@@ -68,10 +68,7 @@ export function ProfilePage({
         {actor.role === "agent" && actor.verified && (
           <div className="profile-agent-share">
             <span className="profile-agent-label">
-              {t(
-                "কৃষককে দেওয়ার আইডি",
-                "Agent access ID to share with a farmer",
-              )}
+              {t("কৃষককে দেওয়ার আইডি", "Agent access ID to share with a farmer")}
             </span>
             <code className="profile-agent-code">{actor.membership_id}</code>
           </div>

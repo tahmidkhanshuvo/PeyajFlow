@@ -44,6 +44,25 @@ class Prediction:
         return self.tool if self.status == "resolved" and self.tool else "abstain"
 
 
+def fallback_resolver():
+    """The grammar plus the live model fallback (needs the model settings)."""
+
+    from app import intent_model
+
+    if not intent_model.enabled():
+        raise SystemExit(
+            "--fallback needs VOICE_MODEL_FALLBACK=true, MODEL_API_KEY and META_MODEL"
+        )
+
+    def current(text: str) -> Prediction:
+        result = intent_model.understand(text, intent_model.ask_model)
+        return Prediction(
+            result.status, result.tool, result.quantity, result.unit, result.reason
+        )
+
+    return f"rules+{intent_model.provider()}:{intent_model.model_name()}", current
+
+
 def resolver():
     """Return the resolver under test, adapted to ``Prediction``."""
     try:
@@ -263,9 +282,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--min-accuracy", type=float, default=0.95)
     parser.add_argument("--min-quantity-accuracy", type=float, default=0.95)
     parser.add_argument("--max-false-action-rate", type=float, default=0.0)
+    parser.add_argument(
+        "--fallback",
+        action="store_true",
+        help="also ask the live model when the grammar finds no command",
+    )
     args = parser.parse_args(argv)
 
-    name, predict = resolver()
+    name, predict = fallback_resolver() if args.fallback else resolver()
     rows = load(args.dataset)
     result = {
         "label": args.label or "check",

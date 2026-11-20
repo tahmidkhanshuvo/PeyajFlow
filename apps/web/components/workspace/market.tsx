@@ -130,7 +130,9 @@ export async function DemandPage({
           className="stock-action-pill-btn demand-find-supply-btn"
         >
           <WorkspaceIcon name="supply" size={16} />
-          <span>{local(locale, "মিল থাকা মজুত খুঁজুন", "Find matching supply")}</span>
+          <span>
+            {local(locale, "মিল থাকা মজুত খুঁজুন", "Find matching supply")}
+          </span>
         </Link>
       </div>
       {!result.items.length && (
@@ -364,7 +366,9 @@ export async function SupplyPage({
               <WorkspaceIcon name="demand" size={15} />
               <span>
                 {t("চাহিদা অনুযায়ী ফল", "Matching demand")}:{" "}
-                <strong>{demand.variety} · {kg(locale, demand.quantity_kg)}</strong>
+                <strong>
+                  {demand.variety} · {kg(locale, demand.quantity_kg)}
+                </strong>
               </span>
             </div>
           )}
@@ -379,7 +383,11 @@ export async function SupplyPage({
           </p>
         )}
 
-        <form action={`${base}/supply`} method="get" className="supply-filter-form">
+        <form
+          action={`${base}/supply`}
+          method="get"
+          className="supply-filter-form"
+        >
           {requestId && (
             <input name="request_id" type="hidden" value={requestId} />
           )}
@@ -486,7 +494,9 @@ export async function SupplyPage({
                 value="true"
                 defaultChecked={value("verified_only") === "true"}
               />
-              <span>{local(locale, "শুধু যাচাইকৃত মজুত", "Verified stock only")}</span>
+              <span>
+                {local(locale, "শুধু যাচাইকৃত মজুত", "Verified stock only")}
+              </span>
             </label>
 
             <div className="supply-filter-btn-group">
@@ -596,7 +606,8 @@ export async function SupplyPage({
                           {taka(locale, lot.estimated_landed_bdt)}
                         </strong>
                         <span className="supply-landed-rate">
-                          ({taka(locale, lot.estimated_landed_bdt_kg)} / {t("কেজি", "kg")})
+                          ({taka(locale, lot.estimated_landed_bdt_kg)} /{" "}
+                          {t("কেজি", "kg")})
                         </span>
                       </div>
                     </div>
@@ -638,11 +649,17 @@ export async function SupplyPage({
                         label={local(locale, "দর (৳/কেজি)", "Price (BDT/kg)")}
                       />
                       <Field
-                        label={local(locale, "সরবরাহের জেলা", "Delivery district")}
+                        label={local(
+                          locale,
+                          "সরবরাহের জেলা",
+                          "Delivery district",
+                        )}
                       >
                         <input
                           name="delivery_district"
-                          defaultValue={demand?.delivery_district ?? actor.district}
+                          defaultValue={
+                            demand?.delivery_district ?? actor.district
+                          }
                           readOnly={Boolean(demand)}
                           maxLength={100}
                           required

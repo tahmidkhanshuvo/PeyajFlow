@@ -20,8 +20,12 @@ import { VerificationsPage } from "../../../../components/workspace/verification
 import { VoicePage } from "../../../../components/workspace/voice";
 import { ProfilePage } from "../../../../components/workspace/profile";
 import { ThemeToggle } from "../../../../components/theme-toggle";
-import { QuickSearch, type SearchItem } from "../../../../components/workspace/quick-search";
+import {
+  QuickSearch,
+  type SearchItem,
+} from "../../../../components/workspace/quick-search";
 import { RouteWarmer } from "../../../../components/workspace/route-warmer";
+import { SimulatorPage } from "../../../../components/workspace/simulator";
 import { Details, Field } from "../../../../components/workspace/fields";
 import { WorkspaceForm } from "../../../../components/workspace/form";
 import {
@@ -52,12 +56,19 @@ import {
   type Profile,
 } from "../../../../lib/workspace-api";
 import { errorText, local, roles } from "../../../../lib/workspace-copy";
-import type { Filters, Lot, Offer, Order } from "../../../../lib/workspace-types";
+import type {
+  Filters,
+  Lot,
+  Offer,
+  Order,
+} from "../../../../lib/workspace-types";
 import { numberLabel } from "../../../../lib/workspace-values";
 import {
   logoutAction,
   mutate,
+  otpSignIn,
   passwordSignIn,
+  requestOtp,
   signIn,
   signOut,
   signupAction,
@@ -87,6 +98,11 @@ function destinations(locale: Locale, actor: Profile) {
       ["orders", local(locale, "অর্ডার", "Orders")],
     );
   pages.push(["prices", local(locale, "বাজারদর", "Market prices")]);
+  if (canUseVoice(actor))
+    pages.push(
+      ["voice", local(locale, "বাংলা সহকারী", "Bangla assistant")],
+      ["simulator", local(locale, "ফোন সিমুলেটর", "Phone simulator")],
+    );
   if (actor.role === "agent" && actor.verified && !actor.is_demo)
     pages.push([
       "verifications",
@@ -112,7 +128,9 @@ function Overview({
   base: string;
   filters: Filters;
 }) {
-  return <Dashboard locale={locale} actor={actor} base={base} filters={filters} />;
+  return (
+    <Dashboard locale={locale} actor={actor} base={base} filters={filters} />
+  );
 }
 
 async function panel(
@@ -179,6 +197,8 @@ async function panel(
   }
   if (page === "imports" && !child) return ImportsPage({ ...context, id });
   if (page === "voice" && !child) return VoicePage({ ...context, id });
+  if (page === "simulator" && !id && canUseVoice(context.actor))
+    return SimulatorPage(context);
   if (id && page === "stock") {
     if (!child) return LotPage({ ...context, id });
     if (child === "inspections") return InspectionsPage({ ...context, id });
@@ -210,11 +230,18 @@ export default async function WorkspacePage({
   let actor: Profile | undefined;
   let error: string | undefined;
   let identities: DemoIdentity[] = [];
+  let smsSignIn = false;
   try {
     actor = await api<Profile>("/v1/me");
   } catch (exception) {
     if (!(exception instanceof ApiError)) throw exception;
     if (exception.status !== 401) error = exception.code;
+  }
+  if (!actor && !error) {
+    // SMS codes are offered only when the API has a configured SMS provider.
+    smsSignIn = await api<{ available: boolean }>("/v1/auth/otp")
+      .then((result) => result.available)
+      .catch(() => false);
   }
   if (!actor && !error && !reviewingSignups) {
     try {
@@ -285,12 +312,16 @@ export default async function WorkspacePage({
     }
     if (sec0 === "stock" && sec1) {
       if (!sec2) pageTitle = local(locale, "মজুতের বিবরণ", "Lot details");
-      else if (sec2 === "inspections") pageTitle = local(locale, "পরিদর্শন ও ছবি", "Inspections & photos");
-      else if (sec2 === "risk") pageTitle = local(locale, "সংরক্ষণের ঝুঁকি", "Storage risk");
-      else if (sec2 === "advice") pageTitle = local(locale, "অপেক্ষা নাকি বিক্রি", "Hold or sell");
+      else if (sec2 === "inspections")
+        pageTitle = local(locale, "পরিদর্শন ও ছবি", "Inspections & photos");
+      else if (sec2 === "risk")
+        pageTitle = local(locale, "সংরক্ষণের ঝুঁকি", "Storage risk");
+      else if (sec2 === "advice")
+        pageTitle = local(locale, "অপেক্ষা নাকি বিক্রি", "Hold or sell");
     } else if (sec0 === "orders" && sec1) {
       if (!sec2) pageTitle = local(locale, "অর্ডারের বিবরণ", "Order details");
-      else if (sec2 === "logistics") pageTitle = local(locale, "পরিবহন ও দর", "Transport & quotes");
+      else if (sec2 === "logistics")
+        pageTitle = local(locale, "পরিবহন ও দর", "Transport & quotes");
     } else if (sec0 === "offers" && sec1) {
       pageTitle = local(locale, "অফারের ইতিহাস", "Offer history");
     } else if (sec0 === "imports") {
@@ -313,9 +344,11 @@ export default async function WorkspacePage({
       dispute_resolved: ["বিরোধ নিষ্পত্তি", "Resolved"],
     };
 
-    const formatKg = (val: string | number) => `${numberLabel(locale, val)} ${local(locale, "কেজি", "kg")}`;
+    const formatKg = (val: string | number) =>
+      `${numberLabel(locale, val)} ${local(locale, "কেজি", "kg")}`;
     const formatTaka = (val: string | number) => `৳${numberLabel(locale, val)}`;
-    const formatStatus = (st: string) => local(locale, ...(orderStatuses[st] ?? [st, st]));
+    const formatStatus = (st: string) =>
+      local(locale, ...(orderStatuses[st] ?? [st, st]));
 
     // Only fetch search entities on overview page to keep all subpage routing instant
     const isOverview = !sec0;
@@ -417,7 +450,8 @@ export default async function WorkspacePage({
         "পাবনা মোকাম ও কাওরান বাজারের দৈনিক পাইকারি দর পর্যবেক্ষণ",
         "Daily farmgate & wholesale onion price benchmark comparison",
       ),
-      keywords: "পাবনা কাওরান বাজার মোকাম পাইকারি রেট দর price pabna dhaka karwan bazar benchmark",
+      keywords:
+        "পাবনা কাওরান বাজার মোকাম পাইকারি রেট দর price pabna dhaka karwan bazar benchmark",
     });
 
     // 6. Alerts / Notifications
@@ -454,7 +488,11 @@ export default async function WorkspacePage({
 
           <nav
             className="work-nav"
-            aria-label={local(locale, "ওয়ার্কস্পেস নেভিগেশন", "Workspace navigation")}
+            aria-label={local(
+              locale,
+              "ওয়ার্কস্পেস নেভিগেশন",
+              "Workspace navigation",
+            )}
           >
             <div className="work-nav-section-title">
               {local(locale, "প্রধান মেনু", "Main Menu")}
@@ -475,25 +513,36 @@ export default async function WorkspacePage({
                       <WorkspaceIcon name={path} />
                     </span>
                     <span className="work-nav-label">{name}</span>
-                    {isCurrent && <span className="work-nav-pill" aria-hidden="true" />}
+                    {isCurrent && (
+                      <span className="work-nav-pill" aria-hidden="true" />
+                    )}
                   </Link>
                 );
               })}
 
-            <div className="work-nav-section-title" style={{ marginTop: "24px" }}>
+            <div
+              className="work-nav-section-title"
+              style={{ marginTop: "24px" }}
+            >
               {local(locale, "অ্যাকাউন্ট ও সেটিংস", "Account & Settings")}
             </div>
             <Link
               href={`${base}/profile`}
               prefetch={true}
-              aria-current={(section[0] ?? "") === "profile" ? "page" : undefined}
+              aria-current={
+                (section[0] ?? "") === "profile" ? "page" : undefined
+              }
               className={`work-nav-link ${(section[0] ?? "") === "profile" ? "active" : ""}`}
             >
               <span className="work-nav-icon">
                 <WorkspaceIcon name="profile" />
               </span>
-              <span className="work-nav-label">{local(locale, "প্রোফাইল", "Profile")}</span>
-              {(section[0] ?? "") === "profile" && <span className="work-nav-pill" aria-hidden="true" />}
+              <span className="work-nav-label">
+                {local(locale, "প্রোফাইল", "Profile")}
+              </span>
+              {(section[0] ?? "") === "profile" && (
+                <span className="work-nav-pill" aria-hidden="true" />
+              )}
             </Link>
             <Link
               href={`${base}/help`}
@@ -504,8 +553,12 @@ export default async function WorkspacePage({
               <span className="work-nav-icon">
                 <WorkspaceIcon name="help" />
               </span>
-              <span className="work-nav-label">{local(locale, "সহায়তা", "Help")}</span>
-              {(section[0] ?? "") === "help" && <span className="work-nav-pill" aria-hidden="true" />}
+              <span className="work-nav-label">
+                {local(locale, "সহায়তা", "Help")}
+              </span>
+              {(section[0] ?? "") === "help" && (
+                <span className="work-nav-pill" aria-hidden="true" />
+              )}
             </Link>
           </nav>
 
@@ -523,7 +576,11 @@ export default async function WorkspacePage({
                   textDecoration: "none",
                   color: "inherit",
                 }}
-                title={local(locale, "প্রোফাইল দেখুন ও পরিবর্তন করুন", "View and edit profile")}
+                title={local(
+                  locale,
+                  "প্রোফাইল দেখুন ও পরিবর্তন করুন",
+                  "View and edit profile",
+                )}
               >
                 <span className="work-user-avatar" aria-hidden="true">
                   {Array.from(actor.name)[0]}
@@ -553,7 +610,11 @@ export default async function WorkspacePage({
             <div className="work-topbar-right">
               <QuickSearch
                 items={searchItems}
-                placeholder={local(locale, "অনুসন্ধান... (Ctrl+K)", "Search... (Ctrl+K)")}
+                placeholder={local(
+                  locale,
+                  "অনুসন্ধান... (Ctrl+K)",
+                  "Search... (Ctrl+K)",
+                )}
                 locale={locale}
               />
 
@@ -699,7 +760,9 @@ export default async function WorkspacePage({
             {!isSignup && (
               <>
                 <div className="auth-header-copy">
-                  <p className="eyebrow">{local(locale, "স্বাগতম", "Welcome back")}</p>
+                  <p className="eyebrow">
+                    {local(locale, "স্বাগতম", "Welcome back")}
+                  </p>
                   <h1>{local(locale, "সাইন ইন", "Sign in")}</h1>
                   <p className="auth-subcopy">
                     {local(
@@ -713,7 +776,11 @@ export default async function WorkspacePage({
                 {identities.length > 0 && (
                   <section className="work-panel">
                     <h2>
-                      {local(locale, "ডেমো অ্যাকাউন্ট বেছে নিন", "Choose demo account")}
+                      {local(
+                        locale,
+                        "ডেমো অ্যাকাউন্ট বেছে নিন",
+                        "Choose demo account",
+                      )}
                     </h2>
                     <WorkspaceForm
                       locale={locale}
@@ -731,7 +798,8 @@ export default async function WorkspacePage({
                               key={identity.identity}
                               value={identity.identity}
                             >
-                              {identity.name} · {local(locale, ...roles[identity.role])}
+                              {identity.name} ·{" "}
+                              {local(locale, ...roles[identity.role])}
                             </option>
                           ))}
                         </select>
@@ -797,9 +865,82 @@ export default async function WorkspacePage({
                   </WorkspaceForm>
                 </section>
 
+                {smsSignIn && (
+                  <section className="work-panel">
+                    <h2>
+                      {local(
+                        locale,
+                        "এসএমএস কোডে প্রবেশ",
+                        "Sign in with SMS code",
+                      )}
+                    </h2>
+                    <p>
+                      {local(
+                        locale,
+                        "যাচাই করা ফোন নম্বরে কোড পাঠানো হয়। কোড কাউকে জানাবেন না।",
+                        "A code is sent to your verified phone number. Never share it.",
+                      )}
+                    </p>
+                    <WorkspaceForm
+                      locale={locale}
+                      action={requestOtp.bind(null, locale)}
+                      label={local(locale, "কোড পাঠান", "Send code")}
+                    >
+                      <Field label={local(locale, "ফোন নম্বর", "Phone number")}>
+                        <input
+                          name="phone"
+                          type="tel"
+                          autoComplete="tel"
+                          inputMode="tel"
+                          placeholder="+8801XXXXXXXXX"
+                          maxLength={16}
+                          required
+                        />
+                      </Field>
+                    </WorkspaceForm>
+                    <WorkspaceForm
+                      locale={locale}
+                      action={otpSignIn.bind(null, locale)}
+                      authType="signin"
+                      label={local(
+                        locale,
+                        "কোড দিয়ে প্রবেশ",
+                        "Sign in with code",
+                      )}
+                    >
+                      <Field label={local(locale, "ফোন নম্বর", "Phone number")}>
+                        <input
+                          name="phone"
+                          type="tel"
+                          autoComplete="tel"
+                          inputMode="tel"
+                          maxLength={16}
+                          required
+                        />
+                      </Field>
+                      <Field
+                        label={local(locale, "৬ অঙ্কের কোড", "6-digit code")}
+                      >
+                        <input
+                          name="code"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          minLength={6}
+                          required
+                        />
+                      </Field>
+                    </WorkspaceForm>
+                  </section>
+                )}
+
                 <div className="auth-switch-note">
                   <span>
-                    {local(locale, "নতুন অ্যাকাউন্ট প্রয়োজন?", "Need an account?")}{" "}
+                    {local(
+                      locale,
+                      "নতুন অ্যাকাউন্ট প্রয়োজন?",
+                      "Need an account?",
+                    )}{" "}
                   </span>
                   <Link className="work-link" href={`${base}?mode=signup`}>
                     {local(locale, "নিবন্ধন করুন", "Create one now")}
@@ -812,7 +953,9 @@ export default async function WorkspacePage({
             {isSignup && (
               <>
                 <div className="auth-header-copy">
-                  <p className="eyebrow">{local(locale, "নতুন অ্যাকাউন্ট", "Get Started")}</p>
+                  <p className="eyebrow">
+                    {local(locale, "নতুন অ্যাকাউন্ট", "Get Started")}
+                  </p>
                   <h1>{local(locale, "নিবন্ধন করুন", "Create account")}</h1>
                   <p className="auth-subcopy">
                     {local(
@@ -913,14 +1056,14 @@ export default async function WorkspacePage({
                       <input
                         name="nid"
                         inputMode="numeric"
-                        pattern="[0-9০-৯]{10,20}"
-                        maxLength={20}
+                        pattern="[0-9০-৯]{10}|[0-9০-৯]{13}|[0-9০-৯]{17}"
+                        maxLength={17}
                         required
                         minLength={10}
                         title={local(
                           locale,
-                          "জাতীয় পরিচয়পত্র নম্বর দিন।",
-                          "Enter your National ID number.",
+                          "জাতীয় পরিচয়পত্র নম্বর দিন: ১০, ১৩ বা ১৭ অঙ্ক।",
+                          "Enter your National ID number: 10, 13 or 17 digits.",
                         )}
                       />
                     </Field>
@@ -929,7 +1072,11 @@ export default async function WorkspacePage({
 
                 <div className="auth-switch-note">
                   <span>
-                    {local(locale, "ইতিমধ্যে অ্যাকাউন্ট আছে?", "Already registered?")}{" "}
+                    {local(
+                      locale,
+                      "ইতিমধ্যে অ্যাকাউন্ট আছে?",
+                      "Already registered?",
+                    )}{" "}
                   </span>
                   <Link className="work-link" href={`${base}?mode=signin`}>
                     {local(locale, "সাইন ইন করুন", "Sign in here")}
@@ -943,7 +1090,13 @@ export default async function WorkspacePage({
           <div className="signin-photo">
             <div className="signin-floating-tag">
               <span className="hero-dot" aria-hidden="true" />
-              <span>{local(locale, "পাবনা মোকাম · যাচাইকৃত সংরক্ষণ", "Pabna Hub · Verified Storage")}</span>
+              <span>
+                {local(
+                  locale,
+                  "পাবনা মোকাম · যাচাইকৃত সংরক্ষণ",
+                  "Pabna Hub · Verified Storage",
+                )}
+              </span>
             </div>
             <div className="signin-photo-content">
               <p className="eyebrow" style={{ color: "rgba(255,255,255,0.9)" }}>

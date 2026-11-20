@@ -69,7 +69,8 @@ export function WorkspaceDropdown({
 
   const selectedOption = options.find((opt) => opt.value === value);
   const displayLabel = selectedOption ? selectedOption.label : placeholder;
-  const isPlaceholder = !value || (selectedOption && selectedOption.value === "");
+  const isPlaceholder =
+    !value || (selectedOption && selectedOption.value === "");
 
   return (
     <div

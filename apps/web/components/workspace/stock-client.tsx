@@ -7,6 +7,7 @@ import type { Locale } from "../../lib/copy";
 import { local } from "../../lib/workspace-copy";
 import type { Lot } from "../../lib/workspace-types";
 import { numberLabel, timeLabel } from "../../lib/workspace-values";
+import type { FormState } from "./form";
 import { LocationIcon } from "./location-icon";
 
 export function kg(locale: Locale, value: string) {
@@ -27,11 +28,6 @@ export function StockActionModal({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Escape key handler
   useEffect(() => {
@@ -73,7 +69,7 @@ export function StockActionModal({
         <span>{label}</span>
       </button>
 
-      {mounted && open &&
+      {open &&
         createPortal(
           <div
             className="stock-modal-backdrop"
@@ -113,20 +109,15 @@ export function UploadPhotoModal({
 }: {
   locale: Locale;
   lotId: string;
-  action: (state: unknown, form: FormData) => Promise<unknown>;
+  action: (state: FormState, form: FormData) => Promise<FormState>;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [fileCount, setFileCount] = useState(0);
   const [fileNames, setFileNames] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -172,11 +163,13 @@ export function UploadPhotoModal({
           setFileNames([]);
         }}
       >
-        <span className="stock-action-pill-icon" aria-hidden="true">+</span>
+        <span className="stock-action-pill-icon" aria-hidden="true">
+          +
+        </span>
         <span>{t("ছবি আপলোড", "Upload photo")}</span>
       </button>
 
-      {mounted && open &&
+      {open &&
         createPortal(
           <div
             className="stock-modal-backdrop"
@@ -211,7 +204,11 @@ export function UploadPhotoModal({
                 <input type="hidden" name="ventilation" value="unknown" />
                 <input type="hidden" name="moisture" value="unknown" />
                 <input type="hidden" name="odor" value="unknown" />
-                <input type="hidden" name="visible_flags" value="no_obvious_defect" />
+                <input
+                  type="hidden"
+                  name="visible_flags"
+                  value="no_obvious_defect"
+                />
                 <input
                   type="file"
                   ref={inputRef}
@@ -245,7 +242,10 @@ export function UploadPhotoModal({
                   }}
                 >
                   {/* Stacked Cards Document Icon */}
-                  <div className="upload-dropzone-icon-stack" aria-hidden="true">
+                  <div
+                    className="upload-dropzone-icon-stack"
+                    aria-hidden="true"
+                  >
                     <div className="upload-icon-card-back-left" />
                     <div className="upload-icon-card-back-right" />
                     <div className="upload-icon-card-front">
@@ -275,12 +275,15 @@ export function UploadPhotoModal({
                     )}
                   </p>
                   <p className="upload-dropzone-format">
-                    JPG, JPEG, PNG, or WEBP · {t("১ থেকে ৪টি ছবি", "1 to 4 photos, up to 3MB each")}
+                    JPG, JPEG, PNG, or WEBP ·{" "}
+                    {t("১ থেকে ৪টি ছবি", "1 to 4 photos, up to 3MB each")}
                   </p>
 
                   {fileCount > 0 && (
                     <div className="upload-selected-files-chip">
-                      ✓ {fileCount} {t("টি ছবি নির্বাচিত", "photos selected")} ({fileNames.slice(0, 2).join(", ")}{fileNames.length > 2 ? "..." : ""})
+                      ✓ {fileCount} {t("টি ছবি নির্বাচিত", "photos selected")} (
+                      {fileNames.slice(0, 2).join(", ")}
+                      {fileNames.length > 2 ? "..." : ""})
                     </div>
                   )}
                 </div>
@@ -358,7 +361,9 @@ export function StockRowItem({
             className={`trade-status-pill ${isVerified ? "verified" : "pending"}`}
           >
             <span className="trade-status-dot" aria-hidden="true" />
-            {isVerified ? t("যাচাইকৃত", "Verified") : t("স্বঘোষিত", "Self-reported")}
+            {isVerified
+              ? t("যাচাইকৃত", "Verified")
+              : t("স্বঘোষিত", "Self-reported")}
           </span>
         </div>
 
@@ -371,7 +376,9 @@ export function StockRowItem({
             <>
               <span className="stock-row-dot">•</span>
               <span className="stock-row-stored">
-                <span className="stock-row-muted">{t("সংরক্ষিত", "Stored")}:</span>{" "}
+                <span className="stock-row-muted">
+                  {t("সংরক্ষিত", "Stored")}:
+                </span>{" "}
                 {timeLabel(locale, lot.stored_on)}
               </span>
             </>
@@ -427,11 +434,6 @@ export function SupplyOfferModal({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -480,8 +482,7 @@ export function SupplyOfferModal({
         <span>{t("অফার লিখুন", "Make an offer")}</span>
       </button>
 
-      {mounted &&
-        open &&
+      {open &&
         createPortal(
           <div
             className="stock-modal-backdrop"
@@ -521,4 +522,3 @@ export function SupplyOfferModal({
     </>
   );
 }
-

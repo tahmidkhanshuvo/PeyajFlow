@@ -41,12 +41,36 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
   ];
 
   const journey = [
-    { step: t("০১", "01"), title: t("সংরক্ষণ", "Store"), desc: t("মাচায় মজুত নিবন্ধন", "Register cured stock") },
-    { step: t("০২", "02"), title: t("পরিদর্শন", "Inspect"), desc: t("ওজন ও আর্দ্রতা যাচাই", "Verify moisture & weight") },
-    { step: t("০৩", "03"), title: t("সিদ্ধান্ত", "Decide"), desc: t("বাজারদর ও ক্ষতি বিশ্লেষণ", "Compare holding cost") },
-    { step: t("০৪", "04"), title: t("ক্রয়-বিক্রয়", "Trade"), desc: t("সরাসরি দর কষাকষি", "Transparent offer & counter") },
-    { step: t("০৫", "05"), title: t("সরবরাহ", "Deliver"), desc: t("পরিবহন ও চালান ট্র্যাকিং", "Transport & receipt review") },
-    { step: t("০৬", "06"), title: t("অর্থপ্রদান", "Record"), desc: t("স্বচ্ছ লেনদেনের প্রমাণ", "Bank & digital settlement") },
+    {
+      step: t("০১", "01"),
+      title: t("সংরক্ষণ", "Store"),
+      desc: t("মাচায় মজুত নিবন্ধন", "Register cured stock"),
+    },
+    {
+      step: t("০২", "02"),
+      title: t("পরিদর্শন", "Inspect"),
+      desc: t("ওজন ও আর্দ্রতা যাচাই", "Verify moisture & weight"),
+    },
+    {
+      step: t("০৩", "03"),
+      title: t("সিদ্ধান্ত", "Decide"),
+      desc: t("বাজারদর ও ক্ষতি বিশ্লেষণ", "Compare holding cost"),
+    },
+    {
+      step: t("০৪", "04"),
+      title: t("ক্রয়-বিক্রয়", "Trade"),
+      desc: t("সরাসরি দর কষাকষি", "Transparent offer & counter"),
+    },
+    {
+      step: t("০৫", "05"),
+      title: t("সরবরাহ", "Deliver"),
+      desc: t("পরিবহন ও চালান ট্র্যাকিং", "Transport & receipt review"),
+    },
+    {
+      step: t("০৬", "06"),
+      title: t("অর্থপ্রদান", "Record"),
+      desc: t("স্বচ্ছ লেনদেনের প্রমাণ", "Bank & digital settlement"),
+    },
   ];
 
   const whoFor = [
@@ -220,7 +244,10 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
               <div
                 className="about-photo-card"
                 role="img"
-                aria-label={t("পাবনার পেঁয়াজ সংরক্ষণাগার ও কৃষক", "Onion storage curing shed")}
+                aria-label={t(
+                  "পাবনার পেঁয়াজ সংরক্ষণাগার ও কৃষক",
+                  "Onion storage curing shed",
+                )}
               >
                 <div className="about-photo-tag">
                   {t("পাবনা ভাণ্ডার", "Pabna Hub")}
@@ -242,7 +269,12 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             {/* Right Column: Display Copy + Paragraph + Pill Button */}
             <div className="home-about-right">
               <h2 className="about-display-heading">
-                <strong>{t("সরাসরি বাজার সংযোগ, সঠিক ওজন ও ন্যায্য অর্থপ্রদানের মাধ্যমে", "PeyajFlow Agriculture supports farmers with")}</strong>{" "}
+                <strong>
+                  {t(
+                    "সরাসরি বাজার সংযোগ, সঠিক ওজন ও ন্যায্য অর্থপ্রদানের মাধ্যমে",
+                    "PeyajFlow Agriculture supports farmers with",
+                  )}
+                </strong>{" "}
                 <span>
                   {t(
                     "PeyajFlow কৃষকদের সহায়তা করে।",
@@ -280,8 +312,12 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
           </div>
 
           <h2 className="process-heading">
-            <span>{t("Storage থেকে Delivery—", "From storage to delivery")}</span>{" "}
-            <span className="headline-secondary">{t("৬টি নির্ভরযোগ্য ধাপ", "in 6 simple steps")}</span>
+            <span>
+              {t("Storage থেকে Delivery—", "From storage to delivery")}
+            </span>{" "}
+            <span className="headline-secondary">
+              {t("৬টি নির্ভরযোগ্য ধাপ", "in 6 simple steps")}
+            </span>
           </h2>
 
           <div className="process-timeline">
@@ -311,7 +347,9 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
 
           <h2 className="process-heading">
             <span>{t("সবার জন্য একটি", "One unified platform for the")}</span>{" "}
-            <span className="headline-secondary">{t(" Unified Platform", "entire supply chain")}</span>
+            <span className="headline-secondary">
+              {t(" Unified Platform", "entire supply chain")}
+            </span>
           </h2>
 
           <div className="personas-grid">
@@ -344,19 +382,32 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             </p>
           </div>
 
-          <nav className="home-footer-nav" aria-label={t("ফুটার নেভিগেশন", "Footer navigation")}>
+          <nav
+            className="home-footer-nav"
+            aria-label={t("ফুটার নেভিগেশন", "Footer navigation")}
+          >
             <a href="#about">{t("আমাদের লক্ষ্য", "About Us")}</a>
             <a href="#how">{t("প্রক্রিয়া", "Process")}</a>
             <a href="#personas">{t("ব্যবহারকারী", "Who It's For")}</a>
-            <Link href={workspace} prefetch={true}>{t("ওয়ার্কস্পেস", "Workspace")}</Link>
+            <Link href={workspace} prefetch={true}>
+              {t("ওয়ার্কস্পেস", "Workspace")}
+            </Link>
             <Link href={`/${alternate}`} lang={alternate}>
               {t("English", "বাংলা")}
             </Link>
           </nav>
         </div>
         <div className="home-footer-bottom">
-          <p>© {new Date().getFullYear()} PeyajFlow. {t("সর্বস্বত্ব সংরক্ষিত।", "All rights reserved.")}</p>
-          <p>{t("দ্বিভাষিক · স্বচ্ছ বাজারদর · নিরাপদ অর্থপ্রদান", "Bilingual · Verified weights · Secure settlements")}</p>
+          <p>
+            © {new Date().getFullYear()} PeyajFlow.{" "}
+            {t("সর্বস্বত্ব সংরক্ষিত।", "All rights reserved.")}
+          </p>
+          <p>
+            {t(
+              "দ্বিভাষিক · স্বচ্ছ বাজারদর · নিরাপদ অর্থপ্রদান",
+              "Bilingual · Verified weights · Secure settlements",
+            )}
+          </p>
         </div>
       </footer>
     </div>

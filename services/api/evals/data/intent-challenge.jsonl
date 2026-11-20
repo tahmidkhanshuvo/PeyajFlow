@@ -15,7 +15,7 @@
 {"id": "challenge-015", "split": "challenge", "lang": "bn", "category": "challenge", "text": "আমার মাল কবে পৌঁছাবে", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
 {"id": "challenge-016", "split": "challenge", "lang": "en", "category": "challenge", "text": "where is my delivery", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
 {"id": "challenge-017", "split": "challenge", "lang": "bn", "category": "challenge", "text": "ঠিক আছে, অফারটা নিয়ে নিলাম", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
-{"id": "challenge-018", "split": "challenge", "lang": "bn", "category": "challenge", "text": "হ্যাঁ ভাই, দুইশো কেজির অফারে আমি রাজি", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "challenge-018", "split": "challenge", "lang": "bn", "category": "challenge", "text": "হ্যাঁ ভাই, দুইশো কেজির অফারে আমি রাজি", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
 {"id": "challenge-019", "split": "challenge", "lang": "banglish", "category": "challenge", "text": "thik ache offer ta niye nilam", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
 {"id": "challenge-020", "split": "challenge", "lang": "en", "category": "challenge", "text": "ok go ahead and accept that offer", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
 {"id": "challenge-021", "split": "challenge", "lang": "bn", "category": "challenge", "text": "অফার গ্রহণ ২০০ কেজি করুন", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}

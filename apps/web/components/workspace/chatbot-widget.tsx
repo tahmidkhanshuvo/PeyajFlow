@@ -47,15 +47,24 @@ export function ChatbotWidget({
   const quickChips = [
     {
       label: t("আজকের মোকাম দর", "Today's market rates"),
-      prompt: t("আজকের পেঁয়াজের মোকাম দর কত?", "What are today's onion market prices?"),
+      prompt: t(
+        "আজকের পেঁয়াজের মোকাম দর কত?",
+        "What are today's onion market prices?",
+      ),
     },
     {
       label: t("আমার মজুত পেঁয়াজ", "My onion stock"),
-      prompt: t("আমার মাচায় কত কেজি পেঁয়াজ আছে?", "How much onion stock is in my storage?"),
+      prompt: t(
+        "আমার মাচায় কত কেজি পেঁয়াজ আছে?",
+        "How much onion stock is in my storage?",
+      ),
     },
     {
       label: t("কাওরান বাজার রেট", "Karwan Bazar price"),
-      prompt: t("কাওরান বাজারে পাইকারি দর কত?", "Wholesale rate in Karwan Bazar?"),
+      prompt: t(
+        "কাওরান বাজারে পাইকারি দর কত?",
+        "Wholesale rate in Karwan Bazar?",
+      ),
     },
     {
       label: t("সরাসরি কল করুন", "Simulate voice call"),
@@ -79,28 +88,53 @@ export function ChatbotWidget({
   const generateBotReply = (userQuery: string): string => {
     const q = userQuery.toLowerCase();
 
-    if (q.includes("দর") || q.includes("রেট") || q.includes("দাম") || q.includes("price") || q.includes("rate")) {
+    if (
+      q.includes("দর") ||
+      q.includes("রেট") ||
+      q.includes("দাম") ||
+      q.includes("price") ||
+      q.includes("rate")
+    ) {
       return t(
         "আজকের পাবনা মোকামে তাহেরপুরী পেঁয়াজ ৩৮.৪০ ৳/কেজি এবং কাওরান বাজার পাইকারি মোকামে ৪৭.৮০ ৳/কেজি দরে লেনদেন হচ্ছে। বিস্তারিত দেখতে 'বাজারদর' পৃষ্ঠায় যান।",
         "Today's Pabna farmgate benchmark is 38.40 ৳/kg and Karwan Bazar wholesale is 47.80 ৳/kg. Navigate to Market Prices for historical trend charts.",
       );
     }
 
-    if (q.includes("মজুত") || q.includes("স্টক") || q.includes("stock") || q.includes("কেজি") || q.includes("shed")) {
+    if (
+      q.includes("মজুত") ||
+      q.includes("স্টক") ||
+      q.includes("stock") ||
+      q.includes("কেজি") ||
+      q.includes("shed")
+    ) {
       return t(
         "আপনার সুজানগর মাচায় বর্তমানে ২,২২০ কেজি আনরিজার্ভড তাহেরপুরী পেঁয়াজ সংরক্ষিত রয়েছে। নতুন অফার পাঠাতে 'আমার মজুত' পৃষ্ঠায় যান।",
         "You currently have 2,220 kg of unreserved Taherpuri onion stored in your Sujanagar shed. Visit 'My Stock' to create new sale offers.",
       );
     }
 
-    if (q.includes("কল") || q.includes("ভয়েস") || q.includes("কথা") || q.includes("voice") || q.includes("call") || q.includes("phone")) {
+    if (
+      q.includes("কল") ||
+      q.includes("ভয়েস") ||
+      q.includes("কথা") ||
+      q.includes("voice") ||
+      q.includes("call") ||
+      q.includes("phone")
+    ) {
       return t(
         "সরাসরি ভয়েস কল সিমুলেশন শুরু করতে নিচের মাইক্রোফোন আইকনে চাপ দিন। সেখানে কিপ্যাডে নম্বর ডায়াল করে কথা বলতে পারবেন।",
         "To start a voice call simulation, tap the microphone icon next to the message bar below. You can dial phone numbers on the keypad.",
       );
     }
 
-    if (q.includes("সহায়তা") || q.includes("সাহায্য") || q.includes("help") || q.includes("support") || q.includes("হটলাইন")) {
+    if (
+      q.includes("সহায়তা") ||
+      q.includes("সাহায্য") ||
+      q.includes("help") ||
+      q.includes("support") ||
+      q.includes("হটলাইন")
+    ) {
       return t(
         "আমাদের সাপোর্ট হটলাইন: +880 1711-234567 (সকাল ৮:০০ - রাত ১০:০০)। জরুরি পরিদর্শনে স্থানীয় ফিল্ড এজেন্টের সাথে যোগাযোগ করুন।",
         "PeyajFlow Support Hotline: +880 1711-234567 (Daily 8:00 AM - 10:00 PM). For urgent crop inspection, contact your regional field agent.",
@@ -118,10 +152,13 @@ export function ChatbotWidget({
     if (!text) return;
 
     const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
+      id: crypto.randomUUID(),
       sender: "user",
       text,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -131,10 +168,13 @@ export function ChatbotWidget({
     setTimeout(() => {
       const replyText = generateBotReply(text);
       const botMsg: ChatMessage = {
-        id: `bot-${Date.now()}`,
+        id: crypto.randomUUID(),
         sender: "bot",
         text: replyText,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
       setMessages((prev) => [...prev, botMsg]);
       setIsTyping(false);
@@ -154,7 +194,11 @@ export function ChatbotWidget({
           type="button"
           className={`chatbot-trigger-btn ${isOpen ? "is-open" : ""}`}
           onClick={() => setIsOpen((prev) => !prev)}
-          title={isOpen ? t("চ্যাটবট বন্ধ করুন", "Close Chatbot") : t("পেঁয়াজফ্লো সহকারী", "Open PeyajFlow Assistant")}
+          title={
+            isOpen
+              ? t("চ্যাটবট বন্ধ করুন", "Close Chatbot")
+              : t("পেঁয়াজফ্লো সহকারী", "Open PeyajFlow Assistant")
+          }
           aria-label={t("সহকারী চ্যাটবট", "Assistant Chatbot")}
           aria-expanded={isOpen}
         >
@@ -190,7 +234,10 @@ export function ChatbotWidget({
                   {t("পেঁয়াজফ্লো এআই সহকারী", "PeyajFlow AI Assistant")}
                 </h3>
                 <span className="chatbot-subtitle">
-                  {t("সক্রিয় · বাংলায় সাহায্য প্রস্তুত", "Always online · Voice ready")}
+                  {t(
+                    "সক্রিয় · বাংলায় সাহায্য প্রস্তুত",
+                    "Always online · Voice ready",
+                  )}
                 </span>
               </div>
             </div>
@@ -224,7 +271,11 @@ export function ChatbotWidget({
                 }}
               >
                 {chip.action === "call" && (
-                  <WorkspaceIcon name="mic" size={12} className="chatbot-chip-icon" />
+                  <WorkspaceIcon
+                    name="mic"
+                    size={12}
+                    className="chatbot-chip-icon"
+                  />
                 )}
                 <span>{chip.label}</span>
               </button>
@@ -290,7 +341,10 @@ export function ChatbotWidget({
               className="chatbot-text-input"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={t("বার্তা লিখুন বা প্রশ্ন করুন...", "Type a message or question...")}
+              placeholder={t(
+                "বার্তা লিখুন বা প্রশ্ন করুন...",
+                "Type a message or question...",
+              )}
               aria-label={t("বার্তা লিখুন", "Type message")}
             />
 

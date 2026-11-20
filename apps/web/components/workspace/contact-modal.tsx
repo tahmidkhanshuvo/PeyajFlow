@@ -14,12 +14,7 @@ export function ContactModal({
   base?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const t = (bn: string, en: string) => local(locale, bn, en);
 
@@ -103,8 +98,7 @@ export function ContactModal({
         <span>{t("যোগাযোগ করুন", "Contact Us")}</span>
       </button>
 
-      {mounted &&
-        open &&
+      {open &&
         createPortal(
           <div
             className="contact-modal-backdrop"
@@ -141,7 +135,9 @@ export function ContactModal({
                     </div>
 
                     <div className="contact-minimal-info">
-                      <span className="contact-minimal-label">{item.title}</span>
+                      <span className="contact-minimal-label">
+                        {item.title}
+                      </span>
                       {item.href ? (
                         <a
                           href={item.href}
@@ -152,7 +148,9 @@ export function ContactModal({
                           {item.value}
                         </a>
                       ) : (
-                        <span className="contact-minimal-value">{item.value}</span>
+                        <span className="contact-minimal-value">
+                          {item.value}
+                        </span>
                       )}
                       {item.sub && (
                         <span className="contact-minimal-sub">{item.sub}</span>

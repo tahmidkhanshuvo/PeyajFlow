@@ -60,7 +60,9 @@ function generateRequestKey(): string {
 }
 
 export function RequestKey() {
-  return <input type="hidden" name="request_key" value={generateRequestKey()} />;
+  return (
+    <input type="hidden" name="request_key" value={generateRequestKey()} />
+  );
 }
 
 export function GradeField({

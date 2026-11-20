@@ -147,22 +147,25 @@ export function NotificationBell({
   const [, startTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sync state if initial props change
-  useEffect(() => {
-    setUnread(initialUnread);
+  const [previousItems, setPreviousItems] = useState(initialItems);
+  const [previousUnread, setPreviousUnread] = useState(initialUnread);
+  if (initialItems !== previousItems || initialUnread !== previousUnread) {
+    setPreviousItems(initialItems);
+    setPreviousUnread(initialUnread);
     setItems(initialItems);
-  }, [initialUnread, initialItems]);
+    setUnread(initialUnread);
+  }
 
-  // Load sound setting from localStorage
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("pf-sound-notifications");
-      if (stored !== null) {
-        setSoundEnabled(stored === "true");
+    const frame = requestAnimationFrame(() => {
+      try {
+        const stored = localStorage.getItem("pf-sound-notifications");
+        if (stored !== null) setSoundEnabled(stored === "true");
+      } catch {
+        // Keep the default if browser storage is unavailable.
       }
-    } catch {
-      // Ignore
-    }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   // Handle outside click & Escape key
@@ -238,7 +241,11 @@ export function NotificationBell({
   const t = (bn: string, en: string) => local(locale, bn, en);
 
   const displayCount =
-    unread > 99 ? (locale === "bn" ? "৯৯+" : "99+") : numberLabel(locale, unread);
+    unread > 99
+      ? locale === "bn"
+        ? "৯৯+"
+        : "99+"
+      : numberLabel(locale, unread);
 
   return (
     <div className="work-notif-container" ref={containerRef}>
@@ -249,8 +256,14 @@ export function NotificationBell({
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        title={t(`বিজ্ঞপ্তি (${unread} অপঠিত)`, `Notifications (${unread} unread)`)}
-        aria-label={t(`বিজ্ঞপ্তি (${unread} অপঠিত)`, `Notifications (${unread} unread)`)}
+        title={t(
+          `বিজ্ঞপ্তি (${unread} অপঠিত)`,
+          `Notifications (${unread} unread)`,
+        )}
+        aria-label={t(
+          `বিজ্ঞপ্তি (${unread} অপঠিত)`,
+          `Notifications (${unread} unread)`,
+        )}
       >
         <WorkspaceIcon name="alerts" />
         {unread > 0 && (
@@ -269,7 +282,9 @@ export function NotificationBell({
         >
           {/* Header Row 1: Title & Mark All Read */}
           <div className="work-notif-header">
-            <h3 className="work-notif-title">{t("বিজ্ঞপ্তি", "Notifications")}</h3>
+            <h3 className="work-notif-title">
+              {t("বিজ্ঞপ্তি", "Notifications")}
+            </h3>
             <button
               type="button"
               className="work-notif-mark-all"
@@ -317,7 +332,10 @@ export function NotificationBell({
                 const titleText = t(
                   ...(titles[item.kind] ?? [item.kind, item.kind]),
                 );
-                const timeText = formatNotificationTime(locale, item.created_at);
+                const timeText = formatNotificationTime(
+                  locale,
+                  item.created_at,
+                );
                 const href =
                   item.resource_type === "offer"
                     ? `${base}/offers/${item.resource_id}`

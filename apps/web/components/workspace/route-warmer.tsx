@@ -43,8 +43,13 @@ export function RouteWarmer({ base }: { base: string; paths?: string[] }) {
       }
     };
 
-    document.addEventListener("pointerenter", handlePointerOver, { capture: true, passive: true });
-    document.addEventListener("touchstart", handlePointerOver, { passive: true });
+    document.addEventListener("pointerenter", handlePointerOver, {
+      capture: true,
+      passive: true,
+    });
+    document.addEventListener("touchstart", handlePointerOver, {
+      passive: true,
+    });
     document.addEventListener("focusin", handlePointerOver, { passive: true });
     document.addEventListener("click", handleClick, true);
 

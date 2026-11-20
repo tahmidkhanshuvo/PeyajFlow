@@ -58,7 +58,7 @@ export async function apiResponse(path: string, init: RequestInit = {}) {
 }
 
 const cachedFetchJson = cache(
-  async (path: string, token: string | undefined): Promise<any> => {
+  async (path: string, token: string | undefined): Promise<unknown> => {
     const origin = process.env.API_INTERNAL_BASE_URL ?? "http://127.0.0.1:8000";
     const headers = new Headers();
     if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -67,7 +67,9 @@ const cachedFetchJson = cache(
       response = await fetch(new URL(path, origin), {
         headers,
         cache: "no-store",
-        signal: AbortSignal.timeout(process.env.VERCEL === "1" ? 48_000 : 12_000),
+        signal: AbortSignal.timeout(
+          process.env.VERCEL === "1" ? 48_000 : 12_000,
+        ),
       });
     } catch {
       throw new ApiError(503, "service_unavailable");
@@ -86,7 +88,10 @@ const cachedFetchJson = cache(
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   // If standard GET request with no custom headers, deduplicate per request via React cache
-  if (!init || ((!init.method || init.method === "GET") && !init.body && !init.headers)) {
+  if (
+    !init ||
+    ((!init.method || init.method === "GET") && !init.body && !init.headers)
+  ) {
     const token = (await cookies()).get(sessionCookie)?.value;
     return cachedFetchJson(path, token) as Promise<T>;
   }

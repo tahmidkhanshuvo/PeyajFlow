@@ -1,0 +1,200 @@
+{
+  "label": "fallback-meta-intent-fallback",
+  "resolver": "rules+meta:muse-spark-1.3",
+  "commit": "100dab3",
+  "dataset": "evals/data/intent-fallback.jsonl",
+  "run_at": "2026-11-20T12:20:02+00:00",
+  "rows": 20,
+  "intent": {
+    "total": 20,
+    "accuracy": 0.9,
+    "labels": [
+      "abstain",
+      "accept",
+      "inspection",
+      "movement",
+      "offers",
+      "prices",
+      "register",
+      "reject",
+      "stock",
+      "support"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 0.7777777777777778,
+        "recall": 1.0,
+        "f1": 0.8750000000000001,
+        "support": 7
+      },
+      "accept": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "support": 3
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "offers": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "prices": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "register": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "reject": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "support": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      }
+    },
+    "macro": {
+      "precision": 0.8777777777777779,
+      "recall": 0.8666666666666666,
+      "f1": 0.8675
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 7
+      },
+      "accept": {
+        "abstain": 1,
+        "accept": 2
+      },
+      "inspection": {
+        "inspection": 1
+      },
+      "movement": {
+        "movement": 1
+      },
+      "offers": {
+        "offers": 1
+      },
+      "prices": {
+        "prices": 3
+      },
+      "register": {
+        "register": 1
+      },
+      "reject": {
+        "reject": 1
+      },
+      "stock": {
+        "stock": 1
+      },
+      "support": {
+        "abstain": 1
+      }
+    }
+  },
+  "status_accuracy": 0.9,
+  "quantity": {
+    "rows": 1,
+    "exact_accuracy": 1.0,
+    "unit_accuracy": 1.0
+  },
+  "abstention": {
+    "rows": 7,
+    "false_action_rate": 0.0,
+    "false_actions": []
+  },
+  "wrong_write_actions": [],
+  "accuracy_by": {
+    "split": {
+      "fallback": {
+        "rows": 20,
+        "accuracy": 0.9
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 2,
+        "accuracy": 1.0
+      },
+      "bn": {
+        "rows": 15,
+        "accuracy": 0.8666666666666667
+      },
+      "en": {
+        "rows": 3,
+        "accuracy": 1.0
+      }
+    },
+    "category": {
+      "fallback": {
+        "rows": 20,
+        "accuracy": 0.9
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "fallback-001",
+      "text": "ওরা যা দিতে চাইল ওটাই রেখে দেন",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-011",
+      "text": "আমি আর পারছি না, অফিসের কারো সাথে আলাপ করিয়ে দিন",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    }
+  ]
+}

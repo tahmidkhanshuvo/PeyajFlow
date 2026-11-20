@@ -197,7 +197,9 @@ export function OfferCard({
         <div className="trade-card-id-wrap">
           <span className="trade-card-hash">#{offer.id.slice(0, 8)}</span>
           <span className="trade-card-variety">
-            {offer.grade ? `${t("গ্রেড", "Grade")} ${offer.grade}` : offer.variety}
+            {offer.grade
+              ? `${t("গ্রেড", "Grade")} ${offer.grade}`
+              : offer.variety}
           </span>
         </div>
         <span className={`trade-status-pill ${statusClass}`}>
@@ -213,7 +215,11 @@ export function OfferCard({
         </h2>
         <div className="trade-card-meta-strip">
           <span>
-            {offer.buyer_name} ({offer.buyer_verified ? t("যাচাইকৃত", "Verified") : t("স্বঘোষিত", "Unverified")})
+            {offer.buyer_name} (
+            {offer.buyer_verified
+              ? t("যাচাইকৃত", "Verified")
+              : t("স্বঘোষিত", "Unverified")}
+            )
           </span>
           <span className="trade-meta-dot">•</span>
           <span className="trade-meta-location">
@@ -245,14 +251,22 @@ export function OfferCard({
       <div className="trade-receipt-body">
         <div className="trade-receipt-row">
           <span className="trade-receipt-label">{t("পরিমাণ", "Quantity")}</span>
-          <span className="trade-receipt-val">{kg(locale, offer.quantity_kg)}</span>
+          <span className="trade-receipt-val">
+            {kg(locale, offer.quantity_kg)}
+          </span>
         </div>
         <div className="trade-receipt-row">
-          <span className="trade-receipt-label">{t("প্রতি কেজির দর", "Price per kg")}</span>
-          <span className="trade-receipt-val">{taka(locale, offer.price_bdt_kg)} / {t("কেজি", "kg")}</span>
+          <span className="trade-receipt-label">
+            {t("প্রতি কেজির দর", "Price per kg")}
+          </span>
+          <span className="trade-receipt-val">
+            {taka(locale, offer.price_bdt_kg)} / {t("কেজি", "kg")}
+          </span>
         </div>
         <div className="trade-receipt-row">
-          <span className="trade-receipt-label">{t("পরিবহন", "Transport")}</span>
+          <span className="trade-receipt-label">
+            {t("পরিবহন", "Transport")}
+          </span>
           <span className="trade-receipt-val">
             {offer.transport === "buyer"
               ? t("ক্রেতার দায়িত্ব", "Buyer arranges")
@@ -261,8 +275,12 @@ export function OfferCard({
         </div>
         <div className="trade-receipt-divider dashed" />
         <div className="trade-receipt-total">
-          <span className="trade-receipt-total-label">{t("মোট মূল্য", "TOTAL VALUE")}</span>
-          <strong className="trade-receipt-total-val">{taka(locale, offer.total_bdt)}</strong>
+          <span className="trade-receipt-total-label">
+            {t("মোট মূল্য", "TOTAL VALUE")}
+          </span>
+          <strong className="trade-receipt-total-val">
+            {taka(locale, offer.total_bdt)}
+          </strong>
         </div>
       </div>
 
@@ -382,16 +400,26 @@ export function OrderCard({
       <div className="trade-receipt-body">
         <div className="trade-receipt-row">
           <span className="trade-receipt-label">{t("পরিমাণ", "Quantity")}</span>
-          <span className="trade-receipt-val">{kg(locale, order.offer.quantity_kg)}</span>
+          <span className="trade-receipt-val">
+            {kg(locale, order.offer.quantity_kg)}
+          </span>
         </div>
         <div className="trade-receipt-row">
-          <span className="trade-receipt-label">{t("দর (প্রতি কেজি)", "Price per kg")}</span>
-          <span className="trade-receipt-val">{taka(locale, order.offer.price_bdt_kg)}</span>
+          <span className="trade-receipt-label">
+            {t("দর (প্রতি কেজি)", "Price per kg")}
+          </span>
+          <span className="trade-receipt-val">
+            {taka(locale, order.offer.price_bdt_kg)}
+          </span>
         </div>
         <div className="trade-receipt-divider dashed" />
         <div className="trade-receipt-total">
-          <span className="trade-receipt-total-label">{t("মোট মূল্য", "TOTAL VALUE")}</span>
-          <strong className="trade-receipt-total-val">{taka(locale, order.offer.total_bdt)}</strong>
+          <span className="trade-receipt-total-label">
+            {t("মোট মূল্য", "TOTAL VALUE")}
+          </span>
+          <strong className="trade-receipt-total-val">
+            {taka(locale, order.offer.total_bdt)}
+          </strong>
         </div>
       </div>
 
@@ -533,12 +561,7 @@ export async function OrdersPage({
       )}
       <div className="trade-cards-grid">
         {orders.map((order) => (
-          <OrderCard
-            key={order.id}
-            locale={locale}
-            order={order}
-            base={base}
-          />
+          <OrderCard key={order.id} locale={locale} order={order} base={base} />
         ))}
       </div>
       <TradePagination
@@ -693,41 +716,65 @@ export async function OrderPage({
             <tbody>
               <tr>
                 <th scope="row">{local(locale, "অর্ডার আইডি", "Order ID")}</th>
-                <td><code>#{order.id}</code></td>
+                <td>
+                  <code>#{order.id}</code>
+                </td>
               </tr>
               <tr>
                 <th scope="row">{local(locale, "ক্রেতা", "Buyer")}</th>
                 <td>
-                  <strong>{order.offer.buyer_name}</strong> · {order.offer.delivery_district}{" "}
+                  <strong>{order.offer.buyer_name}</strong> ·{" "}
+                  {order.offer.delivery_district}{" "}
                   {order.offer.buyer_verified ? (
-                    <span className="stock-verified-badge" title="Verified">✓ {local(locale, "যাচাইকৃত", "Verified")}</span>
+                    <span className="stock-verified-badge" title="Verified">
+                      ✓ {local(locale, "যাচাইকৃত", "Verified")}
+                    </span>
                   ) : (
-                    <span className="stock-unverified-tag">{local(locale, "যাচাই হয়নি", "Unverified")}</span>
+                    <span className="stock-unverified-tag">
+                      {local(locale, "যাচাই হয়নি", "Unverified")}
+                    </span>
                   )}
                 </td>
               </tr>
               <tr>
                 <th scope="row">{local(locale, "বিক্রেতা", "Seller")}</th>
-                <td><strong>{order.offer.seller_name}</strong></td>
+                <td>
+                  <strong>{order.offer.seller_name}</strong>
+                </td>
               </tr>
               <tr className="row-highlight">
                 <th scope="row">{local(locale, "মোট মূল্য", "Total value")}</th>
-                <td><strong className="stock-highlight-kg">{taka(locale, order.offer.total_bdt)}</strong></td>
+                <td>
+                  <strong className="stock-highlight-kg">
+                    {taka(locale, order.offer.total_bdt)}
+                  </strong>
+                </td>
               </tr>
               <tr>
                 <th scope="row">{local(locale, "পরিমাণ", "Quantity")}</th>
-                <td><strong>{kg(locale, order.offer.quantity_kg)}</strong></td>
+                <td>
+                  <strong>{kg(locale, order.offer.quantity_kg)}</strong>
+                </td>
               </tr>
               <tr>
-                <th scope="row">{local(locale, "প্রতি কেজির দর", "Price per kg")}</th>
-                <td>{taka(locale, order.offer.price_bdt_kg)} / {local(locale, "কেজি", "kg")}</td>
+                <th scope="row">
+                  {local(locale, "প্রতি কেজির দর", "Price per kg")}
+                </th>
+                <td>
+                  {taka(locale, order.offer.price_bdt_kg)} /{" "}
+                  {local(locale, "কেজি", "kg")}
+                </td>
               </tr>
               <tr>
-                <th scope="row">{local(locale, "সরবরাহের জেলা", "Delivery district")}</th>
+                <th scope="row">
+                  {local(locale, "সরবরাহের জেলা", "Delivery district")}
+                </th>
                 <td>{order.offer.delivery_district}</td>
               </tr>
               <tr>
-                <th scope="row">{local(locale, "সরবরাহের সময়সীমা", "Delivery window")}</th>
+                <th scope="row">
+                  {local(locale, "সরবরাহের সময়সীমা", "Delivery window")}
+                </th>
                 <td>
                   {order.offer.delivery_from && order.offer.delivery_to
                     ? order.offer.delivery_from === order.offer.delivery_to
@@ -737,7 +784,9 @@ export async function OrderPage({
                 </td>
               </tr>
               <tr>
-                <th scope="row">{local(locale, "পরিবহন ব্যবস্থা", "Transport responsibility")}</th>
+                <th scope="row">
+                  {local(locale, "পরিবহন ব্যবস্থা", "Transport responsibility")}
+                </th>
                 <td>
                   {order.offer.transport === "buyer"
                     ? local(locale, "ক্রেতার দায়িত্ব", "Buyer arranges")
@@ -754,7 +803,9 @@ export async function OrderPage({
               </tr>
               {order.status === "confirmed" && order.expires_at && (
                 <tr>
-                  <th scope="row">{local(locale, "সংরক্ষণের শেষ সময়", "Reservation expires")}</th>
+                  <th scope="row">
+                    {local(locale, "সংরক্ষণের শেষ সময়", "Reservation expires")}
+                  </th>
                   <td>{timeLabel(locale, order.expires_at)}</td>
                 </tr>
               )}
@@ -775,11 +826,16 @@ export async function OrderPage({
       {order.activity && order.activity.length > 0 && (
         <section className="work-panel lot-details-page-panel order-history-panel">
           <div className="lot-page-header-row">
-            <h2 className="lot-page-title">{local(locale, "অর্ডারের ইতিহাস", "Order history")}</h2>
+            <h2 className="lot-page-title">
+              {local(locale, "অর্ডারের ইতিহাস", "Order history")}
+            </h2>
           </div>
           <ul className="offer-history-timeline order-history-timeline">
             {order.activity.map((event, index) => (
-              <li key={`${event.recorded_at}-${index}`} className="offer-history-timeline-item">
+              <li
+                key={`${event.recorded_at}-${index}`}
+                className="offer-history-timeline-item"
+              >
                 <span className="offer-history-timeline-dot" />
                 <div className="offer-history-timeline-content">
                   <div className="offer-history-timeline-row">
@@ -792,7 +848,9 @@ export async function OrderPage({
                   </div>
                   {event.by_system && (
                     <div className="offer-history-by-line">
-                      <span className="offer-history-muted">{local(locale, "স্বয়ংক্রিয় প্রক্রিয়া", "Automated system")}</span>
+                      <span className="offer-history-muted">
+                        {local(locale, "স্বয়ংক্রিয় প্রক্রিয়া", "Automated system")}
+                      </span>
                     </div>
                   )}
                 </div>

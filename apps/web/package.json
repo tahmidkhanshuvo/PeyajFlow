@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/vendor-photo-model.mjs && next dev",
+    "build": "node scripts/vendor-photo-model.mjs && next build",
+    "vendor:photo-model": "node scripts/vendor-photo-model.mjs",
     "start": "next start",
     "format": "prettier --write app components lib tests *.json *.mjs next.config.ts",
     "format:check": "prettier --check app components lib tests *.json *.mjs next.config.ts",

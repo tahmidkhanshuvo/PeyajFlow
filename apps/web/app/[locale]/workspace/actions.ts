@@ -76,6 +76,45 @@ export async function passwordSignIn(
   );
 }
 
+export async function requestOtp(
+  locale: Locale,
+  _state: FormState,
+  form: FormData,
+): Promise<FormState> {
+  if (!isLocale(locale)) return { error: "invalid_input" };
+  try {
+    await api(
+      "/v1/auth/otp/request",
+      json({ phone: asciiDigits(String(form.get("phone") ?? "").trim()) }),
+    );
+  } catch (error) {
+    return errorState(error);
+  }
+  // The same notice is shown whether or not the number has an account.
+  return { notice: "otp_sent" };
+}
+
+export async function otpSignIn(
+  locale: Locale,
+  _state: FormState,
+  form: FormData,
+): Promise<FormState> {
+  if (!isLocale(locale)) return { error: "invalid_input" };
+  try {
+    const session = await api<{ token: string; expires_at: string }>(
+      "/v1/auth/otp/verify",
+      json({
+        phone: asciiDigits(String(form.get("phone") ?? "").trim()),
+        code: asciiDigits(String(form.get("code") ?? "").trim()),
+      }),
+    );
+    await saveSession(session);
+  } catch (error) {
+    return errorState(error);
+  }
+  redirect(`/${locale}/workspace`);
+}
+
 export async function signupAction(
   locale: Locale,
   _state: FormState,
@@ -308,7 +347,8 @@ export async function mutate(
         payload.set(
           "observations",
           JSON.stringify({
-            observed_on: text("observed_on") || new Date().toISOString().split("T")[0],
+            observed_on:
+              text("observed_on") || new Date().toISOString().split("T")[0],
             curing: text("curing") || "unknown",
             ventilation: text("ventilation") || "unknown",
             moisture: text("moisture") || "unknown",
@@ -317,7 +357,8 @@ export async function mutate(
             temperature_c: decimal("temperature_c") || null,
             humidity_pct: decimal("humidity_pct") || null,
             sample_kg: decimal("sample_kg") || null,
-            visible_flags: visibleFlags.length > 0 ? visibleFlags : ["no_obvious_defect"],
+            visible_flags:
+              visibleFlags.length > 0 ? visibleFlags : ["no_obvious_defect"],
           }),
         );
         for (const file of images) payload.append("images", file, file.name);

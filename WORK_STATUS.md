@@ -97,6 +97,158 @@ The AI pilot frontend is live on Vercel and Render deployed the matching API. Pr
 
 Field validation remains open for market forecasts, photo suggestions, storage measurements, and real microphone input across Bangla dialects. The browser inference and controlled microphone tests ran locally.
 
+### Spoken quantities in words (November 20, 2026)
+
+- **What changed.** `app/intent.py` now reads quantities said in words when they come directly before kg or maund:
+  - Bangla 0 to 99.
+  - Hundreds, such as দুইশো, পনেরোশো and একশো পঞ্চাশ.
+  - Thousands and lakhs.
+  - দেড়, আড়াই, সাড়ে, সোয়া and পৌনে.
+  - English, such as "two hundred and fifty".
+  - Common Banglish, such as "tin mon" and "dusho kg".
+- **When it still abstains.** Irregular phrases and number words that are not the quantity still abstain with `number_words`. A number word next to টাকা is a price. Digit-only input uses the unchanged code path. The quantity still passes the form check, read-back and keypad confirmation.
+- **Copy.** The `voice_say_quantity` text no longer asks for digits.
+- **Checks, run on a disposable PostgreSQL 16:**
+  - Ruff lint and format passed.
+  - `alembic check` passed.
+  - The full API suite passed: 129 tests, including 39 new intent tests and one end-to-end call test in which দেড় মণ reserves 60 kg only after keypad confirmation.
+  - `evals.intent_eval --check` passed on both datasets. Main set, 259 rows (20 new number-word rows): accuracy 1.000. Challenge set: accuracy 0.948, up from 0.931, with zero wrong change commands. The results are saved as `intent-number-words` and `intent-challenge-number-words`.
+- **Open.**
+  - Row `challenge-018` states 200 kg, but its expected label had no quantity. It was corrected in a separate commit, which leaves 4 challenge failures (`intent-challenge-label-fix`).
+  - The new rows were written by the same author as the rules.
+  - Spoken numbers need review by native speakers and testing on recorded speech.
+
+### Deep hard test (November 20, 2026)
+
+**What ran:**
+
+- the CI container job (Compose build plus backup and restore drill) on alternate ports;
+- all 21 migrations downgraded to base and upgraded again;
+- an adversarial sweep of all 99 operations;
+- simulator attacks: concurrency races, fuzzing, cross-account attempts, PIN brute force and transcription abuse;
+- live prompt injection against the Meta fallback;
+- NUL characters in every path and query parameter;
+- axe and layout checks of the simulator at 360 and 1280 px in Bangla and English;
+- the full suites.
+
+**Bugs found and fixed:**
+
+1. **NUL characters in request bodies returned 503.** PostgreSQL rejects NUL in text; a lot label, a help note and an SMS were affected. The shared `Input` model now refuses NUL anywhere in a body, nested values included, with `422 invalid_input`.
+2. **A parallel-session race.** Simultaneous SMS replies with no active session created several sessions, each with its own pending change (3–4 per round). Stock was never double-reserved, because only one acceptance could commit. Finding or creating a session is now serialized per account with a transaction advisory lock: measured as 1 session and 1 pending change in 3 of 3 rounds.
+3. **New-message notices.** The basic phone stopped showing them once an inbox held more than the 60 messages the API returns, because unread was counted by list length. It is now counted by the time of the last message read.
+4. **Two accessibility issues on the basic phone.** A nameless soft key, and keypad labels that did not match the visible text (axe `button-name` and `label-content-name-mismatch`). Both are fixed.
+
+**Results after the fixes:**
+
+- **Container and migrations:** the container drill restored an identical head and user count; downgrade to base and re-upgrade were clean.
+- **Adversarial sweep:** 2,092 requests with zero server errors, zero anonymous or cross-account access, and correct size and brute-force limits. Exactly 1 of 15 simultaneous acceptances succeeded.
+- **NUL in parameters:** 228 requests, zero server errors.
+- **Simulator attacks:**
+  - 900 fuzz inputs changed no stock;
+  - parallel confirmations reserved stock once;
+  - the PIN locked after 5 wrong guesses and refused the right PIN during the lock;
+  - transcription refused missing consent, wrong types, invalid base64 and oversized audio.
+- **Prompt injection:** the model never chose a change command. Its 3 injected quantities were blocked by the rule that a quantity must appear in the user's words. Five phrases that literally contain "accept" or "reject" were matched by the grammar, not the model; they still need the offer check and the PIN.
+- **Accessibility:** 0 axe violations and no horizontal overflow at either width.
+- **Suites:** 189 API tests, both evaluation gates, web checks, 17 of 17 simulator checks, Playwright 5 of 5 and the release smoke all pass.
+
+### Phone simulator without a real phone (November 20, 2026)
+
+**What changed:**
+
+- **Simulator page.** It shows the owner's design-pack basic phone next to a smartphone frame that shows the real workspace. The pack's static screens (sample story, middleman, bKash, photo grade) were not copied; the owner chose a live simulator on real data.
+- **Basic phone channels, in `app/phone_sim.py`:**
+  - real alerts mirrored as Bangla SMS (migration `0021_simulator`);
+  - replies `1` and `2` on offers;
+  - text commands;
+  - a USSD menu at `*7392#`;
+  - calls to `7392` with spoken Bangla prompts, captions, keypad menu and speech or typed input.
+- **Confirmation.** Every change reuses the voice staging and needs the voice PIN, or the code for demo accounts.
+- **Demo helpers.** A test offer for demo farmers, and a weekly price SMS built from the real outlook.
+- **Speech.** A consent-gated Gemini transcription fallback for browsers without speech recognition.
+- **Framing.** Same-origin framing (`X-Frame-Options: SAMEORIGIN`, `frame-ancestors 'self'`) lets the smartphone frame show the workspace. The release smoke now checks `SAMEORIGIN`.
+- **Mixed crops.** A change command naming another crop is now refused, a gap found by the hard-test fuzz.
+
+**Checks:**
+
+- **API:** 187 tests passed on PostgreSQL 16, including 7 simulator tests (SMS accept and decline, wrong codes, cancel, text commands, USSD, call, real-account PIN, demo-only test offer, isolation, transcription with Gemini mocked). Migration upgrade, downgrade and re-upgrade passed, and `alembic check` is clean.
+- **Evaluations:** both gates passed at 1.000.
+- **Web:** format, lint, typecheck, 9 unit tests and the production build passed.
+- **Browser:** in Edge, 17 of 17 simulator checks passed against `next start`. They covered the offer SMS, reply 1, code and confirmed order; USSD; the call menu and a spoken request; the smartphone frame; a spoken loss preselecting the loss type; and a real farmer setting a PIN and confirming from the basic phone.
+- **End to end:** the Playwright suite passed 5 of 5, and the release smoke passed.
+
+**Open.** Bangla transcription accuracy is unmeasured, and the simulator has not been tried by real farmers.
+
+### Optional model fallback for unmatched voice commands (November 20, 2026)
+
+- **What changed.** `app/intent_model.py` asks a language model only when the grammar matched nothing. It is off by default. Providers are Meta `muse-spark-1.3`, Gemini `gemini-3.5-flash-lite`, or both (they must agree). It never overturns a refusal, never sees a negated or uncertain phrase, and cannot introduce a quantity. Results carry `match: "model"`, with the same read-back and confirmation. `AGENTS.md` rule 2 was updated with the owner's approval. Keys are read from the git-ignored `services/api/.env`.
+- **Checks:**
+  - 179 API tests passed, including 24 for the fallback with the model mocked.
+  - The deterministic evaluation gates still pass at 1.000.
+  - Live evaluation, with every row checked on all three providers: Meta 0.900, Gemini 0.650 and both 0.800 on the 20 unmatched phrasings, and 1.000 on the main and challenge sets, with zero wrong change commands. Meta is the default.
+- **Open.**
+  - Gemini transcription for browsers without speech recognition: the owner chose fallback only; not built yet.
+  - A phrase naming another crop next to onion is now refused (see the simulator entry above).
+
+### Voice PIN, SMS sign-in, NID format, loss sign and quantity joiners (November 20, 2026)
+
+**What changed:**
+
+- **Voice PIN.** Real accounts confirm call-simulator changes with a personal 4–6 digit PIN. The PIN is scrypt-hashed, never displayed, set after re-entering the passphrase, refused if trivial, and locked for 15 minutes after five wrong entries. Demo accounts keep the displayed code. This is migration `0019_voicepin`.
+- **SMS sign-in codes.** These are 6 digits, last 5 minutes, allow 5 attempts and work once. They go only to operator-verified phone numbers, are rate-limited per device and per number, and give the same reply for unknown numbers. The code is sent after the response, so timing does not reveal accounts. They switch on only with `SMS_PROVIDER=twilio`. This is migration `0020_otp`.
+- **NID format.** Signup accepts only Bangladesh NID formats (10, 13 or 17 digits). A wrong format returns `nid_invalid`.
+- **Spoken losses.** They preselect the loss type. A positive loss amount is stored as negative, and the API refuses a loss phrase sent as an addition (`voice_loss_mismatch`).
+- **Two quantities.** Two numbers for one quantity, such as "200 and 300 kg" or "২০০ বা ৩০০ কেজি", are refused as `multiple_quantities`.
+- **Photo harness.** `apps/web/scripts/photo-eval.mjs` measures the browser photo model on human-labelled photos.
+
+**Checks, run on a fresh PostgreSQL 16:**
+
+- **Migrations:** `alembic check` is clean. Upgrade, downgrade to `0018_signup` and re-upgrade passed for both new migrations, with a single head.
+- **API:** 155 tests passed. They include PIN lockout and replay, the OTP flow with a mocked sender (unknown number, single use, replacement, attempt limit, failed send, rate limit) and NID formats.
+- **Web:** format, lint, typecheck and 9 unit tests passed.
+- **Evaluations:** both passed at 1.000 with zero wrong change commands, after adding 6 joiner rows (saved as `intent-quantity-joiners` and `intent-challenge-quantity-joiners`).
+
+**Not possible without real-world inputs:**
+
+- live Twilio calls and SMS, which need an account, numbers and consent checks;
+- photo accuracy, which needs labelled field photos;
+- forecasts on a real market series;
+- storage-loss validation on field weights;
+- dialect speech testing with native speakers;
+- NID ownership checks, which need an Election Commission service.
+
+### Self-hosted photo-model runtime (November 20, 2026)
+
+- **What changed.** The inspection worker no longer imports transformers.js from jsDelivr. `apps/web/scripts/vendor-photo-model.mjs` runs before `pnpm dev` and `pnpm build`. It fetches the pinned 3.8.1 npm tarball, verifies npm's sha512 integrity and a SHA-384 per file, and writes the library, the ONNX runtime and the license to the git-ignored `public/vendor/`. The worker sets `wasmPaths` to that folder. `/condition-model.js` now has its own policy: `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src` limited to the site and Hugging Face. Vendored files are cached as immutable. Model weights still come from Hugging Face at the pinned revision.
+- **Checks:**
+  - Web format, lint, typecheck, unit tests (7, including 3 new) and the production build passed.
+  - `curl` against `next start` confirmed the worker policy, the `application/wasm` type and immutable caching.
+  - The real worker in Edge classified `onion-storage.webp` with zero CDN requests and no policy violations, then abstained with the pinned model and rule.
+- **Open.**
+  - Builds now need access to `registry.npmjs.org`. Without it, the build stops instead of falling back to the CDN.
+  - The hosted deployment has not been updated or checked; these commits are not pushed.
+
+### End-to-end verification of the November 20 changes
+
+- **Setup.** Commit `c4f8065`, production build, Edge, fresh PostgreSQL 16, seeded with `app.seed`. The setup matched the CI web job on alternate ports (web 3100, API 8100).
+- **Playwright: 5 of 5 workflows passed.**
+  - Market review, outlook, advice, simulated acceptance and freight booking.
+  - The shared farmer, buyer and agent pilot workflow, including the inspection upload and saved photo suggestion.
+  - Bangla signup.
+  - Agent signup review. It ran with a disposable agent provisioned through `app.credentials.provision`, so it was not skipped.
+  - Alerts, operations and offline states across locales and viewport sizes.
+- **Release smoke:** passed with `SMOKE_DEMO_ID=farmer`.
+
+### Clause-scoped negation (November 20, 2026)
+
+- **What changed.** A negation in an earlier clause no longer blocks a plain final command in typed text, such as "no thanks, reject it". The last clause must hold the only change command, with no negation or doubt of its own. No earlier clause may hold a change command or a quantity. Unpunctuated transcripts are never split.
+- **Related fixes.** নাকি ("or") now marks the user as undecided, so the resolver abstains as ambiguous. বাদ দিন and নাকচ করে দিন now mean reject, not send an offer.
+- **Checks, run on a disposable PostgreSQL 16:**
+  - Ruff and `alembic check` passed.
+  - The full API suite passed: 145 tests.
+  - Both evaluations passed their gates: main set 271 rows (12 new), and challenge set 58 rows, both 1.000, with zero wrong change commands. The results are saved as `intent-clause-negation` and `intent-challenge-clause-negation`.
+- **Open.** The challenge set has now been tuned against, so it is an upper bound. The next accuracy estimate needs a new set written by someone else and run once.
+
 ## Work completed
 
 - Reviewed the master handoff, the supplied 311 × 59 transparent logo, and the existing workspace. The workspace started with those two files and no Git history or remote.

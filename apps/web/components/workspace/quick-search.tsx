@@ -35,6 +35,16 @@ export function QuickSearch({
 
   const isBn = locale === "bn";
 
+  const [previousOpen, setPreviousOpen] = useState(open);
+  if (open !== previousOpen) {
+    setPreviousOpen(open);
+    if (!open) {
+      setQuery("");
+      setActiveCategory("all");
+      setSelectedIndex(0);
+    }
+  }
+
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -51,13 +61,9 @@ export function QuickSearch({
 
   // Focus input when opened
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      setQuery("");
-      setActiveCategory("all");
-      setSelectedIndex(0);
-    }
+    if (!open) return;
+    const timer = setTimeout(() => inputRef.current?.focus(), 50);
+    return () => clearTimeout(timer);
   }, [open]);
 
   // Available distinct categories for quick-filter tabs
@@ -99,11 +105,6 @@ export function QuickSearch({
     });
   }, [items, query, activeCategory]);
 
-  // Reset selected index when query or category changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [query, activeCategory]);
-
   // Keep active item in view on keyboard scroll
   useEffect(() => {
     if (!listRef.current) return;
@@ -119,7 +120,9 @@ export function QuickSearch({
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev < filtered.length - 1 ? prev + 1 : prev));
+      setSelectedIndex((prev) =>
+        prev < filtered.length - 1 ? prev + 1 : prev,
+      );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
@@ -173,14 +176,20 @@ export function QuickSearch({
                     : "Search by buyer, seller, order #ID, variety, stock lot, or destination..."
                 }
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSelectedIndex(0);
+                }}
                 onKeyDown={handleInputKeyDown}
               />
               {query && (
                 <button
                   type="button"
                   className="quick-search-clear"
-                  onClick={() => setQuery("")}
+                  onClick={() => {
+                    setQuery("");
+                    setSelectedIndex(0);
+                  }}
                   title={isBn ? "মুছুন" : "Clear"}
                 >
                   ✕
@@ -204,12 +213,17 @@ export function QuickSearch({
                   role="tab"
                   aria-selected={activeCategory === "all"}
                   className={`quick-search-pill ${activeCategory === "all" ? "active" : ""}`}
-                  onClick={() => setActiveCategory("all")}
+                  onClick={() => {
+                    setActiveCategory("all");
+                    setSelectedIndex(0);
+                  }}
                 >
                   {isBn ? "সব" : "All"} ({items.length})
                 </button>
                 {categories.map((cat) => {
-                  const count = items.filter((it) => it.category === cat).length;
+                  const count = items.filter(
+                    (it) => it.category === cat,
+                  ).length;
                   return (
                     <button
                       key={cat}
@@ -217,7 +231,10 @@ export function QuickSearch({
                       role="tab"
                       aria-selected={activeCategory === cat}
                       className={`quick-search-pill ${activeCategory === cat ? "active" : ""}`}
-                      onClick={() => setActiveCategory(cat)}
+                      onClick={() => {
+                        setActiveCategory(cat);
+                        setSelectedIndex(0);
+                      }}
                     >
                       {cat} ({count})
                     </button>
@@ -263,7 +280,10 @@ export function QuickSearch({
                       <span className="quick-search-item-cat">
                         {item.category}
                       </span>
-                      <span className="quick-search-item-arrow" aria-hidden="true">
+                      <span
+                        className="quick-search-item-arrow"
+                        aria-hidden="true"
+                      >
                         <svg
                           width="12"
                           height="12"

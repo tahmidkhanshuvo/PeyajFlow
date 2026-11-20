@@ -605,15 +605,17 @@ export async function OperationsView(context: Page) {
     settlements: SettlementQueue,
     audit: AuditPage,
   };
-  const viewFn = filters.view ? views[filters.view] : null;
+  const viewFn = typeof filters.view === "string" ? views[filters.view] : null;
   if (!viewFn) return null;
   return await viewFn(context);
 }
 
 export async function OperationsPage(context: Page) {
   const { locale, base, filters } = context;
-  const selected = filters.view;
-  const content = selected ? await OperationsView(context) : await Summary(context);
+  const selected = typeof filters.view === "string" ? filters.view : undefined;
+  const content = selected
+    ? await OperationsView(context)
+    : await Summary(context);
   return (
     <>
       <OperationsNav locale={locale} base={base} activeView={selected} />

@@ -5,7 +5,7 @@ import type { Locale } from "../../lib/copy";
 import { local } from "../../lib/workspace-copy";
 import { WorkspaceIcon } from "./icon";
 
-type Recognition = {
+export type Recognition = {
   lang: string;
   maxAlternatives: number;
   onresult:

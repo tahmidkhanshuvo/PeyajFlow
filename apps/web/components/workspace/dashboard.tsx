@@ -439,7 +439,9 @@ export async function Dashboard({
         <OperationsNav
           locale={locale}
           base={base}
-          activeView={filters.view}
+          activeView={
+            typeof filters.view === "string" ? filters.view : undefined
+          }
         />
 
         {/* ─── ACTIVE OPERATIONS SUB-VIEW ─── */}
@@ -495,13 +497,7 @@ export async function Dashboard({
       </section>
 
       {/* ─── OPERATIONS NAVIGATION TABS (For Operator) ─── */}
-      {admin && (
-        <OperationsNav
-          locale={locale}
-          base={base}
-          activeView=""
-        />
-      )}
+      {admin && <OperationsNav locale={locale} base={base} activeView="" />}
 
       {/* ─── KPI METRIC CARDS (Glass-1) ─── */}
       <div className="dash-kpi-grid">
@@ -589,7 +585,10 @@ export async function Dashboard({
             {operations.carrier_events_24h !== null && (
               <div className="ops-delivery-box">
                 <span className="ops-delivery-label">
-                  {t("গত ২৪ ঘণ্টার ক্যারিয়ার ঘটনা", "Carrier callbacks in 24 hours")}
+                  {t(
+                    "গত ২৪ ঘণ্টার ক্যারিয়ার ঘটনা",
+                    "Carrier callbacks in 24 hours",
+                  )}
                 </span>
                 <strong className="ops-delivery-val stat-num">
                   {count(operations.carrier_events_24h)}

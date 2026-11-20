@@ -14,10 +14,11 @@ PeyajFlow is a Bangla-first onion supply-chain workspace for the Pabna-to-Dhaka 
 | `apps/web/app/[locale]/workspace` | Workspace routes and the server actions (`actions.ts`, `pilot-actions.ts`, `operations-actions.ts`) |
 | `apps/web/components/workspace` | One file per area: stock, trade, inspection, voice desk, operations and others |
 | `apps/web/lib` | API client (`workspace-api.ts`), bilingual copy and error text (`workspace-copy.ts`), types |
-| `apps/web/public/condition-model.js` | Browser CLIP worker. It must stay in step with `PHOTO_MODEL` and `PHOTO_RULE` in `services/api/app/inspection.py` |
+| `apps/web/public/condition-model.js` | Browser CLIP worker. It must stay in step with `PHOTO_MODEL` and `PHOTO_RULE` in `services/api/app/inspection.py`. Its transformers.js runtime is copied into the git-ignored `public/vendor/` by `apps/web/scripts/vendor-photo-model.mjs` (run by `pnpm dev` and `pnpm build`). The script checks the npm integrity and per-file SHA-384, so a version change needs new hashes there |
 | `apps/web/tests` | Node unit tests and Playwright end-to-end tests (`tests/e2e`) |
 | `services/api/app` | FastAPI application. One module per domain: `lots`, `trade`, `inspection`, `forecast`, `advice`, `voice`, `intent`, `admin` and others |
 | `services/api/migrations` | Alembic revisions. Exactly one head is required at startup. |
+| `services/api/app/phone_sim.py` | Simulated basic phone (SMS, USSD `*7392#`, calls to `7392`) on the real data. It reuses the voice staging and PIN or code confirmation, and nothing is sent to a carrier |
 | `services/api/tests` | pytest suites. Most need a disposable PostgreSQL database. |
 | `services/api/evals` | Offline evaluations: datasets in `data/`, results in `results/` |
 | `docs` | Deployment runbook, AI feature notes, design review screenshots |
@@ -64,7 +65,7 @@ End-to-end tests need the migrated and seeded API, the production web build and 
 These rules describe the current system. Keep them true.
 
 1. **The backend is the security boundary.** Nothing produced by a model or a language parser may run SQL or change data directly. Voice and web use the same services and transactions.
-2. **Voice commands are resolved deterministically** by `services/api/app/intent.py`. There is no language model in the request path. A resolved change command only stages an action. The user then hears or reads the terms and confirms with a keypad code. A negation never becomes the opposite command. Uncertain input abstains with a specific error.
+2. **Voice commands are resolved deterministically** by `services/api/app/intent.py`, which always runs first and decides. An optional model fallback (`app/intent_model.py`, off unless `VOICE_MODEL_FALLBACK=true`) is asked only when the grammar matched nothing. It may only pick a command from the fixed list, never overturns a refusal, is never sent a phrase containing a negation or doubt, and cannot introduce a quantity the grammar did not read. A resolved change command only stages an action. The user then hears or reads the terms and confirms with a keypad code. A negation never becomes the opposite command. Uncertain input abstains with a specific error.
 3. **The photo model only suggests.** CLIP runs in the user's browser. The API stores its scores only for the pinned model revision and rule, derives the label itself, refuses photos that failed quality checks, and never pre-fills a reviewer's flags. Agreement with human review is reported from real pairs only, with a minimum sample.
 4. **Forecasts and advice abstain** when evidence is stale or insufficient. A candidate model replaces the baselines only after it beats them on held-out replays and meets the coverage gate.
 5. **Label synthetic and demo data** wherever it appears. Never present simulated output as field-validated accuracy.

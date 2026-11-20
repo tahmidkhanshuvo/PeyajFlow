@@ -14,7 +14,9 @@ export function ThemeSynchronizer() {
         if (match) theme = match[1];
       }
       if (!theme) {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
         theme = prefersDark ? "dark" : "light";
       }
 

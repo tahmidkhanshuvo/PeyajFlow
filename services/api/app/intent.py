@@ -102,6 +102,11 @@ def nfc(text: str) -> str:
 
 
 ALIASES = {nfc(key): tool for key, tool in ALIASES.items()}
+# One listed Bangla phrase per command, used when a channel needs to send a
+# command it already knows (for example a keypad menu choice).
+CANONICAL: dict[str, str] = {}
+for _phrase, _tool in ALIASES.items():
+    CANONICAL.setdefault(_tool, _phrase)
 VARIANTS = tuple((nfc(variant), nfc(standard)) for variant, standard in VARIANTS)
 
 
@@ -298,6 +303,14 @@ HELP = stems("সহায়তা", "সাহায্য", "help", "sahajjo"
 AGENT = stems("এজেন্ট", "agent")
 TALK = stems("কথা", "সাথে", "talk", "speak", "kotha", "connect", "যোগাযোগ")
 PERSON = stems("মানুষ", "লোক", "person", "human", "someone", "manush")
+# "বাদ দিন", "নাকচ করে দিন": দেওয়া is the helper verb of rejecting here,
+# not "give an offer".
+REJECT_COMPOUND = re.compile(
+    nfc(
+        r"(?:^|\s)(?:বাদ|নাকচ|প্রত্যাখ্যান|bad|nakoch|protyakhan)"
+        r"(?:\s+(?:কর\S*|দিয়ে|kore|diye))?\s+(?:দি|দে|দা|di|de|da)\S*"
+    )
+)
 ACCEPT_ALONE = words("accept")
 REJECT_ALONE = words("reject", "decline")
 
@@ -326,7 +339,12 @@ NEGATION = re.compile(
     )
     + r"|\S(?:িনি|ইনি)(?=\s|$)"
 )
-UNCERTAIN = re.compile(words("কিনা", "kina") + "|" + phrase("কি না", "ki na"))
+# "whether" (কিনা) and "or" (নাকি) questions: the user has not decided.
+UNCERTAIN = re.compile(
+    words("কিনা", "kina", "নাকি", "naki") + "|" + phrase("কি না", "ki na")
+)
+# Clause boundaries in typed text. A full stop between digits is a decimal.
+CLAUSE_BREAK = re.compile(r"[,،।॥;!?]|(?<!\d)\.|\.(?!\d)")
 UNSUPPORTED_ACTION = re.compile(
     stems(
         "বাতিল",
@@ -415,43 +433,418 @@ UNIT_WORDS = {
     ),
 }
 UNITS = {nfc(word): unit for unit, forms in UNIT_WORDS.items() for word in forms}
-# Quantities said in words cannot be checked against the form, so a change
-# command that contains them asks for digits instead of guessing.
-NUMBER_WORDS = re.compile(
-    words(
-        "এক",
-        "দুই",
-        "তিন",
-        "চার",
-        "পাঁচ",
-        "ছয়",
-        "সাত",
-        "আট",
-        "দশ",
-        "বিশ",
-        "পঞ্চাশ",
-        "একশ",
-        "একশো",
-        "হাজার",
-        "one",
-        "two",
-        "three",
-        "four",
-        "five",
-        "six",
-        "seven",
-        "eight",
-        "nine",
-        "ten",
-        "twenty",
-        "fifty",
-        "hundred",
-        "thousand",
-    )
-    + "|"
-    + r"(?:^|\s)\S+(?:শো|শত)(?=\s|$)"
-)
 NUMBER = re.compile(r"(?<![\d.])(\d{1,9}(?:\.\d{1,3})?)(?![\d.])")
+
+# Quantities said in words ("দুইশো কেজি", "দেড় মণ", "two hundred kg").
+# A spoken number is read only when it directly precedes kg or maund and the
+# whole phrase follows the rules in ``read_number``. Any other number word in
+# a quantity command makes the resolver abstain instead of guessing.
+BANGLA_NUMBERS = {
+    0: ("শূন্য",),
+    1: ("এক",),
+    2: ("দুই", "দু"),
+    3: ("তিন",),
+    4: ("চার",),
+    5: ("পাঁচ",),
+    6: ("ছয়", "ছ"),
+    7: ("সাত",),
+    8: ("আট",),
+    9: ("নয়",),
+    10: ("দশ",),
+    11: ("এগারো", "এগার"),
+    12: ("বারো", "বার"),
+    13: ("তেরো", "তের"),
+    14: ("চৌদ্দ", "চোদ্দ"),
+    15: ("পনেরো", "পনের"),
+    16: ("ষোলো", "ষোল"),
+    17: ("সতেরো", "সতের"),
+    18: ("আঠারো", "আঠার"),
+    19: ("উনিশ",),
+    20: ("বিশ", "কুড়ি"),
+    21: ("একুশ",),
+    22: ("বাইশ",),
+    23: ("তেইশ",),
+    24: ("চব্বিশ",),
+    25: ("পঁচিশ",),
+    26: ("ছাব্বিশ",),
+    27: ("সাতাশ",),
+    28: ("আটাশ", "আঠাশ"),
+    29: ("ঊনত্রিশ", "উনত্রিশ"),
+    30: ("ত্রিশ", "তিরিশ"),
+    31: ("একত্রিশ",),
+    32: ("বত্রিশ",),
+    33: ("তেত্রিশ",),
+    34: ("চৌত্রিশ",),
+    35: ("পঁয়ত্রিশ",),
+    36: ("ছত্রিশ",),
+    37: ("সাঁইত্রিশ",),
+    38: ("আটত্রিশ",),
+    39: ("ঊনচল্লিশ", "উনচল্লিশ"),
+    40: ("চল্লিশ",),
+    41: ("একচল্লিশ",),
+    42: ("বিয়াল্লিশ",),
+    43: ("তেতাল্লিশ",),
+    44: ("চুয়াল্লিশ",),
+    45: ("পঁয়তাল্লিশ",),
+    46: ("ছেচল্লিশ",),
+    47: ("সাতচল্লিশ",),
+    48: ("আটচল্লিশ",),
+    49: ("ঊনপঞ্চাশ", "উনপঞ্চাশ"),
+    50: ("পঞ্চাশ",),
+    51: ("একান্ন",),
+    52: ("বাহান্ন",),
+    53: ("তিপ্পান্ন",),
+    54: ("চুয়ান্ন",),
+    55: ("পঞ্চান্ন",),
+    56: ("ছাপ্পান্ন",),
+    57: ("সাতান্ন",),
+    58: ("আটান্ন",),
+    59: ("ঊনষাট", "উনষাট"),
+    60: ("ষাট",),
+    61: ("একষট্টি",),
+    62: ("বাষট্টি",),
+    63: ("তেষট্টি",),
+    64: ("চৌষট্টি",),
+    65: ("পঁয়ষট্টি",),
+    66: ("ছেষট্টি",),
+    67: ("সাতষট্টি",),
+    68: ("আটষট্টি",),
+    69: ("ঊনসত্তর", "উনসত্তর"),
+    70: ("সত্তর",),
+    71: ("একাত্তর",),
+    72: ("বাহাত্তর",),
+    73: ("তিয়াত্তর",),
+    74: ("চুয়াত্তর",),
+    75: ("পঁচাত্তর",),
+    76: ("ছিয়াত্তর",),
+    77: ("সাতাত্তর",),
+    78: ("আটাত্তর",),
+    79: ("ঊনআশি", "উনআশি"),
+    80: ("আশি",),
+    81: ("একাশি",),
+    82: ("বিরাশি",),
+    83: ("তিরাশি",),
+    84: ("চুরাশি",),
+    85: ("পঁচাশি",),
+    86: ("ছিয়াশি",),
+    87: ("সাতাশি",),
+    88: ("অষ্টাশি",),
+    89: ("ঊননব্বই", "উননব্বই"),
+    90: ("নব্বই",),
+    91: ("একানব্বই",),
+    92: ("বিরানব্বই",),
+    93: ("তিরানব্বই",),
+    94: ("চুরানব্বই",),
+    95: ("পঁচানব্বই",),
+    96: ("ছিয়ানব্বই",),
+    97: ("সাতানব্বই",),
+    98: ("আটানব্বই",),
+    99: ("নিরানব্বই",),
+}
+# Banglish forms are short and often collide with English words ("at", "sat",
+# "tin"), so they only count when the whole phrase reads as a number.
+BANGLISH_NUMBERS = {
+    1: ("ek",),
+    2: ("dui", "du"),
+    3: ("tin",),
+    4: ("char",),
+    5: ("panch", "pach"),
+    6: ("choy", "chhoy", "soy"),
+    7: ("sat", "saat"),
+    8: ("at", "aat"),
+    9: ("noy",),
+    10: ("dosh", "dos"),
+    11: ("egaro",),
+    12: ("baro",),
+    13: ("tero",),
+    14: ("choddo", "chouddo"),
+    15: ("ponero",),
+    16: ("sholo", "solo"),
+    17: ("shotero", "sotero"),
+    18: ("atharo",),
+    19: ("unish",),
+    20: ("bish", "kuri"),
+    25: ("pochish",),
+    30: ("trish", "tirish"),
+    40: ("chollish",),
+    50: ("ponchash", "panchash"),
+    60: ("shat",),
+    70: ("sottor",),
+    80: ("ashi",),
+    90: ("nobboi",),
+}
+ENGLISH_ONES = {
+    "zero": 0,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "sixteen": 16,
+    "seventeen": 17,
+    "eighteen": 18,
+    "nineteen": 19,
+}
+ENGLISH_TENS = {
+    "twenty": 20,
+    "thirty": 30,
+    "forty": 40,
+    "fifty": 50,
+    "sixty": 60,
+    "seventy": 70,
+    "eighty": 80,
+    "ninety": 90,
+}
+# One and a half (দেড়) and two and a half (আড়াই) are single words in Bangla.
+HALVES = {"দেড়": "1.5", "আড়াই": "2.5"}
+BANGLISH_HALVES = {"der": "1.5", "dedh": "1.5", "arai": "2.5"}
+# সাড়ে তিন = 3.5, সোয়া তিন = 3.25, পৌনে তিন = 2.75.
+FRACTIONS = {"সাড়ে": "0.5", "সোয়া": "0.25", "পৌনে": "-0.25"}
+BANGLISH_FRACTIONS = {
+    "sare": "0.5",
+    "soa": "0.25",
+    "shoa": "0.25",
+    "poune": "-0.25",
+}
+HUNDREDS = {"শো": True, "শত": True, "শ": True, "hundred": True, "sho": False}
+SCALES = {
+    "হাজার": (1000, True),
+    "লাখ": (100000, True),
+    "লক্ষ": (100000, False),  # also "aim" or "notice"
+    "thousand": (1000, True),
+    "lakh": (100000, True),
+    "lakhs": (100000, True),
+    "hajar": (1000, False),
+    "hazar": (1000, False),
+}
+# Bangla numerals that are also everyday words: বার ("times"), নয় ("is not").
+WEAK_BANGLA = ("বার", "নয়", "ছ")
+HUNDRED_SUFFIXES = (nfc("শত"), nfc("শো"), nfc("শ"), "shoto", "sho")
+# Tokens shaped like a hundreds word that the table cannot read ("…শো").
+HUNDREDS_SHAPE = re.compile(nfc(r"\S+(?:শো|শত)"))
+ENGLISH_MULTIPLIERS = frozenset({"hundred", "thousand", "lakh", "lakhs"})
+# Words that join two numbers. Only "and" can be part of one English number
+# ("two hundred and fifty"); "২০০ বা ৩০০ কেজি" names two quantities.
+JOINERS = frozenset(
+    map(
+        nfc,
+        ("and", "or", "ba", "ar", "othoba", "ebong", "বা", "অথবা", "এবং", "আর", "ও"),
+    )
+)
+MAX_SPOKEN = Decimal(999_999_999)
+
+
+@dataclass(frozen=True)
+class Numeral:
+    kind: Literal["number", "tens", "fraction", "hundred", "hundreds", "scale"]
+    value: Decimal
+    strong: bool  # Unambiguous as a number, so an unread one blocks the command.
+
+
+def numeral_table() -> dict[str, Numeral]:
+    table: dict[str, Numeral] = {}
+
+    def add(form: str, kind, value, strong: bool) -> None:
+        table[nfc(form)] = Numeral(kind, Decimal(str(value)), strong)
+
+    for value, forms in BANGLA_NUMBERS.items():
+        for form in forms:
+            add(form, "number", value, True)
+    for value, forms in BANGLISH_NUMBERS.items():
+        for form in forms:
+            add(form, "number", value, False)
+    for form, value in ENGLISH_ONES.items():
+        add(form, "number", value, True)
+    for form, value in ENGLISH_TENS.items():
+        add(form, "tens", value, True)
+    for form, value in HALVES.items():
+        add(form, "number", value, True)
+    for form, value in BANGLISH_HALVES.items():
+        add(form, "number", value, False)
+    for form, value in FRACTIONS.items():
+        add(form, "fraction", value, True)
+    for form, value in BANGLISH_FRACTIONS.items():
+        add(form, "fraction", value, False)
+    for form, strong in HUNDREDS.items():
+        add(form, "hundred", 100, strong)
+    for form, (value, strong) in SCALES.items():
+        add(form, "scale", value, strong)
+    for form in WEAK_BANGLA:
+        entry = table[nfc(form)]
+        table[nfc(form)] = Numeral(entry.kind, entry.value, False)
+    return table
+
+
+NUMERALS = numeral_table()
+ENGLISH_DIGITS = frozenset(
+    form for form, value in ENGLISH_ONES.items() if 1 <= value <= 9
+)
+
+
+def numeral(token: str) -> Numeral | None:
+    """Classify one token as part of a spoken number, or return None."""
+    entry = NUMERALS.get(token)
+    if entry is not None:
+        return entry
+    # Hundreds written as one word: দুইশো, দেড়শো, পনেরোশো, dusho.
+    for suffix in HUNDRED_SUFFIXES:
+        if token.endswith(suffix) and len(token) > len(suffix):
+            base = NUMERALS.get(token[: -len(suffix)])
+            if base is not None and base.kind == "number" and 0 < base.value < 100:
+                return Numeral("hundreds", base.value, base.strong)
+    if HUNDREDS_SHAPE.fullmatch(token):
+        return Numeral("hundreds", Decimal(0), True)  # unreadable, never accepted
+    return None
+
+
+def read_number(tokens: list[str]) -> Decimal | None:
+    """Read a whole spoken number, or return None if any part is irregular.
+
+    Accepted shapes: a number below one hundred (one word in Bangla, or an
+    English tens word followed by a digit word), optionally preceded by সাড়ে,
+    সোয়া or পৌনে; a hundreds group (দুইশো, two hundred); and descending
+    thousand and lakh groups, joined in English by "and".
+    """
+    total = Decimal(0)
+    group: Decimal | None = None  # hundreds within the current scale group
+    small: Decimal | None = None  # the part below one hundred
+    open_tens = False  # "twenty" may still take "five"
+    fraction: Decimal | None = None
+    last_scale: Decimal | None = None
+    joined = False  # an "and" is waiting for the next number
+    for token in tokens:
+        if NUMBER.fullmatch(token):
+            entry = Numeral("number", Decimal(token), True)
+        elif token == "a":
+            entry = Numeral("number", Decimal(1), False)
+        elif token == "and":
+            if joined or fraction is not None or small is not None:
+                return None
+            if group is None and last_scale is None:
+                return None
+            joined = True
+            continue
+        else:
+            entry = numeral(token)
+            if entry is None:
+                return None
+        value = entry.value
+        if entry.kind == "fraction":
+            if fraction is not None or small is not None:
+                return None
+            fraction = value
+        elif entry.kind in ("number", "tens"):
+            if small is not None:
+                if open_tens and token in ENGLISH_DIGITS and fraction is None:
+                    small += value
+                    open_tens = False
+                    continue
+                return None
+            if fraction is not None:
+                if value < 1 or value != value.to_integral_value():
+                    return None
+                value += fraction
+                fraction = None
+            small = value
+            open_tens = entry.kind == "tens"
+            joined = False
+        elif entry.kind == "hundreds":
+            if value == 0 or small is not None or group is not None or joined:
+                return None
+            if fraction is not None:
+                if value != value.to_integral_value():
+                    return None
+                value += fraction
+                fraction = None
+            if last_scale is not None and value >= 10:
+                return None
+            group = value * 100
+        elif entry.kind == "hundred":
+            if small is None or group is not None or fraction is not None or joined:
+                return None
+            if small >= 100 or (last_scale is not None and small >= 10):
+                return None
+            group = small * 100
+            small = None
+            open_tens = False
+        else:  # scale
+            if fraction is not None or joined or (small is None and group is None):
+                return None
+            if last_scale is not None and value >= last_scale:
+                return None
+            total += ((group or 0) + (small or 0)) * value
+            group = small = None
+            open_tens = False
+            last_scale = value
+    if fraction is not None or joined:
+        return None
+    if small is None and group is None and last_scale is None:
+        return None
+    value = total + (group or 0) + (small or 0)
+    if value > MAX_SPOKEN:
+        return None
+    if value == value.to_integral_value():
+        return value.quantize(Decimal(1))
+    return value.normalize()
+
+
+def is_numeral(tokens: list[str], index: int) -> bool:
+    token = tokens[index]
+    if NUMBER.fullmatch(token) or numeral(token) is not None:
+        return True
+    following = tokens[index + 1] if index + 1 < len(tokens) else ""
+    if token == "a":  # "a hundred kg"
+        return following in ENGLISH_MULTIPLIERS
+    if token in JOINERS:  # "two hundred and fifty", "২০০ বা ৩০০"
+        return index > 0 and following != "" and is_numeral(tokens, index + 1)
+    return False
+
+
+def number_runs(tokens: list[str]) -> list[tuple[int, int]]:
+    """Spans of consecutive tokens that may form one spoken number."""
+    runs = []
+    index = 0
+    while index < len(tokens):
+        if tokens[index] in JOINERS or not is_numeral(tokens, index):
+            index += 1
+            continue
+        start = index
+        while index < len(tokens) and is_numeral(tokens, index):
+            index += 1
+        runs.append((start, index))
+    return runs
+
+
+def is_strong(token: str) -> bool:
+    if NUMBER.fullmatch(token) or token in ("a", "and"):
+        return False
+    entry = numeral(token)
+    return entry is not None and entry.strong
+
+
+def droppable(token: str) -> bool:
+    """A weak whole-number word that may be an ordinary word instead.
+
+    Fractions and halves are never dropped: reading "sare 3 mon" as 3 maunds
+    would silently change the amount."""
+    if token in ("a", "and"):
+        return True
+    if NUMBER.fullmatch(token) or is_strong(token):
+        return False
+    entry = numeral(token)
+    if entry is None:
+        return False
+    return entry.kind != "fraction" and entry.value == entry.value.to_integral_value()
 
 
 def has(text: str, *patterns: str) -> bool:
@@ -459,6 +852,7 @@ def has(text: str, *patterns: str) -> bool:
 
 
 def matches(text: str) -> list[str]:
+    offering = REJECT_COMPOUND.sub(" ", text)
     found = {
         "prices": has(text, PRICE)
         or has(text, HOW_MUCH, MONEY)
@@ -476,7 +870,7 @@ def matches(text: str) -> list[str]:
         or has(text, STOCK, ADJUST)
         or has(text, LOSS),
         "register": has(text, REGISTER) or has(text, NEW, LOT),
-        "send_offer": (has(text, OFFER, SEND_VERB) and not has(text, RECEIVED))
+        "send_offer": (has(offering, OFFER, SEND_VERB) and not has(text, RECEIVED))
         or (has(text, I_WANT_TO_BUY) and not has(text, BUY_FROM_ME)),
         "transport": has(text, TRANSPORT),
         "inspection": has(text, INSPECTION)
@@ -496,17 +890,27 @@ class Interpretation:
     tool: str | None = None
     quantity: Decimal | None = None
     unit: Unit | None = None
-    match: Literal["exact", "pattern"] | None = None
+    # "model": the grammar found nothing and the optional model fallback
+    # (app.intent_model) chose a command; see that module for its limits.
+    match: Literal["exact", "pattern", "model"] | None = None
     reason: str | None = None
     candidates: tuple[str, ...] = field(default=())
+    # A stock movement described as a loss ("পচে গেছে"), so the form and the
+    # API can require the loss type instead of an addition.
+    loss: bool = False
 
 
-def quantities(text: str) -> tuple[list[tuple[Decimal, Unit]], bool]:
-    """Return (number, unit) pairs and whether a number had no unit."""
-    tokens = text.split()
+# (number, unit) pairs, a number without a unit, an unreadable number word,
+# and several numbers where one quantity belongs.
+Quantities = tuple[list[tuple[Decimal, Unit]], bool, bool, bool]
+
+
+def digit_quantities(tokens: list[str], start: int, end: int) -> Quantities:
+    """Numbers written in digits, each read on its own."""
     pairs: list[tuple[Decimal, Unit]] = []
     bare = False
-    for index, token in enumerate(tokens):
+    for index in range(start, end):
+        token = tokens[index]
         if not NUMBER.fullmatch(token):
             continue
         following = tokens[index + 1] if index + 1 < len(tokens) else ""
@@ -518,7 +922,79 @@ def quantities(text: str) -> tuple[list[tuple[Decimal, Unit]], bool]:
             bare = True
         else:
             pairs.append((Decimal(token), unit))
-    return pairs, bare
+    return pairs, bare, False, False
+
+
+def run_quantities(tokens: list[str], start: int, end: int) -> Quantities:
+    if start >= end:
+        return [], False, False, False
+    run = tokens[start:end]
+    previous = tokens[start - 1] if start else ""
+    following = tokens[end] if end < len(tokens) else ""
+    priced = previous in CURRENCY or following in CURRENCY
+    if all(NUMBER.fullmatch(token) or token in JOINERS for token in run):
+        if not priced and sum(bool(NUMBER.fullmatch(token)) for token in run) > 1:
+            # "200 and 300 kg", "২০০ ৩০০ কেজি": two numbers, one quantity.
+            return [], False, False, True
+        return digit_quantities(tokens, start, end)
+    if priced:
+        return [], False, False, False  # a price said in words, not a quantity
+    unit = UNITS.get(following)
+    value = read_number(run)
+    if value is not None and unit is not None:
+        return [(value, unit)], False, False, False
+    if droppable(run[0]):
+        # A leading Banglish word ("at 200 kg") may not be a number at all,
+        # so read the rest without it.
+        return run_quantities(tokens, start + 1, end)
+    if any(token in JOINERS - {"and"} for token in run):
+        return [], False, False, True  # "দুইশো বা তিনশো কেজি"
+    if any(not NUMBER.fullmatch(token) and not droppable(token) for token in run):
+        return [], False, True, False
+    return digit_quantities(tokens, start, end)
+
+
+def quantities(text: str) -> Quantities:
+    """Return (number, unit) pairs, whether a number had no unit, whether a
+    number said in words could not be read, and whether several numbers were
+    given where one quantity belongs."""
+    tokens = text.split()
+    pairs: list[tuple[Decimal, Unit]] = []
+    bare = unread = several = False
+    for start, end in number_runs(tokens):
+        found, run_bare, run_unread, run_several = run_quantities(tokens, start, end)
+        pairs.extend(found)
+        bare = bare or run_bare
+        unread = unread or run_unread
+        several = several or run_several
+    return pairs, bare, unread, several
+
+
+def affirmed_clause(text: str) -> str | None:
+    """The final clause, when a negation belongs only to earlier clauses.
+
+    "no thanks, reject it" and "এই দামে দিব না, অফারটা বাদ দিন" end with a
+    plain command; the negation refers to something else. The command is
+    used only if it is the last clause and has no negation or doubt of its
+    own, and no earlier clause holds a change command or a quantity. So
+    "অফার গ্রহণ করব, না" and "don't accept, reject it" stay negated, and a
+    transcript without punctuation is never split.
+    """
+    clauses = [clause for clause in CLAUSE_BREAK.split(nfc(text)) if normalize(clause)]
+    if len(clauses) < 2:
+        return None
+    last = normalize(clauses[-1])
+    if NEGATION.search(last) or UNCERTAIN.search(last):
+        return None
+    if not any(tool in WRITES for tool in matches(last)):
+        return None
+    for clause in clauses[:-1]:
+        earlier = normalize(clause)
+        if any(tool in WRITES for tool in matches(earlier)):
+            return None
+        if number_runs(earlier.split()):
+            return None
+    return clauses[-1]
 
 
 def interpret(text: str) -> Interpretation:
@@ -536,11 +1012,17 @@ def interpret(text: str) -> Interpretation:
     found = matches(normalized)
     changes = [tool for tool in found if tool in WRITES]
     if changes:
+        if OTHER_PRODUCT.search(normalized):
+            # "আলুর ৫ কেজি পেঁয়াজ পচে গেছে": a change must concern onion only.
+            return Interpretation("unknown", reason="unsupported_product")
         if UNCERTAIN.search(normalized):
             return Interpretation(
                 "ambiguous", reason="uncertain", candidates=tuple(changes)
             )
         if NEGATION.search(normalized):
+            clause = affirmed_clause(text)
+            if clause is not None:
+                return interpret(clause)
             return Interpretation(
                 "negated", reason="negated", candidates=tuple(changes)
             )
@@ -560,18 +1042,19 @@ def interpret(text: str) -> Interpretation:
 
     if tool not in QUANTITY_TOOLS:
         return Interpretation("resolved", tool, match="pattern")
-    if NUMBER_WORDS.search(normalized):
+    loss = tool == "movement" and bool(re.search(LOSS, normalized))
+    pairs, bare, unread, several = quantities(normalized)
+    if unread:
         return Interpretation("unknown", reason="number_words", candidates=(tool,))
-    pairs, bare = quantities(normalized)
-    if len(pairs) > 1:
+    if several or len(pairs) > 1:
         return Interpretation(
             "ambiguous", reason="multiple_quantities", candidates=(tool,)
         )
     if not pairs:
         if bare:
             return Interpretation("unknown", reason="unit_missing", candidates=(tool,))
-        return Interpretation("resolved", tool, match="pattern")
+        return Interpretation("resolved", tool, match="pattern", loss=loss)
     amount, unit = pairs[0]
     if amount <= 0:
         return Interpretation("unknown", reason="invalid_quantity", candidates=(tool,))
-    return Interpretation("resolved", tool, amount, unit, match="pattern")
+    return Interpretation("resolved", tool, amount, unit, match="pattern", loss=loss)

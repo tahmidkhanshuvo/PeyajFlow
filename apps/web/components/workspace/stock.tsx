@@ -4,7 +4,13 @@ import type { Locale } from "../../lib/copy";
 import type { Advice, PriceSeries } from "../../lib/pilot-types";
 import { api, json, type Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
-import type { Delegation, Inspection, Lot, LotDetail, Risk } from "../../lib/workspace-types";
+import type {
+  Delegation,
+  Inspection,
+  Lot,
+  LotDetail,
+  Risk,
+} from "../../lib/workspace-types";
 import { dhakaToday, numberLabel, timeLabel } from "../../lib/workspace-values";
 import { AssistanceForm } from "./assistance";
 import { DecimalField, Details, Field, GradeField, RequestKey } from "./fields";
@@ -172,7 +178,9 @@ function LotBalances({ locale, lot }: { locale: Locale; lot: Lot }) {
           {stats.map(([label, value]) => (
             <tr key={label}>
               <th scope="row">{label}</th>
-              <td><strong>{value}</strong></td>
+              <td>
+                <strong>{value}</strong>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -228,11 +236,7 @@ export async function StockPage({
             <RequestKey />
             {actor.role === "agent" && (
               <Field
-                label={local(
-                  locale,
-                  "মজুতের মালিক",
-                  "Farmer who owns this lot",
-                )}
+                label={local(locale, "মজুতের মালিক", "Farmer who owns this lot")}
               >
                 <select name="farmer_id" required defaultValue="">
                   <option value="" disabled>
@@ -414,7 +418,11 @@ export async function LotPage({
                 action={mutate.bind(null, locale, "lot-edit", id, "")}
                 label={t("তথ্য সংরক্ষণ করুন", "Save details")}
               >
-                <LotFields locale={locale} district={actor.district} lot={lot} />
+                <LotFields
+                  locale={locale}
+                  district={actor.district}
+                  lot={lot}
+                />
               </WorkspaceForm>
             </StockActionModal>
           )}
@@ -437,14 +445,9 @@ export async function LotPage({
                 <Field label={t("পরিবর্তনের ধরন", "Change type")}>
                   <select name="event_type">
                     <option value="WEIGHED_ADJUSTMENT">
-                      {t(
-                        "ওজন সমন্বয় (+/−)",
-                        "Weight adjustment (+/−)",
-                      )}
+                      {t("ওজন সমন্বয় (+/−)", "Weight adjustment (+/−)")}
                     </option>
-                    <option value="LOSS_REPORTED">
-                      {t("ক্ষতি", "Loss")}
-                    </option>
+                    <option value="LOSS_REPORTED">{t("ক্ষতি", "Loss")}</option>
                   </select>
                 </Field>
                 <UnitFields locale={locale} />
@@ -481,7 +484,10 @@ export async function LotPage({
       <section className="work-panel lot-advice-dashboard-panel">
         <div className="lot-advice-header">
           <h2 className="lot-advice-title">
-            {t("বাজার পরামর্শ (অপেক্ষা নাকি বিক্রি)", "Market Advisory (Hold vs. Sell)")}
+            {t(
+              "বাজার পরামর্শ (অপেক্ষা নাকি বিক্রি)",
+              "Market Advisory (Hold vs. Sell)",
+            )}
           </h2>
           <span className={`advice-pill advice-pill-${decisionTheme}`}>
             <span className="advice-pill-dot" aria-hidden="true" />
@@ -513,19 +519,21 @@ export async function LotPage({
                 {projectedDiffText}
               </strong>
               <span className="lot-advice-stat-unit">
-                {advice?.hold_middle_bdt ? t("মোট নিট সুবিধা", "net advantage") : t("/কেজি সম্ভাব্য বৃদ্ধি", "/kg projected upside")}
+                {advice?.hold_middle_bdt
+                  ? t("মোট নিট সুবিধা", "net advantage")
+                  : t("/কেজি সম্ভাব্য বৃদ্ধি", "/kg projected upside")}
               </span>
             </div>
           </div>
 
           {/* Callout Card: Strategic Recommendation */}
-          <div className={`lot-advice-rationale-card ${isSell ? "theme-sell" : ""}`}>
+          <div
+            className={`lot-advice-rationale-card ${isSell ? "theme-sell" : ""}`}
+          >
             <span className="lot-advice-rationale-label">
               {t("কৌশলগত সিদ্ধান্ত ও কারণ", "Strategic Recommendation")}
             </span>
-            <p className="lot-advice-rationale-text">
-              {rationaleText}
-            </p>
+            <p className="lot-advice-rationale-text">{rationaleText}</p>
           </div>
         </div>
       </section>
@@ -549,7 +557,9 @@ export async function LotPage({
             className={`trade-status-pill ${isVerified ? "verified" : "pending"}`}
           >
             <span className="trade-status-dot" aria-hidden="true" />
-            {isVerified ? t("যাচাইকৃত", "Verified") : t("স্বঘোষিত", "Self-reported")}
+            {isVerified
+              ? t("যাচাইকৃত", "Verified")
+              : t("স্বঘোষিত", "Self-reported")}
           </span>
         </div>
 
@@ -559,18 +569,24 @@ export async function LotPage({
             <tbody>
               <tr>
                 <th scope="row">{t("মজুতের নাম", "Lot name")}</th>
-                <td><strong>{lot.label}</strong></td>
+                <td>
+                  <strong>{lot.label}</strong>
+                </td>
               </tr>
               <tr>
                 <th scope="row">{t("মজুত আইডি", "Lot ID")}</th>
-                <td><code>#{lot.id}</code></td>
+                <td>
+                  <code>#{lot.id}</code>
+                </td>
               </tr>
               <tr>
                 <th scope="row">{t("অবস্থান ও জেলা", "Location")}</th>
                 <td>{lot.district}</td>
               </tr>
               <tr>
-                <th scope="row">{t("যাচাইয়ের অবস্থা", "Verification status")}</th>
+                <th scope="row">
+                  {t("যাচাইয়ের অবস্থা", "Verification status")}
+                </th>
                 <td>
                   <span
                     className={`trade-status-pill ${
@@ -613,8 +629,14 @@ export async function LotPage({
                 </tr>
               )}
               <tr className="row-highlight">
-                <th scope="row">{t("খালি মজুত (বিক্রয়যোগ্য)", "Available balance")}</th>
-                <td><strong className="stock-highlight-kg">{kg(locale, lot.sellable_kg)}</strong></td>
+                <th scope="row">
+                  {t("খালি মজুত (বিক্রয়যোগ্য)", "Available balance")}
+                </th>
+                <td>
+                  <strong className="stock-highlight-kg">
+                    {kg(locale, lot.sellable_kg)}
+                  </strong>
+                </td>
               </tr>
               <tr>
                 <th scope="row">{t("বর্তমান মজুত", "Recorded stock")}</th>
@@ -639,7 +661,9 @@ export async function LotPage({
                 </tr>
               )}
               <tr>
-                <th scope="row">{t("প্রাথমিক নিবন্ধিত পরিমাণ", "Initial quantity")}</th>
+                <th scope="row">
+                  {t("প্রাথমিক নিবন্ধিত পরিমাণ", "Initial quantity")}
+                </th>
                 <td>{kg(locale, lot.initial_kg)}</td>
               </tr>
               <tr>
@@ -711,9 +735,13 @@ export async function LotPage({
 
       {/* Stock History Organized Ledger */}
       <section className="work-panel lot-history-panel">
-        <h2 className="lot-history-title">{local(locale, "মজুতের ইতিহাস", "Stock history")}</h2>
+        <h2 className="lot-history-title">
+          {local(locale, "মজুতের ইতিহাস", "Stock history")}
+        </h2>
         {lot.events.length === 0 ? (
-          <p className="lot-history-empty">{t("এখনও কোনো ইতিহাস নেই।", "No history entries yet.")}</p>
+          <p className="lot-history-empty">
+            {t("এখনও কোনো ইতিহাস নেই।", "No history entries yet.")}
+          </p>
         ) : (
           <div className="lot-history-list">
             {lot.events.map((event) => {
@@ -747,7 +775,10 @@ export async function LotPage({
                       )}
                     </span>
                     <div className="lot-history-meta">
-                      <time className="lot-history-time" dateTime={event.recorded_at}>
+                      <time
+                        className="lot-history-time"
+                        dateTime={event.recorded_at}
+                      >
                         {timeLabel(locale, event.recorded_at)}
                       </time>
                       {customReason && (
@@ -757,14 +788,20 @@ export async function LotPage({
                       )}
                       {hasReservedDelta && (
                         <span className="lot-history-reserved-note">
-                          ({t("সংরক্ষিত", "Reserved")}: {Number(event.reserved_delta_kg) > 0 ? `+${kg(locale, event.reserved_delta_kg)}` : kg(locale, event.reserved_delta_kg)})
+                          ({t("সংরক্ষিত", "Reserved")}:{" "}
+                          {Number(event.reserved_delta_kg) > 0
+                            ? `+${kg(locale, event.reserved_delta_kg)}`
+                            : kg(locale, event.reserved_delta_kg)}
+                          )
                         </span>
                       )}
-                      {event.submitted_unit === "maund" && event.kg_per_maund && (
-                        <span className="lot-history-unit-note">
-                          ({t("প্রতি মণে", "Per maund")}: {kg(locale, event.kg_per_maund)})
-                        </span>
-                      )}
+                      {event.submitted_unit === "maund" &&
+                        event.kg_per_maund && (
+                          <span className="lot-history-unit-note">
+                            ({t("প্রতি মণে", "Per maund")}:{" "}
+                            {kg(locale, event.kg_per_maund)})
+                          </span>
+                        )}
                     </div>
                   </div>
 

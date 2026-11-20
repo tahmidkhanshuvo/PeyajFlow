@@ -21,7 +21,8 @@ type PilotOp =
   | "book"
   | "cancel"
   | "start-call"
-  | "resolve-task";
+  | "resolve-task"
+  | "voice-pin";
 type AdviceState = FormState & { result?: Advice };
 type VoiceState = FormState & {
   call?: VoiceCall;
@@ -117,6 +118,20 @@ export async function pilotMutate(
       }
       case "resolve-task":
         await api(`/v1/voice/tasks/${resource}/resolve`, { method: "POST" });
+        destination = `${base}/voice`;
+        break;
+      case "voice-pin":
+        await api(
+          "/v1/voice/pin",
+          json(
+            {
+              pin: decimal(form, "pin"),
+              // Passphrases keep their spaces, as at sign-in.
+              password: String(form.get("password") ?? ""),
+            },
+            "PUT",
+          ),
+        );
         destination = `${base}/voice`;
         break;
       default:
@@ -215,8 +230,21 @@ function voiceParams(form: FormData): Record<string, unknown> {
         ...(command === "counter" ? terms : {}),
       };
     }
-    case "movement":
-      return { lot_id, ...units, ...fields(form, "event_type", "reason") };
+    case "movement": {
+      // A loss is said and typed as the amount lost ("৫ কেজি পচে গেছে") and
+      // stored as a negative change, so a positive loss amount is negated.
+      const loss = value(form, "event_type") === "LOSS_REPORTED";
+      const quantity =
+        loss && units.quantity && !units.quantity.startsWith("-")
+          ? `-${units.quantity}`
+          : units.quantity;
+      return {
+        lot_id,
+        ...units,
+        quantity,
+        ...fields(form, "event_type", "reason"),
+      };
+    }
     case "register":
       return {
         ...units,

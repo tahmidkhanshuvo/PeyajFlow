@@ -19,6 +19,7 @@ import type { Profile } from "../../lib/workspace-api";
 import { errorText, local } from "../../lib/workspace-copy";
 import type { Lot, Offer, Order, Supply } from "../../lib/workspace-types";
 import { dhakaToday, timeLabel } from "../../lib/workspace-values";
+import type { Recognition } from "./speech-input";
 import { WorkspaceIcon } from "./icon";
 import { WorkspaceDropdown } from "./dropdown";
 
@@ -99,7 +100,7 @@ export function VoiceDesk({
   } | null>(null);
   const [prefill, setPrefill] = useState(0);
   const [listening, setListening] = useState(false);
-  const engine = useRef<any>(null);
+  const engine = useRef<Recognition | null>(null);
 
   useEffect(
     () => () => {
@@ -123,8 +124,8 @@ export function VoiceDesk({
     }
 
     const browser = window as Window & {
-      SpeechRecognition?: new () => any;
-      webkitSpeechRecognition?: new () => any;
+      SpeechRecognition?: new () => Recognition;
+      webkitSpeechRecognition?: new () => Recognition;
     };
     const BrowserRecognition =
       browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
@@ -146,9 +147,9 @@ export function VoiceDesk({
       recognition.lang = "bn-BD";
       recognition.maxAlternatives = 3;
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event) => {
         const alternatives = Array.from(event.results[0] ?? [])
-          .map((item: any) => item.transcript?.trim().slice(0, 100))
+          .map((item) => item.transcript.trim().slice(0, 100))
           .filter(Boolean)
           .slice(0, 3);
         if (alternatives.length) {
@@ -156,7 +157,7 @@ export function VoiceDesk({
         }
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event) => {
         setListening(false);
         engine.current = null;
         if (event.error !== "aborted") {
@@ -185,6 +186,8 @@ export function VoiceDesk({
     }
   }
   const pending = call.entries.find((entry) => entry.state === "pending");
+  // Demo accounts type the displayed 4-digit code; real accounts their PIN.
+  const pinLength = actor.is_demo ? 4 : 6;
   const active = call.status === "active";
   const buyer = actor.role === "buyer";
   const farmer = actor.role === "farmer";
@@ -236,6 +239,7 @@ export function VoiceDesk({
         setUnit(amount.unit);
       }
       setSpoken(amount);
+      setEventType(usable.loss ? "LOSS_REPORTED" : "WEIGHED_ADJUSTMENT");
       setPrefill((count) => count + 1);
       setHeard({
         ok: true,
@@ -500,15 +504,21 @@ export function VoiceDesk({
               </div>
 
               <blockquote className="voice-transcript-body">
-                "{phrase}"
+                &ldquo;{phrase}&rdquo;
               </blockquote>
 
               {heard && (
                 <div
                   className={`voice-transcript-feedback ${heard.ok ? "is-ok" : "is-error"}`}
                 >
-                  <span className="voice-transcript-feedback-icon" aria-hidden="true">
-                    <WorkspaceIcon name={heard.ok ? "check" : "info"} size={16} />
+                  <span
+                    className="voice-transcript-feedback-icon"
+                    aria-hidden="true"
+                  >
+                    <WorkspaceIcon
+                      name={heard.ok ? "check" : "info"}
+                      size={16}
+                    />
                   </span>
                   <span>{heard.text}</span>
                 </div>
@@ -518,7 +528,11 @@ export function VoiceDesk({
             {/* Call Controls: End Call or Return to Desk */}
             <div className="voice-call-controls-row">
               {active ? (
-                <form action={submit} onSubmit={send} className="voice-end-call-form">
+                <form
+                  action={submit}
+                  onSubmit={send}
+                  className="voice-end-call-form"
+                >
                   <input name="mode" type="hidden" value="end" />
                   <button
                     className="voice-call-end-btn"
@@ -537,7 +551,9 @@ export function VoiceDesk({
                   <span className="voice-restart-icon" aria-hidden="true">
                     <WorkspaceIcon name="voice" size={18} />
                   </span>
-                  <span>{t("সহকারী ডেস্কে ফিরুন", "Back to Voice Assistant")}</span>
+                  <span>
+                    {t("সহকারী ডেস্কে ফিরুন", "Back to Voice Assistant")}
+                  </span>
                 </Link>
               )}
             </div>
@@ -559,7 +575,9 @@ export function VoiceDesk({
         <section className="work-panel">
           <div className="dash-quality-eyebrow" style={{ marginBottom: "8px" }}>
             <span className="dash-pulse-dot" aria-hidden="true" />
-            <span>{t("কণ্ঠস্বর ও কমান্ড কিপ্যাড", "Voice & Command Interface")}</span>
+            <span>
+              {t("কণ্ঠস্বর ও কমান্ড কিপ্যাড", "Voice & Command Interface")}
+            </span>
           </div>
           <h2 className="dash-analysis-title" style={{ marginBottom: "18px" }}>
             {t("কথা লিখুন বা নির্বাচন করুন", "Enter or Select a Command")}
@@ -568,7 +586,10 @@ export function VoiceDesk({
             <input name="mode" type="hidden" value="intent" />
             <div className="work-grid">
               <div className="work-field-col">
-                <label htmlFor="voice-command-select" className="work-field-label">
+                <label
+                  htmlFor="voice-command-select"
+                  className="work-field-label"
+                >
                   {t("কাজ", "Command")}
                 </label>
                 <WorkspaceDropdown
@@ -609,7 +630,10 @@ export function VoiceDesk({
               ].includes(tool) &&
                 !buyer && (
                   <div className="work-field-col">
-                    <label htmlFor="voice-lot-select" className="work-field-label">
+                    <label
+                      htmlFor="voice-lot-select"
+                      className="work-field-label"
+                    >
                       {t("মজুত", "Lot")}
                     </label>
                     <WorkspaceDropdown
@@ -633,7 +657,10 @@ export function VoiceDesk({
                 )}
               {["prices", "advice"].includes(tool) && (
                 <div className="work-field-col">
-                  <label htmlFor="voice-series-select" className="work-field-label">
+                  <label
+                    htmlFor="voice-series-select"
+                    className="work-field-label"
+                  >
                     {t("দরের ধারা", "Market series")}
                   </label>
                   <WorkspaceDropdown
@@ -654,7 +681,10 @@ export function VoiceDesk({
               )}
               {offerAction && (
                 <div className="work-field-col">
-                  <label htmlFor="voice-offer-select" className="work-field-label">
+                  <label
+                    htmlFor="voice-offer-select"
+                    className="work-field-label"
+                  >
                     {t("অফার", "Offer")}
                   </label>
                   <WorkspaceDropdown
@@ -684,7 +714,10 @@ export function VoiceDesk({
               {tool === "movement" && (
                 <>
                   <div className="work-field-col">
-                    <label htmlFor="voice-movement-type-select" className="work-field-label">
+                    <label
+                      htmlFor="voice-movement-type-select"
+                      className="work-field-label"
+                    >
                       {t("পরিবর্তনের ধরন", "Movement type")}
                     </label>
                     <WorkspaceDropdown
@@ -695,11 +728,14 @@ export function VoiceDesk({
                       options={[
                         {
                           value: "WEIGHED_ADJUSTMENT",
-                          label: t("ওজন সমন্বয় (+/−)", "Weight adjustment (+/−)"),
+                          label: t(
+                            "ওজন সমন্বয় (+/−)",
+                            "Weight adjustment (+/−)",
+                          ),
                         },
                         {
                           value: "LOSS_REPORTED",
-                          label: t("ক্ষতি (ঋণাত্মক)", "Loss (negative)"),
+                          label: t("ক্ষতি (যতটা কমেছে)", "Loss (amount lost)"),
                         },
                       ]}
                     />
@@ -753,7 +789,10 @@ export function VoiceDesk({
                     />
                   </label>
                   <div className="work-field-col">
-                    <label htmlFor="voice-grade-select" className="work-field-label">
+                    <label
+                      htmlFor="voice-grade-select"
+                      className="work-field-label"
+                    >
                       {t("গ্রেড", "Grade")}
                     </label>
                     <WorkspaceDropdown
@@ -779,7 +818,10 @@ export function VoiceDesk({
               {tool === "send_offer" && (
                 <>
                   <div className="work-field-col">
-                    <label htmlFor="voice-supply-lot-select" className="work-field-label">
+                    <label
+                      htmlFor="voice-supply-lot-select"
+                      className="work-field-label"
+                    >
                       {t("তালিকাভুক্ত মজুত", "Listed lot")}
                     </label>
                     <WorkspaceDropdown
@@ -809,7 +851,10 @@ export function VoiceDesk({
                     />
                   </label>
                   <div className="work-field-col">
-                    <label htmlFor="voice-transport-select" className="work-field-label">
+                    <label
+                      htmlFor="voice-transport-select"
+                      className="work-field-label"
+                    >
                       {t("পরিবহনের দায়িত্ব", "Transport responsibility")}
                     </label>
                     <WorkspaceDropdown
@@ -828,7 +873,10 @@ export function VoiceDesk({
               {tool === "transport" && (
                 <>
                   <div className="work-field-col">
-                    <label htmlFor="voice-order-select" className="work-field-label">
+                    <label
+                      htmlFor="voice-order-select"
+                      className="work-field-label"
+                    >
                       {t("অর্ডার", "Order")}
                     </label>
                     <WorkspaceDropdown
@@ -901,7 +949,11 @@ export function VoiceDesk({
                     : t("কাজটি যাচাই করুন", "Check command")}
                 </span>
               </button>
-              <button className="voice-command-send-btn refresh" disabled={busy} type="submit">
+              <button
+                className="voice-command-send-btn refresh"
+                disabled={busy}
+                type="submit"
+              >
                 <span className="voice-btn-icon" aria-hidden="true">
                   <WorkspaceIcon name="arrow" size={16} />
                 </span>
@@ -932,22 +984,26 @@ export function VoiceDesk({
           >
             {t("বাংলায় শুনুন", "Play Bangla read-back")}
           </button>
-          {state.code && state.pendingId === pending.id ? (
+          {!actor.is_demo || (state.code && state.pendingId === pending.id) ? (
             <form action={submit} onSubmit={send} className="work-form">
               <input type="hidden" name="mode" value="confirm" />
               <input type="hidden" name="action_id" value={pending.id} />
-              <p>
-                {actor.is_demo
-                  ? t("ডেমো কোড", "Demo keypad code")
-                  : t("কিপ্যাড কোড", "Keypad code")}{" "}
-                <strong>{state.code}</strong>
-              </p>
+              {actor.is_demo && (
+                <p>
+                  {t("ডেমো কোড", "Demo keypad code")}{" "}
+                  <strong>{state.code}</strong>
+                </p>
+              )}
               <label>
-                {t("চার অঙ্কের নিশ্চিতকরণ", "Four-digit confirmation")}
+                {actor.is_demo
+                  ? t("চার অঙ্কের নিশ্চিতকরণ", "Four-digit confirmation")
+                  : t("আপনার ভয়েস পিন", "Your voice PIN")}
                 <input
                   name="digits"
+                  type={actor.is_demo ? "text" : "password"}
+                  autoComplete="off"
                   inputMode="numeric"
-                  maxLength={4}
+                  maxLength={pinLength}
                   value={digits}
                   onChange={(event) => setDigits(event.target.value)}
                   required
@@ -960,7 +1016,7 @@ export function VoiceDesk({
                     type="button"
                     key={n}
                     onClick={() =>
-                      setDigits((value) => `${value}${n}`.slice(0, 4))
+                      setDigits((value) => `${value}${n}`.slice(0, pinLength))
                     }
                   >
                     {n}
@@ -978,7 +1034,9 @@ export function VoiceDesk({
                 <button
                   className="refresh"
                   type="submit"
-                  disabled={busy || digits.length !== 4}
+                  disabled={
+                    busy || digits.length < 4 || digits.length > pinLength
+                  }
                 >
                   {t("কিপ্যাডে নিশ্চিত করুন", "Confirm by keypad")}
                 </button>

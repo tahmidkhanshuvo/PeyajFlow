@@ -36,7 +36,9 @@ export function PhoneDialer({
   const [activeKey, setActiveKey] = useState<string | null>(null);
 
   // In-place calling interface state
-  const [callState, setCallState] = useState<"idle" | "ringing" | "connected" | "ended">("idle");
+  const [callState, setCallState] = useState<
+    "idle" | "ringing" | "connected" | "ended"
+  >("idle");
   const [callSeconds, setCallSeconds] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaker, setIsSpeaker] = useState(false);
@@ -111,7 +113,7 @@ export function PhoneDialer({
   // Matched contact info
   const cleanNum = number.replace(/\s+/g, "");
   const matchedContact = quickNumbers.find(
-    (item) => item.number.replace(/\s+/g, "") === cleanNum
+    (item) => item.number.replace(/\s+/g, "") === cleanNum,
   );
   const activeCallerTitle = matchedContact
     ? matchedContact.label
@@ -244,10 +246,13 @@ export function PhoneDialer({
           <div className="phone-status-strip">
             <span className="phone-carrier">PeyajFlow 5G</span>
             <span className="phone-time">
-              {new Date().toLocaleTimeString(locale === "bn" ? "bn-BD" : "en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {new Date().toLocaleTimeString(
+                locale === "bn" ? "bn-BD" : "en-US",
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                },
+              )}
             </span>
             <div className="phone-battery-wrap">
               <span className="phone-battery-level" />
@@ -272,7 +277,11 @@ export function PhoneDialer({
               </div>
 
               {/* 3x4 Dialpad Grid */}
-              <div className="phone-keypad-grid" role="group" aria-label="Phone keypad">
+              <div
+                className="phone-keypad-grid"
+                role="group"
+                aria-label="Phone keypad"
+              >
                 {dialKeys.map(({ digit, sub }) => (
                   <button
                     key={digit}
@@ -335,14 +344,18 @@ export function PhoneDialer({
             <div className="phone-incall-view" aria-live="polite">
               {/* Caller Information */}
               <div className="phone-incall-header">
-                <div className={`phone-incall-avatar-wrap ${callState === "ringing" ? "is-ringing" : ""}`}>
+                <div
+                  className={`phone-incall-avatar-wrap ${callState === "ringing" ? "is-ringing" : ""}`}
+                >
                   <div className="phone-incall-avatar">
                     <WorkspaceIcon
                       name={matchedContact ? matchedContact.icon : "phone"}
                       size={36}
                     />
                   </div>
-                  {callState === "ringing" && <span className="phone-avatar-ripple" />}
+                  {callState === "ringing" && (
+                    <span className="phone-avatar-ripple" />
+                  )}
                 </div>
 
                 <h4 className="phone-incall-title">{activeCallerTitle}</h4>
@@ -417,25 +430,39 @@ export function PhoneDialer({
                   >
                     <span className="phone-tool-icon">
                       <span className="phone-keypad-icon-grid">
-                        <span /><span /><span />
-                        <span /><span /><span />
-                        <span /><span /><span />
+                        <span />
+                        <span />
+                        <span />
+                        <span />
+                        <span />
+                        <span />
+                        <span />
+                        <span />
+                        <span />
                       </span>
                     </span>
-                    <span className="phone-tool-label">{t("কী-প্যাড", "Keypad")}</span>
+                    <span className="phone-tool-label">
+                      {t("কী-প্যাড", "Keypad")}
+                    </span>
                   </button>
 
                   <button
                     type="button"
                     className={`phone-incall-tool-btn ${isSpeaker ? "is-active" : ""}`}
                     onClick={() => setIsSpeaker((s) => !s)}
-                    title={isSpeaker ? t("স্পিকার বন্ধ", "Speaker Off") : t("স্পিকার অন", "Speaker")}
+                    title={
+                      isSpeaker
+                        ? t("স্পিকার বন্ধ", "Speaker Off")
+                        : t("স্পিকার অন", "Speaker")
+                    }
                   >
                     <span className="phone-tool-icon">
                       <WorkspaceIcon name="volume" size={22} />
                     </span>
                     <span className="phone-tool-label">
-                      {isSpeaker ? t("স্পিকার অন", "Speaker On") : t("স্পিকার", "Speaker")}
+                      {isSpeaker
+                        ? t("স্পিকার অন", "Speaker On")
+                        : t("স্পিকার", "Speaker")}
                     </span>
                   </button>
                 </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { WorkspaceIcon } from "./workspace/icon";
 
 function getResolvedTheme(): "light" | "dark" {
@@ -22,31 +22,27 @@ function getResolvedTheme(): "light" | "dark" {
   return "light";
 }
 
+function subscribeTheme(onChange: () => void) {
+  window.addEventListener("themechange", onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener("themechange", onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
 export function ThemeToggle({
   labels = { light: "Light", dark: "Dark" },
 }: {
   labels?: { light: string; dark: string };
 }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    setTheme(getResolvedTheme());
-
-    const handleSync = () => {
-      setTheme(getResolvedTheme());
-    };
-    window.addEventListener("themechange", handleSync);
-    window.addEventListener("storage", handleSync);
-    return () => {
-      window.removeEventListener("themechange", handleSync);
-      window.removeEventListener("storage", handleSync);
-    };
-  }, []);
+  const theme = useSyncExternalStore(
+    subscribeTheme,
+    getResolvedTheme,
+    () => null,
+  );
 
   const toggle = (next: "light" | "dark") => {
-    setTheme(next);
     try {
       localStorage.setItem("pf-theme", next);
       document.cookie = `pf-theme=${next}; path=/; max-age=31536000; SameSite=Lax`;
@@ -65,7 +61,7 @@ export function ThemeToggle({
     window.dispatchEvent(new Event("themechange"));
   };
 
-  if (!mounted) {
+  if (!theme) {
     return (
       <div className="theme-toggle-seg" aria-hidden="true">
         <span className="theme-toggle-btn active">

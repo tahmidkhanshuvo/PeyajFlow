@@ -14,7 +14,7 @@ import {
   dismissAuthTransition,
 } from "../auth-transition-overlay";
 
-export type FormState = { error?: string };
+export type FormState = { error?: string; notice?: string };
 export type FormAction = (
   state: FormState,
   form: FormData,
@@ -85,6 +85,11 @@ export function WorkspaceForm({
       {error && (
         <p className="form-error" role="alert">
           {errorText(locale, error)}
+        </p>
+      )}
+      {!error && state.notice && (
+        <p className="work-feedback" role="status">
+          {errorText(locale, state.notice)}
         </p>
       )}
       <button type="submit" className="refresh" disabled={pending || preparing}>

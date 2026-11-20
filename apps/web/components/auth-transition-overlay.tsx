@@ -8,7 +8,9 @@ export type AuthMode = "signin" | "signout";
 
 export function triggerAuthTransition(mode: AuthMode = "signin") {
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("pf-auth-start", { detail: { mode } }));
+    window.dispatchEvent(
+      new CustomEvent("pf-auth-start", { detail: { mode } }),
+    );
   }
 }
 
@@ -195,8 +197,18 @@ export function AuthTransitionOverlay({ locale }: { locale: Locale }) {
             </defs>
 
             {/* Ambient radiating ripples */}
-            <circle className="pf-onion-ripple pf-onion-ripple-1" cx="80" cy="85" r="50" />
-            <circle className="pf-onion-ripple pf-onion-ripple-2" cx="80" cy="85" r="65" />
+            <circle
+              className="pf-onion-ripple pf-onion-ripple-1"
+              cx="80"
+              cy="85"
+              r="50"
+            />
+            <circle
+              className="pf-onion-ripple pf-onion-ripple-2"
+              cx="80"
+              cy="85"
+              r="65"
+            />
 
             {/* Onion Bulb with floating breath */}
             <g className="pf-onion-body">

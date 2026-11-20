@@ -70,6 +70,11 @@ def test_signup_and_review(pilot):
     invalid = client.post(create, json={**entry, "nid": "not-an-id-number"})
     assert invalid.status_code == 422
     assert invalid.json() == {"detail": "invalid_input"}
+    # Only real Bangladesh NID formats: 10, 13 or 17 digits, and a 17-digit
+    # number begins with a plausible birth year.
+    for nid in ("12345678901", "123456789012345678", "18001234567890123"):
+        refused = client.post(create, json={**entry, "nid": nid})
+        assert refused.json() == {"detail": "nid_invalid"}, nid
     created = client.post(
         create,
         json={

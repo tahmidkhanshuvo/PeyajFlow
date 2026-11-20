@@ -157,4 +157,3 @@ export async function markAllAlertsRead(locale: Locale): Promise<void> {
     // Ignore error
   }
 }
-

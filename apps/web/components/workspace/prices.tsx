@@ -87,7 +87,12 @@ function Observations({
         <span className="price-empty-icon" aria-hidden="true">
           <WorkspaceIcon name="inbox" size={32} />
         </span>
-        <p>{t("কোনো অনুমোদিত পর্যবেক্ষণ পাওয়া যায়নি।", "No approved observations found.")}</p>
+        <p>
+          {t(
+            "কোনো অনুমোদিত পর্যবেক্ষণ পাওয়া যায়নি।",
+            "No approved observations found.",
+          )}
+        </p>
       </div>
     );
   }
@@ -103,16 +108,24 @@ function Observations({
         <thead>
           <tr>
             <th scope="col" className="col-date">
-              <span className="th-content">{t("পর্যবেক্ষণের তারিখ", "Observed Date")}</span>
+              <span className="th-content">
+                {t("পর্যবেক্ষণের তারিখ", "Observed Date")}
+              </span>
             </th>
             <th scope="col" className="col-market">
-              <span className="th-content">{t("বাজার ও জাত", "Market & Variety")}</span>
+              <span className="th-content">
+                {t("বাজার ও জাত", "Market & Variety")}
+              </span>
             </th>
             <th scope="col" className="col-price text-right">
-              <span className="th-content">{t("দর (প্রতি কেজি)", "Price / kg")}</span>
+              <span className="th-content">
+                {t("দর (প্রতি কেজি)", "Price / kg")}
+              </span>
             </th>
             <th scope="col" className="col-source">
-              <span className="th-content">{t("উৎস ও রেকর্ড", "Source & Verification")}</span>
+              <span className="th-content">
+                {t("উৎস ও রেকর্ড", "Source & Verification")}
+              </span>
             </th>
           </tr>
         </thead>
@@ -120,7 +133,8 @@ function Observations({
           {rows.map((row) => {
             const lowKg = Number(row.low_bdt_kg);
             const highKg = Number(row.high_bdt_kg);
-            const isSingle = !isNaN(lowKg) && !isNaN(highKg) && lowKg === highKg;
+            const isSingle =
+              !isNaN(lowKg) && !isNaN(highKg) && lowKg === highKg;
             const dist = districts[row.district]
               ? local(locale, ...districts[row.district])
               : row.district;
@@ -165,10 +179,13 @@ function Observations({
                   <div className="price-val-cell">
                     <div className="price-bdt-main">
                       {isSingle ? (
-                        <span className="price-num">{taka(locale, lowKg.toFixed(2))}</span>
+                        <span className="price-num">
+                          {taka(locale, lowKg.toFixed(2))}
+                        </span>
                       ) : (
                         <span className="price-num">
-                          {taka(locale, lowKg.toFixed(2))} – {taka(locale, highKg.toFixed(2))}
+                          {taka(locale, lowKg.toFixed(2))} –{" "}
+                          {taka(locale, highKg.toFixed(2))}
                         </span>
                       )}
                       <span className="price-unit"> / {t("কেজি", "kg")}</span>
@@ -177,11 +194,13 @@ function Observations({
                     {row.unit === "maund" && (
                       <div className="price-maund-sub">
                         <span>
-                          {taka(locale, row.low)} – {taka(locale, row.high)} {t("/মণ", "/maund")}
+                          {taka(locale, row.low)} – {taka(locale, row.high)}{" "}
+                          {t("/মণ", "/maund")}
                         </span>
                         <span className="price-dot-sep">·</span>
                         <span>
-                          {numberLabel(locale, row.kg_per_maund ?? "0")} {t("কেজি/মণ", "kg/maund")}
+                          {numberLabel(locale, row.kg_per_maund ?? "0")}{" "}
+                          {t("কেজি/মণ", "kg/maund")}
                         </span>
                       </div>
                     )}
@@ -199,18 +218,22 @@ function Observations({
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <span>{row.source_record || t("উৎস রেকর্ড", "View Record")}</span>
+                          <span>
+                            {row.source_record || t("উৎস রেকর্ড", "View Record")}
+                          </span>
                           <WorkspaceIcon name="external" size={13} />
                         </a>
                       ) : (
                         <span className="price-source-plain">
-                          {row.source_record || t("সরকারি রেকর্ড", "Official Record")}
+                          {row.source_record ||
+                            t("সরকারি রেকর্ড", "Official Record")}
                         </span>
                       )}
                     </div>
                     <div className="price-source-meta">
                       <span className="price-published-date">
-                        {t("প্রকাশ:", "Published:")} {timeLabel(locale, row.published_on)}
+                        {t("প্রকাশ:", "Published:")}{" "}
+                        {timeLabel(locale, row.published_on)}
                       </span>
                     </div>
                   </div>
@@ -242,7 +265,12 @@ function HistoricalSpikeGraph({
         <span className="price-empty-icon" aria-hidden="true">
           <WorkspaceIcon name="inbox" size={32} />
         </span>
-        <p>{t("কোনো অনুমোদিত পর্যবেক্ষণ পাওয়া যায়নি।", "No approved observations found.")}</p>
+        <p>
+          {t(
+            "কোনো অনুমোদিত পর্যবেক্ষণ পাওয়া যায়নি।",
+            "No approved observations found.",
+          )}
+        </p>
       </div>
     );
   }
@@ -266,7 +294,12 @@ function HistoricalSpikeGraph({
   if (!points.length) {
     return (
       <div className="price-empty-state">
-        <p>{t("পর্যাপ্ত দর উপাত্ত পাওয়া যায়নি।", "Insufficient price data points to plot.")}</p>
+        <p>
+          {t(
+            "পর্যাপ্ত দর উপাত্ত পাওয়া যায়নি।",
+            "Insufficient price data points to plot.",
+          )}
+        </p>
       </div>
     );
   }
@@ -340,48 +373,70 @@ function HistoricalSpikeGraph({
       {/* Overview Financial Metrics Strip */}
       <div className="price-spike-kpis">
         <div className="price-spike-kpi">
-          <span className="price-spike-kpi-label">{t("সর্বশেষ দর", "Latest Benchmark")}</span>
+          <span className="price-spike-kpi-label">
+            {t("সর্বশেষ দর", "Latest Benchmark")}
+          </span>
           <strong className="price-spike-kpi-val highlight">
             ৳{numberLabel(locale, latestPoint.mid.toFixed(2))}
             <span className="price-spike-kpi-unit"> / {t("কেজি", "kg")}</span>
           </strong>
           <span className="price-spike-kpi-sub">
-            ৳{numberLabel(locale, latestPoint.low.toFixed(2))} – ৳{numberLabel(locale, latestPoint.high.toFixed(2))}
+            ৳{numberLabel(locale, latestPoint.low.toFixed(2))} – ৳
+            {numberLabel(locale, latestPoint.high.toFixed(2))}
           </span>
         </div>
 
         <div className="price-spike-kpi">
-          <span className="price-spike-kpi-label">{t("সর্বোচ্চ স্পাইক", "Peak Observed")}</span>
+          <span className="price-spike-kpi-label">
+            {t("সর্বোচ্চ স্পাইক", "Peak Observed")}
+          </span>
           <strong className="price-spike-kpi-val">
             ৳{numberLabel(locale, maxHigh.toFixed(2))}
             <span className="price-spike-kpi-unit"> / {t("কেজি", "kg")}</span>
           </strong>
-          <span className="price-spike-kpi-sub">{t("মৌসুমের সর্বোচ্চ", "Season High")}</span>
+          <span className="price-spike-kpi-sub">
+            {t("মৌসুমের সর্বোচ্চ", "Season High")}
+          </span>
         </div>
 
         <div className="price-spike-kpi">
-          <span className="price-spike-kpi-label">{t("সর্বনিম্ন দর", "Lowest Floor")}</span>
+          <span className="price-spike-kpi-label">
+            {t("সর্বনিম্ন দর", "Lowest Floor")}
+          </span>
           <strong className="price-spike-kpi-val">
             ৳{numberLabel(locale, minLow.toFixed(2))}
             <span className="price-spike-kpi-unit"> / {t("কেজি", "kg")}</span>
           </strong>
-          <span className="price-spike-kpi-sub">{t("মৌসুমের সর্বনিম্ন", "Season Low")}</span>
+          <span className="price-spike-kpi-sub">
+            {t("মৌসুমের সর্বনিম্ন", "Season Low")}
+          </span>
         </div>
 
         <div className="price-spike-kpi">
-          <span className="price-spike-kpi-label">{t("গড় বাজারদর", "Benchmark Average")}</span>
+          <span className="price-spike-kpi-label">
+            {t("গড় বাজারদর", "Benchmark Average")}
+          </span>
           <strong className="price-spike-kpi-val">
             ৳{numberLabel(locale, avgMid.toFixed(2))}
             <span className="price-spike-kpi-unit"> / {t("কেজি", "kg")}</span>
           </strong>
           <span className="price-spike-kpi-sub">
-            {numberLabel(locale, points.length)} {t("দিন পর্যবেক্ষণ", "observations")}
+            {numberLabel(locale, points.length)}{" "}
+            {t("দিন পর্যবেক্ষণ", "observations")}
           </span>
         </div>
       </div>
 
       {/* Responsive SVG Spike Graph */}
-      <div className="price-spike-chart-box" tabIndex={0} role="region" aria-label={t("দরের ঐতিহাসিক স্পাইক গ্রাফ", "Historical price spike chart")}>
+      <div
+        className="price-spike-chart-box"
+        tabIndex={0}
+        role="region"
+        aria-label={t(
+          "দরের ঐতিহাসিক স্পাইক গ্রাফ",
+          "Historical price spike chart",
+        )}
+      >
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="price-spike-svg"
@@ -460,12 +515,7 @@ function HistoricalSpikeGraph({
                 strokeLinecap="round"
               />
               {/* Top cap (High price) */}
-              <circle
-                cx={pt.x}
-                cy={pt.yHigh}
-                r="3.5"
-                fill="#8B263E"
-              />
+              <circle cx={pt.x} cy={pt.yHigh} r="3.5" fill="#8B263E" />
               {/* Midpoint marker dot */}
               <circle
                 cx={pt.x}
@@ -476,12 +526,7 @@ function HistoricalSpikeGraph({
                 strokeWidth="1.5"
               />
               {/* Bottom floor dot */}
-              <circle
-                cx={pt.x}
-                cy={pt.yLow}
-                r="2.5"
-                fill="#DE6A8F"
-              />
+              <circle cx={pt.x} cy={pt.yLow} r="2.5" fill="#DE6A8F" />
             </g>
           ))}
 
@@ -569,7 +614,10 @@ function ForecastRange({
           className={`price-forecast-subcard tone-${card.tone} ${card.featured ? "is-featured-subcard" : ""}`}
         >
           <div className="forecast-subcard-header">
-            <span className={`forecast-subcard-icon tone-${card.tone}`} aria-hidden="true">
+            <span
+              className={`forecast-subcard-icon tone-${card.tone}`}
+              aria-hidden="true"
+            >
               <WorkspaceIcon name={card.iconName} size={18} />
             </span>
             <span className="forecast-subcard-badge">{card.badge}</span>
@@ -582,7 +630,9 @@ function ForecastRange({
             ) : (
               <strong className={`forecast-subcard-value tone-${card.tone}`}>
                 {taka(locale, card.amount)}{" "}
-                <span className="forecast-subcard-unit">/ {t("কেজি", "kg")}</span>
+                <span className="forecast-subcard-unit">
+                  / {t("কেজি", "kg")}
+                </span>
               </strong>
             )}
           </div>
@@ -620,7 +670,10 @@ function ForecastPanel({
             <span>{t("মূল্য পূর্বাভাস ও পরিসর", "PRICE OUTLOOK")}</span>
           </div>
           <h2 className="dash-analysis-title price-forecast-title">
-            {t("দরের অনুরূপ প্রবণতার মডেল পূর্বাভাস", "Pattern Matching Model Outlook")}
+            {t(
+              "দরের অনুরূপ প্রবণতার মডেল পূর্বাভাস",
+              "Pattern Matching Model Outlook",
+            )}
           </h2>
           <p className="price-preview-desc">
             {t(
@@ -634,12 +687,14 @@ function ForecastPanel({
           <span className="price-pill-horizon">
             <WorkspaceIcon name="clock" size={14} />
             <span>
-              {numberLabel(locale, horizon)} {t("দিনের পূর্বাভাস", "Days Horizon")}
+              {numberLabel(locale, horizon)}{" "}
+              {t("দিনের পূর্বাভাস", "Days Horizon")}
             </span>
           </span>
           {result.target_on && (
             <span className="price-pill-target">
-              {t("পূর্বাভাস লক্ষ্য তারিখ:", "Target:")} {timeLabel(locale, result.target_on)}
+              {t("পূর্বাভাস লক্ষ্য তারিখ:", "Target:")}{" "}
+              {timeLabel(locale, result.target_on)}
             </span>
           )}
         </div>
@@ -656,7 +711,9 @@ function ForecastPanel({
           </span>
           <span>
             {t("ব্যবহৃত পর্যবেক্ষণ সংখ্যা:", "Observation dates used:")}{" "}
-            <strong>{numberLabel(locale, result.history_count)} {t("দিন", "days")}</strong>
+            <strong>
+              {numberLabel(locale, result.history_count)} {t("দিন", "days")}
+            </strong>
           </span>
         </div>
         {result.last_observed && (
@@ -858,15 +915,24 @@ function MarketBenchmarksTable({
         <div>
           <div className="dash-quality-eyebrow">
             <span className="dash-pulse-dot" aria-hidden="true" />
-            <span>{t("আঞ্চলিক মোকাম ও পাইকারি মানদণ্ড", "MARKET BENCHMARKS & OUTLOOK")}</span>
+            <span>
+              {t(
+                "আঞ্চলিক মোকাম ও পাইকারি মানদণ্ড",
+                "MARKET BENCHMARKS & OUTLOOK",
+              )}
+            </span>
           </div>
           <h2 className="dash-analysis-title price-section-title">
-            {t("বাজারের মানদণ্ড ও তুলনামূলক চিত্র", "Market Benchmarks & Regional Outlook")}
+            {t(
+              "বাজারের মানদণ্ড ও তুলনামূলক চিত্র",
+              "Market Benchmarks & Regional Outlook",
+            )}
           </h2>
         </div>
         <div className="price-section-count">
           <span className="price-count-chip">
-            {numberLabel(locale, benchmarks.length)} {t("টি মোকাম", "regional hubs")}
+            {numberLabel(locale, benchmarks.length)}{" "}
+            {t("টি মোকাম", "regional hubs")}
           </span>
         </div>
       </div>
@@ -875,12 +941,24 @@ function MarketBenchmarksTable({
         <table className="price-table price-benchmarks-table">
           <thead>
             <tr>
-              <th scope="col" style={{ width: "22%" }}>{t("মোকাম ও জেলা", "Market & District")}</th>
-              <th scope="col" style={{ width: "20%" }}>{t("বাণিজ্য স্তর ও জাত", "Trade Level & Variety")}</th>
-              <th scope="col" className="text-right" style={{ width: "17%" }}>{t("দর পরিসর (৳/কেজি)", "Benchmark Range")}</th>
-              <th scope="col" className="text-right" style={{ width: "13%" }}>{t("মধ্যক দর", "Median Rate")}</th>
-              <th scope="col" style={{ width: "16%" }}>{t("১৪ দিনের পূর্বাভাস", "14-Day Outlook")}</th>
-              <th scope="col" style={{ width: "12%" }}>{t("অবস্থা", "Status")}</th>
+              <th scope="col" style={{ width: "22%" }}>
+                {t("মোকাম ও জেলা", "Market & District")}
+              </th>
+              <th scope="col" style={{ width: "20%" }}>
+                {t("বাণিজ্য স্তর ও জাত", "Trade Level & Variety")}
+              </th>
+              <th scope="col" className="text-right" style={{ width: "17%" }}>
+                {t("দর পরিসর (৳/কেজি)", "Benchmark Range")}
+              </th>
+              <th scope="col" className="text-right" style={{ width: "13%" }}>
+                {t("মধ্যক দর", "Median Rate")}
+              </th>
+              <th scope="col" style={{ width: "16%" }}>
+                {t("১৪ দিনের পূর্বাভাস", "14-Day Outlook")}
+              </th>
+              <th scope="col" style={{ width: "12%" }}>
+                {t("অবস্থা", "Status")}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -901,7 +979,9 @@ function MarketBenchmarksTable({
                       </strong>
                       <span className="benchmark-market-district">
                         <LocationIcon size={12} />
-                        <span>{local(locale, item.districtBn, item.district)}</span>
+                        <span>
+                          {local(locale, item.districtBn, item.district)}
+                        </span>
                       </span>
                     </div>
                   </td>
@@ -913,7 +993,8 @@ function MarketBenchmarksTable({
                         {priceType(locale, item.type)}
                       </span>
                       <span className="benchmark-variety-text">
-                        {local(locale, item.varietyBn, item.variety)} · {t("গ্রেড", "Grade")} {item.grade}
+                        {local(locale, item.varietyBn, item.variety)} ·{" "}
+                        {t("গ্রেড", "Grade")} {item.grade}
                       </span>
                     </div>
                   </td>
@@ -921,7 +1002,8 @@ function MarketBenchmarksTable({
                   {/* Column 3: Benchmark Range */}
                   <td className="text-right tabular-nums">
                     <span className="benchmark-range-val">
-                      ৳{numberLabel(locale, item.low)} – ৳{numberLabel(locale, item.high)}
+                      ৳{numberLabel(locale, item.low)} – ৳
+                      {numberLabel(locale, item.high)}
                     </span>
                     <span className="price-unit"> / {t("কেজি", "kg")}</span>
                   </td>
@@ -942,7 +1024,9 @@ function MarketBenchmarksTable({
 
                   {/* Column 6: Status */}
                   <td>
-                    <span className={`trade-status-pill ${item.status === "High Volume" ? "high-volume" : "verified"}`}>
+                    <span
+                      className={`trade-status-pill ${item.status === "High Volume" ? "high-volume" : "verified"}`}
+                    >
                       <span className="trade-status-dot" aria-hidden="true" />
                       {local(locale, item.statusBn, item.status)}
                     </span>
@@ -988,7 +1072,11 @@ export async function PricePage({
       {/* ─── 1. SERIES & HORIZON FILTER CARD ─── */}
       {choice ? (
         <section className="work-panel price-filter-card glass-1">
-          <form action={`${base}/prices`} method="get" className="price-filter-form">
+          <form
+            action={`${base}/prices`}
+            method="get"
+            className="price-filter-form"
+          >
             <div className="price-filter-fields">
               <div className="price-field-group">
                 <label htmlFor="series-select" className="price-field-label">
@@ -1047,12 +1135,19 @@ export async function PricePage({
         </section>
       ) : (
         <div className="work-panel" role="status">
-          <p>{t("এখনও অনুমোদিত বাজারদর নেই।", "No approved market observations yet.")}</p>
+          <p>
+            {t(
+              "এখনও অনুমোদিত বাজারদর নেই।",
+              "No approved market observations yet.",
+            )}
+          </p>
         </div>
       )}
 
       {/* ─── 3. QUANTITATIVE FORECAST OUTLOOK (Pattern Matching Model Preview only) ─── */}
-      {forecast && <ForecastPanel locale={locale} result={forecast} horizon={horizon} />}
+      {forecast && (
+        <ForecastPanel locale={locale} result={forecast} horizon={horizon} />
+      )}
 
       {/* ─── 4. HISTORICAL DATA (SPIKE GRAPH VIEW) ─── */}
       {choice && (
@@ -1064,12 +1159,16 @@ export async function PricePage({
                 <span>{t("ঐতিহাসিক মূল্য উপাত্ত", "HISTORICAL DATA")}</span>
               </div>
               <h2 className="dash-analysis-title price-section-title">
-                {t("বাজারদরের স্পাইক গ্রাফ ওভারভিউ", "Historical Price Spikes & Trajectory")}
+                {t(
+                  "বাজারদরের স্পাইক গ্রাফ ওভারভিউ",
+                  "Historical Price Spikes & Trajectory",
+                )}
               </h2>
             </div>
             <div className="price-section-count">
               <span className="price-count-chip">
-                {numberLabel(locale, rows.length)} {t("টি পর্যবেক্ষণ", "observations")}
+                {numberLabel(locale, rows.length)}{" "}
+                {t("টি পর্যবেক্ষণ", "observations")}
               </span>
             </div>
           </div>
@@ -1079,7 +1178,10 @@ export async function PricePage({
       )}
 
       {/* ─── 5. MARKET BENCHMARKS & REGIONAL OUTLOOK TABLE ─── */}
-      <MarketBenchmarksTable locale={locale} activeDistrict={choice?.district} />
+      <MarketBenchmarksTable
+        locale={locale}
+        activeDistrict={choice?.district}
+      />
 
       {/* ─── 5. OFFICIAL DAM GOVERNMENT PORTAL BANNER ─── */}
       <aside className="work-panel price-dam-banner glass-1">

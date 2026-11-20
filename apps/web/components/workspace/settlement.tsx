@@ -31,12 +31,7 @@ export function OrderSettlement({
   const t = (bn: string, en: string) => local(locale, bn, en);
   const [statusBn, statusEn] = statuses[data.status];
 
-  const statusClass =
-    data.status === "verified"
-      ? "verified"
-      : data.status === "rejected"
-        ? "rejected"
-        : "pending";
+  const statusClass = data.status === "verified" ? "verified" : "pending";
 
   return (
     <section className="work-panel lot-details-page-panel settlement-panel glass-1">
@@ -45,7 +40,9 @@ export function OrderSettlement({
         <div>
           <div className="dash-quality-eyebrow">
             <span className="dash-pulse-dot" aria-hidden="true" />
-            <span>{t("অর্থপ্রদান ও লেনদেনের রেকর্ড", "PAYMENT & SETTLEMENT")}</span>
+            <span>
+              {t("অর্থপ্রদান ও লেনদেনের রেকর্ড", "PAYMENT & SETTLEMENT")}
+            </span>
           </div>
           <h2 className="lot-page-title settlement-title">
             {t("অর্থপ্রদানের বিবরণ", "Settlement Details")}
@@ -78,10 +75,19 @@ export function OrderSettlement({
           </strong>
           <span className="settlement-tile-note">
             {data.status === "verified"
-              ? t("অপারেটর দ্বারা অর্থপ্রদান সম্পূর্ণ যাচাইকৃত", "Payment verified by operations desk")
+              ? t(
+                  "অপারেটর দ্বারা অর্থপ্রদান সম্পূর্ণ যাচাইকৃত",
+                  "Payment verified by operations desk",
+                )
               : data.status === "reported"
-                ? t("যাচাইয়ের জন্য অপেক্ষমাণ", "Submitted and awaiting verification")
-                : t("অর্থপ্রদানের তথ্যের অপেক্ষায়", "Awaiting off-platform payment confirmation")}
+                ? t(
+                    "যাচাইয়ের জন্য অপেক্ষমাণ",
+                    "Submitted and awaiting verification",
+                  )
+                : t(
+                    "অর্থপ্রদানের তথ্যের অপেক্ষায়",
+                    "Awaiting off-platform payment confirmation",
+                  )}
           </span>
         </div>
 
@@ -125,7 +131,10 @@ export function OrderSettlement({
           ) : (
             <div className="settlement-empty-reports">
               <span className="settlement-empty-text">
-                {t("এখনো কোনো অর্থপ্রদানের তথ্য জমা দেওয়া হয়নি।", "No transaction reference reported yet.")}
+                {t(
+                  "এখনো কোনো অর্থপ্রদানের তথ্য জমা দেওয়া হয়নি।",
+                  "No transaction reference reported yet.",
+                )}
               </span>
             </div>
           )}
@@ -135,19 +144,29 @@ export function OrderSettlement({
       {/* Payment Reporting Form for Buyer */}
       {mayReport && data.status === "pending" && (
         <div className="settlement-report-form-wrap">
-          <Details label={t("অর্থপ্রদানের তথ্য জমা দিন", "Report off-platform payment")}>
+          <Details
+            label={t("অর্থপ্রদানের তথ্য জমা দিন", "Report off-platform payment")}
+          >
             <WorkspaceForm
               locale={locale}
               action={operate.bind(null, locale, "report-payment", id)}
               label={t("প্রতিবেদন জমা দিন", "Submit payment report")}
             >
               <RequestKey />
-              <Field label={t("লেনদেনের রেফারেন্স (ব্যাংক / এমএফএস ট্রানজেকশন আইডি)", "Transaction reference (Bank / MFS ID)")}>
+              <Field
+                label={t(
+                  "লেনদেনের রেফারেন্স (ব্যাংক / এমএফএস ট্রানজেকশন আইডি)",
+                  "Transaction reference (Bank / MFS ID)",
+                )}
+              >
                 <input
                   name="reference"
                   minLength={3}
                   maxLength={100}
-                  placeholder={t("যেমন: TRX92817462 বা ব্যাংক ভাউচার নং", "e.g., TRX92817462 or Bank voucher ref")}
+                  placeholder={t(
+                    "যেমন: TRX92817462 বা ব্যাংক ভাউচার নং",
+                    "e.g., TRX92817462 or Bank voucher ref",
+                  )}
                   required
                 />
               </Field>

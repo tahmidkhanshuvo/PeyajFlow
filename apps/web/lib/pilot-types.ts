@@ -147,6 +147,12 @@ export type VoiceResolution = {
   match: "exact" | "pattern" | null;
   candidates: string[];
   error: string | null;
+  loss?: boolean;
+};
+export type VoicePinStatus = {
+  required: boolean;
+  set: boolean;
+  locked_until: string | null;
 };
 export type VoiceTask = {
   id: string;

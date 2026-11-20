@@ -7,7 +7,8 @@ import { pilotMutate } from "../../app/[locale]/workspace/pilot-actions";
 import type { Locale } from "../../lib/copy";
 import type { Logistics } from "../../lib/pilot-types";
 import { local } from "../../lib/workspace-copy";
-import type { OfferDetail, Profile } from "../../lib/workspace-types";
+import type { Profile } from "../../lib/workspace-api";
+import type { OfferDetail } from "../../lib/workspace-types";
 import { dhakaToday, numberLabel, timeLabel } from "../../lib/workspace-values";
 import { DecimalField, RequestKey } from "./fields";
 import { WorkspaceForm } from "./form";
@@ -57,9 +58,6 @@ export function OfferActionModal({
   btnClass?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -99,8 +97,7 @@ export function OfferActionModal({
         <span>{label}</span>
       </button>
 
-      {mounted &&
-        open &&
+      {open &&
         createPortal(
           <div
             className="stock-modal-backdrop"
@@ -146,7 +143,8 @@ export function OfferActionModal({
                       {t("বর্তমান শর্ত", "Current Terms")}
                     </span>
                     <strong className="offer-modal-summary-val">
-                      {kg(locale, offer.quantity_kg)} @ {taka(locale, offer.price_bdt_kg)}/{t("কেজি", "kg")}
+                      {kg(locale, offer.quantity_kg)} @{" "}
+                      {taka(locale, offer.price_bdt_kg)}/{t("কেজি", "kg")}
                     </strong>
                   </div>
                   <div className="offer-modal-summary-item">
@@ -161,7 +159,13 @@ export function OfferActionModal({
 
                 <WorkspaceForm
                   locale={locale}
-                  action={mutate.bind(null, locale, "offer-reply", offer.id, action)}
+                  action={mutate.bind(
+                    null,
+                    locale,
+                    "offer-reply",
+                    offer.id,
+                    action,
+                  )}
                   label={titles[action]}
                 >
                   <RequestKey />
@@ -238,9 +242,6 @@ export function OfferHistoryModal({
   offer: OfferDetail;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -279,7 +280,10 @@ export function OfferHistoryModal({
         type="button"
         className="stock-row-action-pill offer-history-btn"
         onClick={() => setOpen(true)}
-        title={t("অফারের ইতিহাস ও বিবরণ দেখুন", "View offer history and details")}
+        title={t(
+          "অফারের ইতিহাস ও বিবরণ দেখুন",
+          "View offer history and details",
+        )}
       >
         <span>{t("ইতিহাস", "History")}</span>
         <span className="stock-row-arrow" aria-hidden="true">
@@ -298,8 +302,7 @@ export function OfferHistoryModal({
         </span>
       </button>
 
-      {mounted &&
-        open &&
+      {open &&
         createPortal(
           <div
             className="stock-modal-backdrop"
@@ -315,7 +318,9 @@ export function OfferHistoryModal({
               <div className="stock-modal-header">
                 <div className="offer-modal-header-info">
                   <div className="offer-modal-header-top">
-                    <span className="trade-card-hash">#{offer.id.slice(0, 8)}</span>
+                    <span className="trade-card-hash">
+                      #{offer.id.slice(0, 8)}
+                    </span>
                     <span className={`trade-status-pill ${statusClass}`}>
                       <span className="trade-status-dot" aria-hidden="true" />
                       {state(locale, offer.status)}
@@ -339,29 +344,49 @@ export function OfferHistoryModal({
                 {/* Clean Essential Terms */}
                 <div className="offer-history-terms-grid">
                   <div className="offer-term-card">
-                    <span className="offer-term-label">{t("পরিমাণ", "Quantity")}</span>
-                    <strong className="offer-term-val">{kg(locale, offer.quantity_kg)}</strong>
+                    <span className="offer-term-label">
+                      {t("পরিমাণ", "Quantity")}
+                    </span>
+                    <strong className="offer-term-val">
+                      {kg(locale, offer.quantity_kg)}
+                    </strong>
                   </div>
                   <div className="offer-term-card">
-                    <span className="offer-term-label">{t("দর (প্রতি কেজি)", "Price / kg")}</span>
+                    <span className="offer-term-label">
+                      {t("দর (প্রতি কেজি)", "Price / kg")}
+                    </span>
                     <strong className="offer-term-val">
                       {taka(locale, offer.price_bdt_kg)} / {t("কেজি", "kg")}
                     </strong>
                   </div>
                   <div className="offer-term-card">
-                    <span className="offer-term-label">{t("মোট মূল্য", "Total Value")}</span>
-                    <strong className="offer-term-val highlight">{taka(locale, offer.total_bdt)}</strong>
+                    <span className="offer-term-label">
+                      {t("মোট মূল্য", "Total Value")}
+                    </span>
+                    <strong className="offer-term-val highlight">
+                      {taka(locale, offer.total_bdt)}
+                    </strong>
                   </div>
                   <div className="offer-term-card">
-                    <span className="offer-term-label">{t("ক্রেতা", "Buyer")}</span>
-                    <strong className="offer-term-val">{offer.buyer_name}</strong>
+                    <span className="offer-term-label">
+                      {t("ক্রেতা", "Buyer")}
+                    </span>
+                    <strong className="offer-term-val">
+                      {offer.buyer_name}
+                    </strong>
                   </div>
                   <div className="offer-term-card">
-                    <span className="offer-term-label">{t("সরবরাহ এলাকা", "Delivery Area")}</span>
-                    <strong className="offer-term-val">{offer.delivery_district}</strong>
+                    <span className="offer-term-label">
+                      {t("সরবরাহ এলাকা", "Delivery Area")}
+                    </span>
+                    <strong className="offer-term-val">
+                      {offer.delivery_district}
+                    </strong>
                   </div>
                   <div className="offer-term-card">
-                    <span className="offer-term-label">{t("পরিবহন", "Transport")}</span>
+                    <span className="offer-term-label">
+                      {t("পরিবহন", "Transport")}
+                    </span>
                     <strong className="offer-term-val">
                       {offer.transport === "buyer"
                         ? t("ক্রেতার দায়িত্ব", "Buyer arranges")
@@ -373,13 +398,19 @@ export function OfferHistoryModal({
                 {/* Negotiation Timeline */}
                 <div className="offer-history-timeline-section">
                   <h3 className="offer-history-section-title">
-                    {t("দরকষাকষি ও পরিবর্তন ইতিহাস", "Negotiation & Activity History")}
+                    {t(
+                      "দরকষাকষি ও পরিবর্তন ইতিহাস",
+                      "Negotiation & Activity History",
+                    )}
                   </h3>
 
                   <ul className="offer-history-timeline">
                     {offer.activity && offer.activity.length > 0 ? (
                       offer.activity.map((entry, idx) => (
-                        <li key={`activity-${entry.version ?? "v"}-${entry.recorded_at ?? ""}-${idx}`} className="offer-history-timeline-item">
+                        <li
+                          key={`activity-${entry.version ?? "v"}-${entry.recorded_at ?? ""}-${idx}`}
+                          className="offer-history-timeline-item"
+                        >
                           <span className="offer-history-timeline-dot" />
                           <div className="offer-history-timeline-content">
                             <div className="offer-history-timeline-row">
@@ -391,16 +422,22 @@ export function OfferHistoryModal({
                               </span>
                             </div>
                             <div className="offer-history-by-line">
-                              <span className="offer-history-muted">{t("অংশগ্রহণকারী", "Participant")}:</span>{" "}
+                              <span className="offer-history-muted">
+                                {t("অংশগ্রহণকারী", "Participant")}:
+                              </span>{" "}
                               <strong>{entry.by}</strong>
                             </div>
-                            {entry.quantity_kg !== null && entry.price_bdt_kg !== null && (
-                              <div className="offer-history-terms-chip">
-                                <span>{kg(locale, entry.quantity_kg)}</span>
-                                <span className="stock-row-dot">•</span>
-                                <span>{taka(locale, entry.price_bdt_kg)} / {t("কেজি", "kg")}</span>
-                              </div>
-                            )}
+                            {entry.quantity_kg !== null &&
+                              entry.price_bdt_kg !== null && (
+                                <div className="offer-history-terms-chip">
+                                  <span>{kg(locale, entry.quantity_kg)}</span>
+                                  <span className="stock-row-dot">•</span>
+                                  <span>
+                                    {taka(locale, entry.price_bdt_kg)} /{" "}
+                                    {t("কেজি", "kg")}
+                                  </span>
+                                </div>
+                              )}
                           </div>
                         </li>
                       ))
@@ -409,8 +446,12 @@ export function OfferHistoryModal({
                         <span className="offer-history-timeline-dot" />
                         <div className="offer-history-timeline-content">
                           <div className="offer-history-timeline-row">
-                            <span className="offer-history-action-tag">{state(locale, offer.status)}</span>
-                            <span className="offer-history-time">{timeLabel(locale, offer.expires_at)}</span>
+                            <span className="offer-history-action-tag">
+                              {state(locale, offer.status)}
+                            </span>
+                            <span className="offer-history-time">
+                              {timeLabel(locale, offer.expires_at)}
+                            </span>
                           </div>
                         </div>
                       </li>
@@ -492,7 +533,10 @@ export function OfferRowItem({
           <span className="offer-meta-label">{t("ক্রেতা", "Buyer")}:</span>{" "}
           <strong>{offer.buyer_name}</strong>
           {offer.buyer_verified && (
-            <span className="stock-verified-badge" title={t("যাচাইকৃত", "Verified")}>
+            <span
+              className="stock-verified-badge"
+              title={t("যাচাইকৃত", "Verified")}
+            >
               ✓
             </span>
           )}
@@ -506,15 +550,21 @@ export function OfferRowItem({
         <span className="offer-card-rate">
           <span>{kg(locale, offer.quantity_kg)}</span>
           <span className="offer-meta-dim"> @ </span>
-          <span>{taka(locale, offer.price_bdt_kg)}/{t("কেজি", "kg")}</span>
+          <span>
+            {taka(locale, offer.price_bdt_kg)}/{t("কেজি", "kg")}
+          </span>
         </span>
       </div>
 
       {/* Bottom Footer: Total Value on Left, Action Pop-up Buttons + History Pop-up Button on Right */}
       <div className="offer-card-footer">
         <div className="offer-card-value-box">
-          <span className="offer-card-value-label">{t("মোট মূল্য", "TOTAL VALUE")}</span>
-          <strong className="offer-card-value-val">{taka(locale, offer.total_bdt)}</strong>
+          <span className="offer-card-value-label">
+            {t("মোট মূল্য", "TOTAL VALUE")}
+          </span>
+          <strong className="offer-card-value-val">
+            {taka(locale, offer.total_bdt)}
+          </strong>
         </div>
 
         <div className="offer-card-actions">
@@ -602,9 +652,6 @@ export function OrderActionModal({
   btnClass?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -654,10 +701,22 @@ export function OrderActionModal({
   };
 
   const confirmTexts: Record<string, string> = {
-    dispatch: t("আমি পণ্য প্রেরণের তথ্য নিশ্চিত করছি।", "I confirm the goods have been dispatched."),
-    receive: t("আমি পণ্য বুঝে নেওয়ার বিষয়টি নিশ্চিত করছি।", "I confirm receipt of this shipment."),
-    cancel: t("আমি অর্ডার বাতিলের সিদ্ধান্ত নিশ্চিত করছি।", "I confirm order cancellation."),
-    dispute: t("আমি বিরোধ উত্থাপনের বিষয়টি নিশ্চিত করছি।", "I confirm reporting this dispute."),
+    dispatch: t(
+      "আমি পণ্য প্রেরণের তথ্য নিশ্চিত করছি।",
+      "I confirm the goods have been dispatched.",
+    ),
+    receive: t(
+      "আমি পণ্য বুঝে নেওয়ার বিষয়টি নিশ্চিত করছি।",
+      "I confirm receipt of this shipment.",
+    ),
+    cancel: t(
+      "আমি অর্ডার বাতিলের সিদ্ধান্ত নিশ্চিত করছি।",
+      "I confirm order cancellation.",
+    ),
+    dispute: t(
+      "আমি বিরোধ উত্থাপনের বিষয়টি নিশ্চিত করছি।",
+      "I confirm reporting this dispute.",
+    ),
   };
 
   const actionIcons: Record<string, string> = {
@@ -680,8 +739,7 @@ export function OrderActionModal({
         <span>{label}</span>
       </button>
 
-      {mounted &&
-        open &&
+      {open &&
         createPortal(
           <div
             className="stock-modal-backdrop"
@@ -696,7 +754,9 @@ export function OrderActionModal({
             >
               <div className="stock-modal-header">
                 <div className="offer-modal-header-info">
-                  <h2 className="stock-modal-title">{titles[action] || label}</h2>
+                  <h2 className="stock-modal-title">
+                    {titles[action] || label}
+                  </h2>
                   <span className="offer-modal-subtitle">
                     #{orderId.slice(0, 8)} · {orderLabel}
                   </span>
@@ -725,7 +785,13 @@ export function OrderActionModal({
                   <div className="offer-form-field-group">
                     <label className="checkbox offer-checkbox">
                       <input type="checkbox" name="confirm" required />
-                      <span>{confirmTexts[action] || t("আমি এই পরিবর্তন নিশ্চিত করছি।", "I confirm this action.")}</span>
+                      <span>
+                        {confirmTexts[action] ||
+                          t(
+                            "আমি এই পরিবর্তন নিশ্চিত করছি।",
+                            "I confirm this action.",
+                          )}
+                      </span>
                     </label>
                   </div>
                 </WorkspaceForm>
@@ -761,10 +827,7 @@ export function OrderLogisticsModal({
   orderStatus: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -802,12 +865,13 @@ export function OrderLogisticsModal({
         className="stock-action-pill-btn order-logistics-pill-btn"
         onClick={() => setOpen(true)}
       >
-        <span className="stock-action-pill-icon" aria-hidden="true">🚚</span>
+        <span className="stock-action-pill-icon" aria-hidden="true">
+          🚚
+        </span>
         <span>{t("পরিবহন ও দর", "Transport and quotes")}</span>
       </button>
 
-      {mounted &&
-        open &&
+      {open &&
         createPortal(
           <div
             className="stock-modal-backdrop"
@@ -823,7 +887,9 @@ export function OrderLogisticsModal({
               <div className="stock-modal-header">
                 <div className="offer-modal-header-info">
                   <div className="offer-modal-header-top">
-                    <span className="trade-card-hash">#{orderId.slice(0, 8)}</span>
+                    <span className="trade-card-hash">
+                      #{orderId.slice(0, 8)}
+                    </span>
                     <span className="trade-status-pill verified">
                       <span className="trade-status-dot" aria-hidden="true" />
                       {state(locale, orderStatus)}
@@ -850,13 +916,17 @@ export function OrderLogisticsModal({
                     <span className="offer-modal-summary-label">
                       {t("পরিবহনের দায়িত্ব", "Responsibility")}
                     </span>
-                    <strong className="offer-modal-summary-val">{responsibleText}</strong>
+                    <strong className="offer-modal-summary-val">
+                      {responsibleText}
+                    </strong>
                   </div>
                   <div className="offer-modal-summary-item">
                     <span className="offer-modal-summary-label">
                       {t("পণ্যের পরিমাণ", "Quantity")}
                     </span>
-                    <strong className="offer-modal-summary-val">{kg(locale, logistics?.quantity_kg || quantityKg)}</strong>
+                    <strong className="offer-modal-summary-val">
+                      {kg(locale, logistics?.quantity_kg || quantityKg)}
+                    </strong>
                   </div>
                   <div className="offer-modal-summary-item">
                     <span className="offer-modal-summary-label">
@@ -872,7 +942,10 @@ export function OrderLogisticsModal({
                 <div className="order-logistics-section">
                   <div className="order-logistics-section-head">
                     <h3 className="offer-history-section-title">
-                      {t("পরিবহন অনুরোধ ও প্রাপ্ত দর", "Transport Requests & Quotes")}
+                      {t(
+                        "পরিবহন অনুরোধ ও প্রাপ্ত দর",
+                        "Transport Requests & Quotes",
+                      )}
                     </h3>
                     {canRequestQuotes && !showRequestForm && (
                       <button
@@ -888,20 +961,29 @@ export function OrderLogisticsModal({
                   {requests.length > 0 ? (
                     <div className="order-logistics-requests-list">
                       {requests.map((req) => (
-                        <div key={req.id} className="order-logistics-request-card">
+                        <div
+                          key={req.id}
+                          className="order-logistics-request-card"
+                        >
                           <div className="order-logistics-req-row">
                             <strong className="order-logistics-route">
                               {req.pickup_district} → {req.delivery_district}
                             </strong>
                             <span className="trade-status-pill pending">
-                              <span className="trade-status-dot" aria-hidden="true" />
+                              <span
+                                className="trade-status-dot"
+                                aria-hidden="true"
+                              />
                               {logisticsState(locale, req.status)}
                             </span>
                           </div>
 
                           <div className="order-logistics-req-details">
                             <span>
-                              {t("সংগ্রহের তারিখ", "Pickup")}: <strong>{timeLabel(locale, req.pickup_on)}</strong>
+                              {t("সংগ্রহের তারিখ", "Pickup")}:{" "}
+                              <strong>
+                                {timeLabel(locale, req.pickup_on)}
+                              </strong>
                             </span>
                             {req.handling && (
                               <>
@@ -913,17 +995,24 @@ export function OrderLogisticsModal({
 
                           {req.quotes && req.quotes.length > 0 ? (
                             <div className="order-logistics-quotes-cluster">
-                              <span className="order-quotes-label">{t("প্রাপ্ত দরসমূহ", "Quotes received")}:</span>
+                              <span className="order-quotes-label">
+                                {t("প্রাপ্ত দরসমূহ", "Quotes received")}:
+                              </span>
                               {req.quotes.map((q) => (
                                 <div key={q.id} className="order-quote-row">
                                   <span>{q.provider}</span>
-                                  <strong>{taka(locale, q.freight_total_bdt)}</strong>
+                                  <strong>
+                                    {taka(locale, q.freight_total_bdt)}
+                                  </strong>
                                 </div>
                               ))}
                             </div>
                           ) : (
                             <p className="order-logistics-waiting">
-                              {t("পরিবহনকারীদের কাছ থেকে দরের অপেক্ষায় রয়েছে।", "Awaiting quotations from transporters.")}
+                              {t(
+                                "পরিবহনকারীদের কাছ থেকে দরের অপেক্ষায় রয়েছে।",
+                                "Awaiting quotations from transporters.",
+                              )}
                             </p>
                           )}
                         </div>
@@ -945,7 +1034,12 @@ export function OrderLogisticsModal({
                 {canRequestQuotes && showRequestForm && (
                   <div className="order-logistics-form-box">
                     <div className="order-logistics-form-header">
-                      <h4>{t("নতুন পরিবহন দরের অনুরোধ", "New Transport Quote Request")}</h4>
+                      <h4>
+                        {t(
+                          "নতুন পরিবহন দরের অনুরোধ",
+                          "New Transport Quote Request",
+                        )}
+                      </h4>
                       <button
                         type="button"
                         className="order-logistics-form-cancel"
@@ -957,7 +1051,13 @@ export function OrderLogisticsModal({
 
                     <WorkspaceForm
                       locale={locale}
-                      action={pilotMutate.bind(null, locale, "transport", orderId, "")}
+                      action={pilotMutate.bind(
+                        null,
+                        locale,
+                        "transport",
+                        orderId,
+                        "",
+                      )}
                       label={t("অনুরোধ জমা দিন", "Submit Request")}
                     >
                       <RequestKey />
@@ -973,11 +1073,16 @@ export function OrderLogisticsModal({
                           />
                         </div>
                         <div className="field">
-                          <label>{t("মাল তোলার নির্দেশনা", "Handling instructions")}</label>
+                          <label>
+                            {t("মাল তোলার নির্দেশনা", "Handling instructions")}
+                          </label>
                           <input
                             name="handling"
                             maxLength={100}
-                            placeholder={t("যেমন: সাবধানে লোড করুন", "e.g., Load with care")}
+                            placeholder={t(
+                              "যেমন: সাবধানে লোড করুন",
+                              "e.g., Load with care",
+                            )}
                             required
                           />
                         </div>
