@@ -9,7 +9,7 @@ from uuid import UUID, uuid4, uuid5
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, ConfigDict, StringConstraints
+from pydantic import BaseModel, ConfigDict, StringConstraints, model_validator
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -40,8 +40,27 @@ class Role(StrEnum):
     ADMIN = "admin"
 
 
+def contains_nul(value: object) -> bool:
+    if isinstance(value, str):
+        return "\x00" in value
+    if isinstance(value, dict):
+        return any(contains_nul(k) or contains_nul(v) for k, v in value.items())
+    if isinstance(value, list | tuple):
+        return any(contains_nul(item) for item in value)
+    return False
+
+
 class Input(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def refuse_nul(cls, data: object) -> object:
+        # PostgreSQL text cannot hold NUL, so a request carrying one is
+        # refused as invalid input instead of failing in the database.
+        if contains_nul(data):
+            raise ValueError("NUL characters are not allowed")
+        return data
 
 
 ShortText = Annotated[

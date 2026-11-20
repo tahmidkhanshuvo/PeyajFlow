@@ -161,7 +161,14 @@ def reference(resource_id: UUID) -> str:
 
 # ----------------------------------------------------------- shared engine
 def channel_call(db: Session, actor: Profile) -> UUID:
-    """The account's active simulator session, reusing the voice call tables."""
+    """The account's active simulator session, reusing the voice call tables.
+
+    Concurrent messages from one account must share one session, so that
+    only one change can wait for confirmation. A transaction-level advisory
+    lock per account serializes finding or creating it."""
+    db.execute(
+        select(func.pg_advisory_xact_lock(actor.membership_id.int & (2**63 - 1)))
+    )
     call = db.scalar(
         select(voice.calls.c.id)
         .where(

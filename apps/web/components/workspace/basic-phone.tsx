@@ -78,7 +78,11 @@ export function BasicPhone({
 }) {
   const t = (bn: string, en: string) => local(locale, bn, en);
   const [messages, setMessages] = useState(initial);
-  const [seen, setSeen] = useState(initial.length);
+  // The server returns the latest messages only, so unread counts use the
+  // time of the last message read, not the length of the list.
+  const [seenAt, setSeenAt] = useState(initial.at(-1)?.created_at ?? "");
+  const markRead = (list: SimMessage[]) =>
+    setSeenAt(list.at(-1)?.created_at ?? "");
   const [screen, setScreen] = useState<Screen>({ kind: "home" });
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -90,7 +94,11 @@ export function BasicPhone({
   const [now, setNow] = useState<Date | null>(null);
 
   const incoming = messages.filter((m) => m.direction === "in");
-  const unread = Math.max(0, messages.length - seen);
+  const unread = messages.filter(
+    (m) =>
+      m.direction === "in" &&
+      Date.parse(m.created_at) > Date.parse(seenAt || "0"),
+  ).length;
 
   useEffect(() => {
     // The clock starts after mounting so the server and browser agree.
@@ -139,7 +147,7 @@ export function BasicPhone({
     const thread = await run(() => simSendSms(text));
     if (!thread) return;
     setMessages(thread);
-    setSeen(thread.length - 1);
+    markRead(thread);
     const reply = thread[thread.length - 1];
     setScreen({ kind: "message", id: reply.id });
   }
@@ -238,7 +246,7 @@ export function BasicPhone({
     if (busy) return;
     switch (screen.kind) {
       case "home":
-        setSeen(messages.length);
+        markRead(messages);
         setScreen(unread ? { kind: "inbox", at: 0 } : { kind: "menu", at: 0 });
         break;
       case "menu":
@@ -569,11 +577,25 @@ export function BasicPhone({
           </div>
           {view}
           <div className="sim-soft">
-            <button type="button" onClick={leftSoft} disabled={busy}>
+            <button
+              type="button"
+              onClick={leftSoft}
+              disabled={busy}
+              aria-label={
+                soft[0] ? undefined : t("বাম সফট কী", "Left soft key")
+              }
+            >
               {busy ? "…" : soft[0]}
             </button>
             <span />
-            <button type="button" onClick={rightSoft} disabled={busy}>
+            <button
+              type="button"
+              onClick={rightSoft}
+              disabled={busy}
+              aria-label={
+                soft[1] ? undefined : t("ডান সফট কী", "Right soft key")
+              }
+            >
               {soft[1]}
             </button>
           </div>
@@ -624,14 +646,9 @@ export function BasicPhone({
         </div>
         <div className="sim-keypad">
           {KEYS.map(([key, letters]) => (
-            <button
-              type="button"
-              key={key}
-              onClick={() => press(key)}
-              aria-label={key}
-            >
+            <button type="button" key={key} onClick={() => press(key)}>
               <span>{key}</span>
-              <small>{letters}</small>
+              <small aria-hidden="true">{letters}</small>
             </button>
           ))}
         </div>

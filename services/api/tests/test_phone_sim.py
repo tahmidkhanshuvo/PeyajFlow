@@ -263,3 +263,47 @@ def test_transcription_needs_setup_consent_and_audio(pilot, monkeypatch):
     assert sent[-1]["contents"][0]["parts"][1]["inlineData"]["mimeType"] == "audio/wav"
     monkeypatch.setattr(intent_model, "post", lambda *_: None)
     assert client.post(path, headers=farmer, json=clip).status_code == 502
+
+
+@requires_database
+def test_simultaneous_replies_share_one_session_and_one_pending_change(pilot):
+    from concurrent.futures import ThreadPoolExecutor
+
+    from sqlalchemy import func, select
+
+    from app import voice
+
+    client, engine, _ = pilot
+    farmer, buyer = login(client, "farmer"), login(client, "buyer")
+    lot = new_lot(client, farmer, quantity="1000", listed=True)
+    new_offer(client, buyer, lot, 60, price_bdt_kg="45")
+    latest(client, farmer)
+    member = client.get("/v1/me", headers=farmer).json()["membership_id"]
+    with Session(engine) as db, db.begin():
+        db.execute(
+            update(voice.calls)
+            .where(voice.calls.c.actor_id == member)
+            .values(status="ended")
+        )
+
+    def reply(_):
+        return client.post("/v1/simulator/sms", headers=farmer, json={"body": "1"})
+
+    with ThreadPoolExecutor(8) as pool:
+        assert {r.status_code for r in pool.map(reply, range(8))} == {200}
+    with Session(engine) as db:
+        active = db.scalar(
+            select(func.count())
+            .select_from(voice.calls)
+            .where(voice.calls.c.actor_id == member, voice.calls.c.status == "active")
+        )
+        pending = db.scalar(
+            select(func.count())
+            .select_from(voice.actions.join(voice.calls))
+            .where(
+                voice.calls.c.actor_id == member,
+                voice.calls.c.status == "active",
+                voice.actions.c.state == "pending",
+            )
+        )
+    assert (active, pending) == (1, 1)

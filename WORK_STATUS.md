@@ -118,6 +118,40 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - The new rows were written by the same author as the rules.
   - Spoken numbers need review by native speakers and testing on recorded speech.
 
+### Deep hard test (November 20, 2026)
+
+**What ran:**
+
+- the CI container job (Compose build plus backup and restore drill) on alternate ports;
+- all 21 migrations downgraded to base and upgraded again;
+- an adversarial sweep of all 99 operations;
+- simulator attacks: concurrency races, fuzzing, cross-account attempts, PIN brute force and transcription abuse;
+- live prompt injection against the Meta fallback;
+- NUL characters in every path and query parameter;
+- axe and layout checks of the simulator at 360 and 1280 px in Bangla and English;
+- the full suites.
+
+**Bugs found and fixed:**
+
+1. **NUL characters in request bodies returned 503.** PostgreSQL rejects NUL in text; a lot label, a help note and an SMS were affected. The shared `Input` model now refuses NUL anywhere in a body, nested values included, with `422 invalid_input`.
+2. **A parallel-session race.** Simultaneous SMS replies with no active session created several sessions, each with its own pending change (3–4 per round). Stock was never double-reserved, because only one acceptance could commit. Finding or creating a session is now serialized per account with a transaction advisory lock: measured as 1 session and 1 pending change in 3 of 3 rounds.
+3. **New-message notices.** The basic phone stopped showing them once an inbox held more than the 60 messages the API returns, because unread was counted by list length. It is now counted by the time of the last message read.
+4. **Two accessibility issues on the basic phone.** A nameless soft key, and keypad labels that did not match the visible text (axe `button-name` and `label-content-name-mismatch`). Both are fixed.
+
+**Results after the fixes:**
+
+- **Container and migrations:** the container drill restored an identical head and user count; downgrade to base and re-upgrade were clean.
+- **Adversarial sweep:** 2,092 requests with zero server errors, zero anonymous or cross-account access, and correct size and brute-force limits. Exactly 1 of 15 simultaneous acceptances succeeded.
+- **NUL in parameters:** 228 requests, zero server errors.
+- **Simulator attacks:**
+  - 900 fuzz inputs changed no stock;
+  - parallel confirmations reserved stock once;
+  - the PIN locked after 5 wrong guesses and refused the right PIN during the lock;
+  - transcription refused missing consent, wrong types, invalid base64 and oversized audio.
+- **Prompt injection:** the model never chose a change command. Its 3 injected quantities were blocked by the rule that a quantity must appear in the user's words. Five phrases that literally contain "accept" or "reject" were matched by the grammar, not the model; they still need the offer check and the PIN.
+- **Accessibility:** 0 axe violations and no horizontal overflow at either width.
+- **Suites:** 189 API tests, both evaluation gates, web checks, 17 of 17 simulator checks, Playwright 5 of 5 and the release smoke all pass.
+
 ### Phone simulator without a real phone (November 20, 2026)
 
 **What changed:**

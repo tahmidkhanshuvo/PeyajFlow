@@ -42,3 +42,26 @@ def test_migrated_database_readiness() -> None:
         stale = client.get("/health/ready")
         assert stale.status_code == 503
         assert stale.json() == {"database": "migration_required"}
+
+
+def test_request_bodies_with_nul_characters_are_refused():
+    from pydantic import ValidationError
+
+    from app.auth import Input
+
+    class Body(Input):
+        note: str
+        params: dict = {}
+
+    assert Body(note="fine", params={"a": ["ok"]}).note == "fine"
+    for bad in (
+        {"note": "a\x00b"},
+        {"note": "ok", "params": {"k": "v\x00"}},
+        {"note": "ok", "params": {"k\x00": "v"}},
+        {"note": "ok", "params": {"k": ["x", "\x00"]}},
+    ):
+        try:
+            Body.model_validate(bad)
+        except ValidationError:
+            continue
+        raise AssertionError(f"accepted {bad!r}")
