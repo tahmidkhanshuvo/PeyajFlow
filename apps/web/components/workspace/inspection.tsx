@@ -417,8 +417,8 @@ export async function InspectionsPage({
               <Field
                 label={local(
                   locale,
-                  "২–৪টি ছবি, প্রতিটি সর্বোচ্চ ৩ মিবি",
-                  "2–4 photos, up to 3 MiB each",
+                  "১–৪টি ছবি, প্রতিটি সর্বোচ্চ ৩ মিবি",
+                  "1–4 photos, up to 3 MiB each",
                 )}
               >
                 <input

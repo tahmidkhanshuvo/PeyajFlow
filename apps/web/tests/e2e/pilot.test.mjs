@@ -225,7 +225,7 @@ test(
       assert.ok(
         buffer.length <= 3 * 1024 * 1024 && buffer.length * 2 > 3_000_000,
       );
-      await inspection.getByLabel("2–4 photos, up to 3 MiB each").setInputFiles(
+      await inspection.getByLabel("1–4 photos, up to 3 MiB each").setInputFiles(
         ["overview.png", "closeup.png"].map((name) => ({
           name,
           mimeType: "image/png",
@@ -328,7 +328,7 @@ test(
         .selectOption("dry");
       await second.getByLabel("Odor", { exact: true }).selectOption("normal");
       await second.getByLabel("Uncertain evidence", { exact: true }).check();
-      await second.getByLabel("2–4 photos, up to 3 MiB each").setInputFiles(
+      await second.getByLabel("1–4 photos, up to 3 MiB each").setInputFiles(
         ["shed.png", "bulbs.png"].map((name) => ({
           name,
           mimeType: "image/png",

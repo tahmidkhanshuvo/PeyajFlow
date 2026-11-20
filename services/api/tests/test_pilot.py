@@ -438,10 +438,7 @@ def test_inspection_images_review_and_risk(pilot):
         client.post(path, headers=outsider, data=payload, files=files).status_code
         == 404
     )
-    assert (
-        client.post(path, headers=farmer, data=payload, files=files[:1]).status_code
-        == 422
-    )
+    assert client.post(path, headers=farmer, data=payload).status_code == 422
     bad = [("images", ("mismatch.png", photo.getvalue(), "image/png")), files[0]]
     assert client.post(path, headers=farmer, data=payload, files=bad).status_code == 415
     big = [
@@ -450,7 +447,7 @@ def test_inspection_images_review_and_risk(pilot):
     ]
     assert client.post(path, headers=farmer, data=payload, files=big).status_code == 413
     assert list(folder.iterdir()) == []
-    result = client.post(path, headers=farmer, data=payload, files=files)
+    result = client.post(path, headers=farmer, data=payload, files=files[:1])
     assert result.status_code == 201, result.text
     inspection = result.json()
     assert inspection["confidence"] is None

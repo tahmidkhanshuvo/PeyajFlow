@@ -40,7 +40,7 @@ export async function fitInspectionPhotos(data: FormData): Promise<void> {
   const files = data
     .getAll("images")
     .filter((file): file is File => file instanceof File && file.size > 0);
-  if (files.length < 2 || files.length > 4) throw new Error("photos_required");
+  if (files.length < 1 || files.length > 4) throw new Error("photos_required");
   if (files.some((file) => !TYPES.has(file.type)))
     throw new Error("image_invalid");
   if (files.some((file) => file.size > MAX_INPUT))

@@ -274,7 +274,7 @@ const errors: Record<string, [string, string]> = {
     "ছবির আকার অনুমোদিত সীমা ছাড়িয়েছে।",
     "The image exceeds the allowed size.",
   ],
-  photos_required: ["দুই থেকে চারটি ছবি যোগ করুন।", "Attach two to four photos."],
+  photos_required: ["এক থেকে চারটি ছবি যোগ করুন।", "Attach one to four photos."],
   username_taken: [
     "এই অ্যাকাউন্ট আইডি ইতিমধ্যে ব্যবহৃত হচ্ছে।",
     "This account ID is already in use.",
