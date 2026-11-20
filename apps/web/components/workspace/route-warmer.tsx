@@ -11,7 +11,9 @@ export function RouteWarmer({ base }: { base: string; paths?: string[] }) {
     // Only pre-warm on direct user intent (hover, touch, keyboard focus)
     // This gives instant response without overloading compilation threads
     const handlePointerOver = (e: Event) => {
-      const target = (e.target as HTMLElement | null)?.closest("a");
+      const raw = e.target;
+      if (!raw || typeof (raw as Element).closest !== "function") return;
+      const target = (raw as Element).closest("a");
       if (!target) return;
       const href = target.getAttribute("href");
       if (href && href.startsWith(base) && href !== pathname) {
@@ -25,7 +27,9 @@ export function RouteWarmer({ base }: { base: string; paths?: string[] }) {
 
     // Instant click visual progress indicator
     const handleClick = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement | null)?.closest("a");
+      const raw = e.target;
+      if (!raw || typeof (raw as Element).closest !== "function") return;
+      const target = (raw as Element).closest("a");
       if (!target) return;
       const href = target.getAttribute("href");
       if (

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Locale } from "../../lib/copy";
 import { local } from "../../lib/workspace-copy";
+import { WorkspaceIcon } from "./icon";
 
 type Recognition = {
   lang: string;
@@ -114,10 +115,14 @@ export function SpeechInput({
         type="button"
         disabled={disabled}
         onClick={listen}
+        style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
       >
-        {listening
-          ? t("শোনা বন্ধ করুন", "Stop listening")
-          : t("বাংলায় বলুন", "Speak Bangla")}
+        <WorkspaceIcon name="mic" size={16} />
+        <span>
+          {listening
+            ? t("শোনা বন্ধ করুন", "Stop listening")
+            : t("বাংলায় বলুন", "Speak Bangla")}
+        </span>
       </button>
       <small>
         {t(

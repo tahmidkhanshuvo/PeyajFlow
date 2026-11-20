@@ -72,19 +72,19 @@ export async function VoicePage({
   return (
     <div className="voice-page-wrap">
       {/* ─── 1. HERO VOICE INTERACTION STAGE (Modern Voice-to-Text UI) ─── */}
-      <section className="voice-hero-card glass-1">
+      <section className="work-panel voice-hero-card glass-1">
         {/* Ambient Top Glow */}
         <div className="voice-hero-ambient" aria-hidden="true" />
 
         {/* Top Meta Strip */}
         <div className="voice-hero-header">
-          <div className="voice-live-badge">
-            <span className="voice-live-dot" aria-hidden="true" />
+          <div className="dash-welcome-eyebrow">
+            <span className="dash-pulse-dot" aria-hidden="true" />
             <span>{t("লাইভ ভয়েস সহকারী", "Live Voice Assistant")}</span>
           </div>
           <div className="voice-engine-badge">
             <span className="voice-engine-icon" aria-hidden="true">
-              🗣️
+              <WorkspaceIcon name="speech" size={18} />
             </span>
             <span>
               {t(
@@ -116,7 +116,8 @@ export async function VoicePage({
           <div className="voice-speech-bubble voice-speech-user">
             <div className="voice-bubble-header">
               <span className="voice-bubble-lang-pill">
-                🇧🇩 {t("বাংলা (পাবনা উপভাষা সমর্থিত)", "Bangla (Pabna dialect)")}
+                <WorkspaceIcon name="bd" size={16} />
+                <span>{t("বাংলা (পাবনা উপভাষা সমর্থিত)", "Bangla (Pabna dialect)")}</span>
               </span>
               <span className="voice-bubble-user-tag">
                 {actor.name} · {local(locale, ...roles[actor.role])}
@@ -124,8 +125,8 @@ export async function VoicePage({
             </div>
             <p className="voice-bubble-text">
               {t(
-                "“আমার মাচায় তাহেরপুরী পেঁয়াজের বর্তমান মজুত ও কাওরান বাজারের দর কত?”",
-                "“What is my current Taherpuri stock balance and Karwan Bazar wholesale price?”",
+                "“আমার তাহেরপুরী স্টকের বর্তমান মজুদ ও কাওরান বাজারে পাইকারী দর কত?”",
+                "“আমার তাহেরপুরী স্টকের বর্তমান মজুদ ও কাওরান বাজারে পাইকারী দর কত?”",
               )}
             </p>
           </div>
@@ -141,7 +142,8 @@ export async function VoicePage({
             <div className="voice-bubble-header">
               <span className="voice-bubble-ai-pill">
                 <span className="voice-pulse-dot" aria-hidden="true" />
-                🧅 {t("PeyajFlow ভয়েস সহকারী", "PeyajFlow Voice AI")}
+                <WorkspaceIcon name="onion" size={16} />
+                <span>{t("PeyajFlow ভয়েস সহকারী", "PeyajFlow Voice AI")}</span>
               </span>
               <span className="voice-bubble-ai-tag">
                 {t("স্বীকৃত উত্তর", "Recognized Response")}
@@ -168,21 +170,7 @@ export async function VoicePage({
               title={t("ভয়েস সহকারী শুরু করুন", "Start Voice Assistant")}
             >
               <span className="voice-cta-mic-badge" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="22"
-                  height="22"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                  <line x1="12" y1="19" x2="12" y2="23" />
-                  <line x1="8" y1="23" x2="16" y2="23" />
-                </svg>
+                <WorkspaceIcon name="mic" size={24} />
               </span>
               <span className="voice-cta-content">
                 <span className="voice-cta-title">
@@ -202,41 +190,69 @@ export async function VoicePage({
           </form>
         </div>
 
-        {/* Quick Voice Prompt Shortcuts */}
+        {/* Quick Voice Prompt Shortcuts (Styled as Overview KPI Cards) */}
         <div className="voice-prompts-tray">
           <div className="voice-prompts-label">
             {t("সমর্থিত কণ্ঠস্বর নির্দেশনাসমূহ:", "Common voice commands you can speak:")}
           </div>
-          <div className="voice-prompts-grid">
-            <div className="voice-prompt-chip">
-              <span className="voice-prompt-emoji">📦</span>
-              <div className="voice-prompt-text">
-                <strong>{t("মজুত পরীক্ষা", "Check stock")}</strong>
-                <small>{t("“আমার মাচায় পেঁয়াজ কত আছে?”", "“How much onion in my shed?”")}</small>
+          <div className="dash-kpi-grid voice-prompts-grid">
+            <div className="dash-kpi-card glass-1 voice-prompt-chip">
+              <div className="dash-kpi-header">
+                <span className="dash-kpi-icon">
+                  <WorkspaceIcon name="package" />
+                </span>
+                <span className="dash-kpi-badge">{t("মজুত", "Stock")}</span>
+              </div>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{t("মজুত পরীক্ষা", "Check stock")}</span>
+                <strong className="voice-prompt-sample">
+                  {t("“আমার মাচায় পেঁয়াজ কত আছে?”", "“How much onion in my shed?”")}
+                </strong>
               </div>
             </div>
 
-            <div className="voice-prompt-chip">
-              <span className="voice-prompt-emoji">📈</span>
-              <div className="voice-prompt-text">
-                <strong>{t("বাজারদর অনুসন্ধান", "Market prices")}</strong>
-                <small>{t("“পাবনা মোকামের পাইকারি রেট কত?”", "“Pabna wholesale onion rate”")}</small>
+            <div className="dash-kpi-card glass-1 voice-prompt-chip">
+              <div className="dash-kpi-header">
+                <span className="dash-kpi-icon">
+                  <WorkspaceIcon name="trendUp" />
+                </span>
+                <span className="dash-kpi-badge">{t("দর", "Rates")}</span>
+              </div>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{t("বাজারদর অনুসন্ধান", "Market prices")}</span>
+                <strong className="voice-prompt-sample">
+                  {t("“পাবনা মোকামের পাইকারি রেট কত?”", "“Pabna wholesale onion rate”")}
+                </strong>
               </div>
             </div>
 
-            <div className="voice-prompt-chip">
-              <span className="voice-prompt-emoji">🤝</span>
-              <div className="voice-prompt-text">
-                <strong>{t("অফার প্রেরণ", "Send offer")}</strong>
-                <small>{t("“২০০ কেজি তাহেরপুরী বিক্রির অফার দিন”", "“Offer 200 kg for sale”")}</small>
+            <div className="dash-kpi-card glass-1 voice-prompt-chip">
+              <div className="dash-kpi-header">
+                <span className="dash-kpi-icon">
+                  <WorkspaceIcon name="handshake" />
+                </span>
+                <span className="dash-kpi-badge">{t("বাণিজ্য", "Trade")}</span>
+              </div>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{t("অফার প্রেরণ", "Send offer")}</span>
+                <strong className="voice-prompt-sample">
+                  {t("“২০০ কেজি তাহেরপুরী বিক্রির অফার দিন”", "“Offer 200 kg for sale”")}
+                </strong>
               </div>
             </div>
 
-            <div className="voice-prompt-chip">
-              <span className="voice-prompt-emoji">🔍</span>
-              <div className="voice-prompt-text">
-                <strong>{t("মাঠ পরিদর্শন", "Field inspection")}</strong>
-                <small>{t("“মাচায় আর্দ্রতা পরিদর্শনের অনুরোধ”", "“Request moisture inspection”")}</small>
+            <div className="dash-kpi-card glass-1 voice-prompt-chip">
+              <div className="dash-kpi-header">
+                <span className="dash-kpi-icon">
+                  <WorkspaceIcon name="search" />
+                </span>
+                <span className="dash-kpi-badge">{t("মাঠ", "Field")}</span>
+              </div>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{t("মাঠ পরিদর্শন", "Field inspection")}</span>
+                <strong className="voice-prompt-sample">
+                  {t("“মাচায় আর্দ্রতা পরিদর্শনের অনুরোধ”", "“Request moisture inspection”")}
+                </strong>
               </div>
             </div>
           </div>
@@ -244,14 +260,14 @@ export async function VoicePage({
       </section>
 
       {/* ─── 2. INSPECTION & SUPPORT REQUESTS QUEUE ─── */}
-      <section className="voice-tasks-section">
-        <header className="voice-tasks-header">
+      <section className="work-panel voice-tasks-section">
+        <header className="dash-analysis-header">
           <div>
-            <div className="voice-tasks-eyebrow">
+            <div className="dash-quality-eyebrow">
               <span className="dash-pulse-dot" aria-hidden="true" />
               <span>{t("মাঠ কার্যক্রম", "Field Operations")}</span>
             </div>
-            <h2 className="voice-tasks-title">
+            <h2 className="dash-analysis-title">
               {t("পরিদর্শন ও সহায়তার অনুরোধ", "Inspection and Support Requests")}
             </h2>
             <p className="voice-tasks-sub">
@@ -263,75 +279,66 @@ export async function VoicePage({
           </div>
 
           {tasks.length > 0 && (
-            <span className="voice-tasks-count-pill">
-              <span className="voice-count-num stat-num">
-                {numberLabel(locale, openTasksCount)}
-              </span>{" "}
+            <span className="trade-status-pill pending">
+              <span className="trade-status-dot" aria-hidden="true" />
+              <span className="stat-num">{numberLabel(locale, openTasksCount)}</span>{" "}
               {t("চলমান অনুরোধ", "open requests")}
             </span>
           )}
         </header>
 
         {tasks.length === 0 ? (
-          <div className="voice-empty-box glass-1">
-            <div className="voice-empty-icon" aria-hidden="true">
-              <WorkspaceIcon name="help" />
-            </div>
-            <h3 className="voice-empty-title">
-              {t("এখনও কোনো অনুরোধ নেই", "No requests yet")}
-            </h3>
-            <p className="voice-empty-sub">
-              {t(
-                "ভয়েস কলের মাধ্যমে পরিদর্শন বা সহায়তার অনুরোধ জানানো হলে তা সরাসরি এখানে জমা হবে।",
-                "Any inspection or field assistance requested during simulated voice calls will appear here.",
-              )}
-            </p>
+          <div className="price-empty-state">
+            <span className="price-empty-icon" aria-hidden="true">
+              <WorkspaceIcon name="help" size={32} />
+            </span>
+            <p>{t("ভয়েস কলের মাধ্যমে পরিদর্শন বা সহায়তার অনুরোধ জানানো হলে তা সরাসরি এখানে জমা হবে।", "Any inspection or field assistance requested during simulated voice calls will appear here.")}</p>
           </div>
         ) : (
-          <div className="voice-tasks-grid">
+          <div className="trade-cards-grid">
             {tasks.map((task) => {
               const isOpen = task.status !== "resolved";
               const isInspection = task.kind === "inspection";
               return (
-                <article key={task.id} className="voice-task-card glass-1">
-                  <div className="voice-task-card-top">
-                    <span
-                      className={`voice-kind-badge ${isInspection ? "inspection" : "support"}`}
-                    >
-                      <span className="voice-kind-icon" aria-hidden="true">
-                        {isInspection ? "🔍" : "🤝"}
+                <article key={task.id} className="trade-order-card voice-task-card">
+                  <div className="trade-card-header">
+                    <div className="trade-card-id-wrap">
+                      <span className="trade-card-hash">#{task.id.slice(0, 8)}</span>
+                      <span className="trade-card-variety">
+                        {isInspection ? t("মাচা পরিদর্শন", "Storage Inspection") : t("মাঠ সহায়তা", "Field Support")}
                       </span>
-                      <span>
-                        {isInspection
-                          ? t("পরিদর্শন", "Inspection")
-                          : t("সহায়তা", "Support")}
-                      </span>
-                    </span>
+                    </div>
 
                     <span
-                      className={`voice-task-status-pill ${isOpen ? "open" : "resolved"}`}
+                      className={`trade-status-pill ${isOpen ? "pending" : "verified"}`}
                     >
-                      <span className="voice-status-dot" aria-hidden="true" />
+                      <span className="trade-status-dot" aria-hidden="true" />
                       <span>{isOpen ? t("খোলা", "Open") : t("সম্পন্ন", "Resolved")}</span>
                     </span>
                   </div>
 
-                  <p className="voice-task-note">{task.note}</p>
-
-                  <div className="voice-task-timestamp">
-                    <span>🕒 {timeLabel(locale, task.created_at)}</span>
+                  <div className="trade-card-main-title">
+                    <p className="voice-task-note">{task.note}</p>
                   </div>
 
-                  <div className="voice-task-actions">
+                  <div className="trade-meta-dates">
+                    <span className="trade-meta-location">
+                      <WorkspaceIcon name="clock" size={13} />
+                      {" "}
+                      {timeLabel(locale, task.created_at)}
+                    </span>
+                  </div>
+
+                  <div className="trade-card-divider dashed" />
+
+                  <div className="trade-card-footer">
                     {task.lot_id && (
                       <Link
-                        className="voice-task-action-btn"
+                        className="trade-card-action-btn primary"
                         href={`${base}/stock/${task.lot_id}/inspections`}
                       >
                         <span>{t("মজুতের পরিদর্শন", "Lot inspections")}</span>
-                        <span className="voice-action-arrow" aria-hidden="true">
-                          <WorkspaceIcon name="arrow" />
-                        </span>
+                        <WorkspaceIcon name="arrow" size={14} />
                       </Link>
                     )}
 
@@ -340,7 +347,7 @@ export async function VoicePage({
                         action={resolveVoiceTask.bind(null, locale, task.id)}
                         className="voice-task-resolve-form"
                       >
-                        <button type="submit" className="voice-task-resolve-btn">
+                        <button type="submit" className="trade-card-action-btn secondary">
                           {t("সম্পন্ন চিহ্নিত করুন", "Mark resolved")}
                         </button>
                       </form>

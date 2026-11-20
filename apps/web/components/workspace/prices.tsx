@@ -204,7 +204,7 @@ function Observations({
                           rel="noopener noreferrer"
                         >
                           <span>{row.source_record || t("উৎস রেকর্ড", "View Record")}</span>
-                          <span aria-hidden="true">↗</span>
+                          <WorkspaceIcon name="external" size={13} />
                         </a>
                       ) : (
                         <span className="price-source-plain">
@@ -273,28 +273,28 @@ function ForecastRange({
   ];
 
   return (
-    <div className={`price-metrics-grid ${isPreview ? "is-preview-grid" : ""}`}>
+    <div className={`dash-kpi-grid price-metrics-grid ${isPreview ? "is-preview-grid" : ""}`}>
       {cards.map((card) => (
         <div
           key={card.key}
-          className={`price-metric-tile tone-${card.tone} ${card.featured && !isPreview ? "is-featured-median" : ""}`}
+          className={`dash-kpi-card glass-1 price-metric-tile tone-${card.tone} ${card.featured && !isPreview ? "is-featured-median" : ""}`}
         >
-          <div className="price-metric-top">
-            <span className="price-metric-icon" aria-hidden="true">
-              <WorkspaceIcon name={card.iconName} size={18} />
+          <div className="dash-kpi-header">
+            <span className="dash-kpi-icon">
+              <WorkspaceIcon name={card.iconName} />
             </span>
-            <span className="price-metric-label">{card.label}</span>
-            <span className="price-metric-badge">{card.badge}</span>
+            <span className="dash-kpi-badge">{card.badge}</span>
           </div>
 
-          <div className="price-metric-value">
+          <div className="dash-kpi-body">
+            <span className="dash-kpi-label">{card.label}</span>
             {card.amount === null ? (
-              <span className="price-metric-empty">—</span>
+              <strong className="dash-kpi-value stat-num">—</strong>
             ) : (
-              <div className="price-metric-num-group">
-                <span className="price-metric-num">{taka(locale, card.amount)}</span>
-                <span className="price-metric-unit"> / {t("কেজি", "kg")}</span>
-              </div>
+              <strong className="dash-kpi-value stat-num">
+                {taka(locale, card.amount)}{" "}
+                <span className="price-metric-unit">/ {t("কেজি", "kg")}</span>
+              </strong>
             )}
           </div>
         </div>
@@ -319,15 +319,15 @@ function ForecastPanel({
       : null;
 
   return (
-    <section className="price-forecast-card glass-1">
+    <section className="work-panel price-forecast-card glass-1">
       {/* Header Strip */}
       <div className="price-forecast-header">
         <div className="price-forecast-title-wrap">
-          <div className="section-eyebrow">
-            <span className="hero-dot" aria-hidden="true" />
+          <div className="dash-quality-eyebrow">
+            <span className="dash-pulse-dot" aria-hidden="true" />
             <span>{t("মূল্য পূর্বাভাস ও পরিসর", "PRICE OUTLOOK")}</span>
           </div>
-          <h2 className="price-forecast-title">
+          <h2 className="dash-analysis-title price-forecast-title">
             {t("দরের সম্ভাব্য পূর্বাভাস পরিসর", "Price Range Outlook")}
           </h2>
         </div>
@@ -339,7 +339,10 @@ function ForecastPanel({
             </span>
           )}
           <span className="price-pill-horizon">
-            ⏱️ {numberLabel(locale, horizon)} {t("দিনের পূর্বাভাস", "Days Horizon")}
+            <WorkspaceIcon name="clock" size={14} />
+            <span>
+              {numberLabel(locale, horizon)} {t("দিনের পূর্বাভাস", "Days Horizon")}
+            </span>
           </span>
         </div>
       </div>
@@ -537,11 +540,11 @@ export async function PricePage({
   return (
     <div className="price-page-wrap">
       {/* ─── 1. EXECUTIVE HERO HEADER ─── */}
-      <section className="price-hero-header glass-1">
+      <section className="work-panel price-hero-header glass-1">
         <div className="price-hero-ambient" aria-hidden="true" />
         <div className="price-hero-top">
-          <div className="price-hero-badge">
-            <span className="price-pulse-dot" aria-hidden="true" />
+          <div className="dash-welcome-eyebrow">
+            <span className="dash-pulse-dot" aria-hidden="true" />
             <span>{t("লাইভ বাজারদর ও মূল্য বিশ্লেষণ", "Market Benchmarks & Outlook")}</span>
           </div>
           {choice?.synthetic && (
@@ -565,24 +568,34 @@ export async function PricePage({
           </p>
         </div>
 
-        {/* Live Market Quick Stat Cards */}
+        {/* Live Market Quick Stat Cards (Matches Overview KPI Grid) */}
         {choice && latestObs && (
-          <div className="price-hero-stats">
-            <div className="price-stat-pill">
-              <span className="price-stat-icon" aria-hidden="true">
-                <LocationIcon size={22} />
-              </span>
-              <div className="price-stat-info">
-                <small>{t("বর্তমান বাজার", "Active Market")}</small>
-                <strong>{choice.market} · {activeDistrict}</strong>
+          <div className="dash-kpi-grid price-hero-stats">
+            <div className="dash-kpi-card glass-1">
+              <div className="dash-kpi-header">
+                <span className="dash-kpi-icon">
+                  <LocationIcon size={16} />
+                </span>
+                <span className="dash-kpi-badge">{t("বাজার", "Market")}</span>
+              </div>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{t("বর্তমান বাজার", "Active Market")}</span>
+                <strong className="dash-kpi-value stat-num">
+                  {choice.market} · {activeDistrict}
+                </strong>
               </div>
             </div>
 
-            <div className="price-stat-pill">
-              <span className="price-stat-icon" aria-hidden="true">🏷️</span>
-              <div className="price-stat-info">
-                <small>{t("সর্বশেষ দর", "Latest Observation")}</small>
-                <strong>
+            <div className="dash-kpi-card glass-1">
+              <div className="dash-kpi-header">
+                <span className="dash-kpi-icon">
+                  <WorkspaceIcon name="tag" size={15} />
+                </span>
+                <span className="dash-kpi-badge">{t("সর্বশেষ দর", "Latest")}</span>
+              </div>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{t("পর্যবেক্ষণ দর", "Observed Rate")}</span>
+                <strong className="dash-kpi-value stat-num">
                   {Number(latestObs.low_bdt_kg) === Number(latestObs.high_bdt_kg)
                     ? `${taka(locale, Number(latestObs.low_bdt_kg).toFixed(2))} / ${t("কেজি", "kg")}`
                     : `${taka(locale, Number(latestObs.low_bdt_kg).toFixed(2))} – ${taka(locale, Number(latestObs.high_bdt_kg).toFixed(2))} / ${t("কেজি", "kg")}`}
@@ -590,19 +603,31 @@ export async function PricePage({
               </div>
             </div>
 
-            <div className="price-stat-pill">
-              <span className="price-stat-icon" aria-hidden="true">📅</span>
-              <div className="price-stat-info">
-                <small>{t("পর্যবেক্ষণ তারিখ", "Observed On")}</small>
-                <strong>{timeLabel(locale, latestObs.observed_on)}</strong>
+            <div className="dash-kpi-card glass-1">
+              <div className="dash-kpi-header">
+                <span className="dash-kpi-icon">
+                  <WorkspaceIcon name="calendar" size={15} />
+                </span>
+                <span className="dash-kpi-badge">{t("তারিখ", "Date")}</span>
+              </div>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{t("পর্যবেক্ষণ তারিখ", "Observed On")}</span>
+                <strong className="dash-kpi-value stat-num">{timeLabel(locale, latestObs.observed_on)}</strong>
               </div>
             </div>
 
-            <div className="price-stat-pill">
-              <span className="price-stat-icon" aria-hidden="true">📊</span>
-              <div className="price-stat-info">
-                <small>{t("মোট পর্যবেক্ষণ", "Total Observations")}</small>
-                <strong>{numberLabel(locale, rows.length)} {t("দিন", "days")}</strong>
+            <div className="dash-kpi-card glass-1">
+              <div className="dash-kpi-header">
+                <span className="dash-kpi-icon">
+                  <WorkspaceIcon name="chartBar" size={15} />
+                </span>
+                <span className="dash-kpi-badge">{t("রেকর্ড", "History")}</span>
+              </div>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{t("মোট পর্যবেক্ষণ", "Total Observations")}</span>
+                <strong className="dash-kpi-value stat-num">
+                  {numberLabel(locale, rows.length)} {t("দিন", "days")}
+                </strong>
               </div>
             </div>
           </div>
@@ -611,12 +636,14 @@ export async function PricePage({
 
       {/* ─── 2. SERIES & HORIZON FILTER CARD ─── */}
       {choice ? (
-        <section className="price-filter-card glass-1">
+        <section className="work-panel price-filter-card glass-1">
           <form action={`${base}/prices`} method="get" className="price-filter-form">
             <div className="price-filter-fields">
               <div className="price-field-group">
                 <label htmlFor="series-select" className="price-field-label">
-                  <span className="price-field-icon" aria-hidden="true">📈</span>
+                  <span className="price-field-icon" aria-hidden="true">
+                    <WorkspaceIcon name="trendUp" size={16} />
+                  </span>
                   <span>{t("বাজারের দরধারা", "Market Series")}</span>
                 </label>
                 <div className="price-select-wrap">
@@ -637,7 +664,9 @@ export async function PricePage({
 
               <div className="price-field-group price-field-horizon">
                 <label htmlFor="horizon-select" className="price-field-label">
-                  <span className="price-field-icon" aria-hidden="true">⏱️</span>
+                  <span className="price-field-icon" aria-hidden="true">
+                    <WorkspaceIcon name="clock" size={16} />
+                  </span>
                   <span>{t("পূর্বাভাস সময়সীমা", "Forecast Horizon")}</span>
                 </label>
                 <div className="price-select-wrap">
@@ -658,7 +687,9 @@ export async function PricePage({
             </div>
 
             <button className="price-submit-btn" type="submit">
-              <span className="price-btn-icon" aria-hidden="true">🔍</span>
+              <span className="price-btn-icon" aria-hidden="true">
+                <WorkspaceIcon name="search" size={16} />
+              </span>
               <span>{t("দর পর্যালোচনা করুন", "View Prices")}</span>
             </button>
           </form>
@@ -674,14 +705,14 @@ export async function PricePage({
 
       {/* ─── 4. PUBLISHED OBSERVATIONS TABLE ─── */}
       {choice && (
-        <section className="price-observations-card glass-1">
+        <section className="work-panel price-observations-card glass-1">
           <div className="price-section-header">
             <div>
-              <div className="section-eyebrow">
-                <span className="hero-dot" aria-hidden="true" />
+              <div className="dash-quality-eyebrow">
+                <span className="dash-pulse-dot" aria-hidden="true" />
                 <span>{t("বাজারদর উপাত্ত", "HISTORICAL DATA")}</span>
               </div>
-              <h2 className="price-section-title">
+              <h2 className="dash-analysis-title price-section-title">
                 {t("প্রকাশিত পর্যবেক্ষণসমূহ", "Published Observations")}
               </h2>
             </div>
@@ -697,10 +728,10 @@ export async function PricePage({
       )}
 
       {/* ─── 5. OFFICIAL DAM GOVERNMENT PORTAL BANNER ─── */}
-      <aside className="price-dam-banner glass-1">
+      <aside className="work-panel price-dam-banner glass-1">
         <div className="price-dam-content">
           <div className="price-dam-icon-wrap" aria-hidden="true">
-            🏛️
+            <WorkspaceIcon name="building" size={26} />
           </div>
           <div className="price-dam-text">
             <strong className="price-dam-title">
@@ -724,7 +755,7 @@ export async function PricePage({
           rel="noopener noreferrer"
         >
           <span>{t("DAM পোর্টাল খুলুন", "Open DAM Portal")}</span>
-          <span className="price-dam-cta-arrow" aria-hidden="true">↗</span>
+          <WorkspaceIcon name="external" size={15} />
         </a>
       </aside>
     </div>

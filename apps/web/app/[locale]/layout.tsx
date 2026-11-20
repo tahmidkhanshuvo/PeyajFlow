@@ -16,7 +16,13 @@ import "../product.css";
 
 export const metadata: Metadata = {
   title: "PeyajFlow",
-  icons: { icon: "/peyajflow-icon.png" },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/peyajflow-icon.png", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default async function LocaleLayout({
