@@ -17,6 +17,7 @@ import {
 } from "../../../../components/workspace/prices";
 import { VerificationsPage } from "../../../../components/workspace/verifications";
 import { VoicePage } from "../../../../components/workspace/voice";
+import { SimulatorPage } from "../../../../components/workspace/simulator";
 import { Details, Field } from "../../../../components/workspace/fields";
 import { WorkspaceForm } from "../../../../components/workspace/form";
 import {
@@ -78,7 +79,10 @@ function destinations(locale: Locale, actor: Profile) {
   pages.push(["prices", local(locale, "বাজারদর", "Market prices")]);
   pages.push(["alerts", local(locale, "বিজ্ঞপ্তি", "Alerts")]);
   if (canUseVoice(actor))
-    pages.push(["voice", local(locale, "বাংলা সহকারী", "Bangla assistant")]);
+    pages.push(
+      ["voice", local(locale, "বাংলা সহকারী", "Bangla assistant")],
+      ["simulator", local(locale, "ফোন সিমুলেটর", "Phone simulator")],
+    );
   pages.push(["help", local(locale, "সহায়তা", "Help")]);
   if (actor.role === "agent" && actor.verified && !actor.is_demo)
     pages.push([
@@ -227,6 +231,8 @@ async function panel(
   }
   if (page === "imports" && !child) return ImportsPage({ ...context, id });
   if (page === "voice" && !child) return VoicePage({ ...context, id });
+  if (page === "simulator" && !id && canUseVoice(context.actor))
+    return SimulatorPage(context);
   if (id && page === "stock") {
     if (!child) return LotPage({ ...context, id });
     if (child === "inspections") return InspectionsPage({ ...context, id });

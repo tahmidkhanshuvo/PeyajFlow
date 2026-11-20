@@ -118,6 +118,33 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - The new rows were written by the same author as the rules.
   - Spoken numbers need review by native speakers and testing on recorded speech.
 
+### Phone simulator without a real phone (November 20, 2026)
+
+**What changed:**
+
+- **Simulator page.** It shows the owner's design-pack basic phone next to a smartphone frame that shows the real workspace. The pack's static screens (sample story, middleman, bKash, photo grade) were not copied; the owner chose a live simulator on real data.
+- **Basic phone channels, in `app/phone_sim.py`:**
+  - real alerts mirrored as Bangla SMS (migration `0021_simulator`);
+  - replies `1` and `2` on offers;
+  - text commands;
+  - a USSD menu at `*7392#`;
+  - calls to `7392` with spoken Bangla prompts, captions, keypad menu and speech or typed input.
+- **Confirmation.** Every change reuses the voice staging and needs the voice PIN, or the code for demo accounts.
+- **Demo helpers.** A test offer for demo farmers, and a weekly price SMS built from the real outlook.
+- **Speech.** A consent-gated Gemini transcription fallback for browsers without speech recognition.
+- **Framing.** Same-origin framing (`X-Frame-Options: SAMEORIGIN`, `frame-ancestors 'self'`) lets the smartphone frame show the workspace. The release smoke now checks `SAMEORIGIN`.
+- **Mixed crops.** A change command naming another crop is now refused, a gap found by the hard-test fuzz.
+
+**Checks:**
+
+- **API:** 187 tests passed on PostgreSQL 16, including 7 simulator tests (SMS accept and decline, wrong codes, cancel, text commands, USSD, call, real-account PIN, demo-only test offer, isolation, transcription with Gemini mocked). Migration upgrade, downgrade and re-upgrade passed, and `alembic check` is clean.
+- **Evaluations:** both gates passed at 1.000.
+- **Web:** format, lint, typecheck, 9 unit tests and the production build passed.
+- **Browser:** in Edge, 17 of 17 simulator checks passed against `next start`. They covered the offer SMS, reply 1, code and confirmed order; USSD; the call menu and a spoken request; the smartphone frame; a spoken loss preselecting the loss type; and a real farmer setting a PIN and confirming from the basic phone.
+- **End to end:** the Playwright suite passed 5 of 5, and the release smoke passed.
+
+**Open.** Bangla transcription accuracy is unmeasured, and the simulator has not been tried by real farmers.
+
 ### Optional model fallback for unmatched voice commands (November 20, 2026)
 
 - **What changed.** `app/intent_model.py` asks a language model only when the grammar matched nothing. It is off by default. Providers are Meta `muse-spark-1.3`, Gemini `gemini-3.5-flash-lite`, or both (they must agree). It never overturns a refusal, never sees a negated or uncertain phrase, and cannot introduce a quantity. Results carry `match: "model"`, with the same read-back and confirmation. `AGENTS.md` rule 2 was updated with the owner's approval. Keys are read from the git-ignored `services/api/.env`.
@@ -127,7 +154,7 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - Live evaluation, with every row checked on all three providers: Meta 0.900, Gemini 0.650 and both 0.800 on the 20 unmatched phrasings, and 1.000 on the main and challenge sets, with zero wrong change commands. Meta is the default.
 - **Open.**
   - Gemini transcription for browsers without speech recognition: the owner chose fallback only; not built yet.
-  - A phrase naming another crop next to onion ("আলুর ৫ কেজি পেঁয়াজ পচে গেছে") still resolves; the hard-test fuzz found this.
+  - A phrase naming another crop next to onion is now refused (see the simulator entry above).
 
 ### Voice PIN, SMS sign-in, NID format, loss sign and quantity joiners (November 20, 2026)
 

@@ -131,6 +131,16 @@ How to read these figures:
 - **Most fallback-set rows the model got wrong are cautious abstentions.** The negation guard blocks "আমি আর পারছি না, অফিসের কারো সাথে আলাপ করিয়ে দিন" on purpose.
 - **These are live model calls.** Results can vary between runs, and CI does not run them. CI gates only the deterministic grammar.
 
+## Speech-to-text
+
+- **Browser recognition (default).** The browser's own speech recognition (`bn-BD`, Chrome and Edge) fills an editable transcript. PeyajFlow never receives the audio.
+- **Gemini fallback.** In browsers without recognition, the phone simulator records up to 12 seconds and, after explicit consent, sends the clip to `gemini-3.5-transcribe` through `POST /v1/simulator/transcribe`.
+  - It is off unless `VOICE_TRANSCRIPTION=true`.
+  - The audio is never stored.
+  - The transcript stays editable and goes through the same grammar and confirmation.
+  - Calls are limited to 20 per account per 10 minutes.
+- **Measured.** A connectivity check on an English text-to-speech clip was transcribed exactly in 2.8 s. Bangla speech accuracy has not been measured; that needs recordings from native speakers.
+
 ## Photo condition suggestions and human review
 
 The worker runs `Xenova/clip-vit-base-patch32` at pinned revision `6b7c523…` with q8 weights on WebAssembly. It compares the photo with five text descriptions (rot or mold, sprouting, cuts or bruises, intact dry skin, no clear view of a bulb). It abstains unless the top score is at least 0.58 and leads the next by at least 0.16 (rule `clip-margin-v1`). One model instance serves every photo on the page.

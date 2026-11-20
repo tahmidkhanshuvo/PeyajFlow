@@ -102,6 +102,11 @@ def nfc(text: str) -> str:
 
 
 ALIASES = {nfc(key): tool for key, tool in ALIASES.items()}
+# One listed Bangla phrase per command, used when a channel needs to send a
+# command it already knows (for example a keypad menu choice).
+CANONICAL: dict[str, str] = {}
+for _phrase, _tool in ALIASES.items():
+    CANONICAL.setdefault(_tool, _phrase)
 VARIANTS = tuple((nfc(variant), nfc(standard)) for variant, standard in VARIANTS)
 
 
@@ -1007,6 +1012,9 @@ def interpret(text: str) -> Interpretation:
     found = matches(normalized)
     changes = [tool for tool in found if tool in WRITES]
     if changes:
+        if OTHER_PRODUCT.search(normalized):
+            # "আলুর ৫ কেজি পেঁয়াজ পচে গেছে": a change must concern onion only.
+            return Interpretation("unknown", reason="unsupported_product")
         if UNCERTAIN.search(normalized):
             return Interpretation(
                 "ambiguous", reason="uncertain", candidates=tuple(changes)

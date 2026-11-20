@@ -24,6 +24,7 @@ from app import (
     lots,
     market_data,
     notifications,
+    phone_sim,
     rate_limits,
     risk,
     settlement,
@@ -136,6 +137,7 @@ app.include_router(forecast.router)
 app.include_router(advice.router)
 app.include_router(logistics.router)
 app.include_router(voice.router)
+app.include_router(phone_sim.router)
 app.include_router(telephony.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)

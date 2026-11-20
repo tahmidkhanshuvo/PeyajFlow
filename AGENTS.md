@@ -18,6 +18,7 @@ PeyajFlow is a Bangla-first onion supply-chain workspace for the Pabna-to-Dhaka 
 | `apps/web/tests` | Node unit tests and Playwright end-to-end tests (`tests/e2e`) |
 | `services/api/app` | FastAPI application. One module per domain: `lots`, `trade`, `inspection`, `forecast`, `advice`, `voice`, `intent`, `admin` and others |
 | `services/api/migrations` | Alembic revisions. Exactly one head is required at startup. |
+| `services/api/app/phone_sim.py` | Simulated basic phone (SMS, USSD `*7392#`, calls to `7392`) on the real data. It reuses the voice staging and PIN or code confirmation, and nothing is sent to a carrier |
 | `services/api/tests` | pytest suites. Most need a disposable PostgreSQL database. |
 | `services/api/evals` | Offline evaluations: datasets in `data/`, results in `results/` |
 | `docs` | Deployment runbook, AI feature notes, design review screenshots |

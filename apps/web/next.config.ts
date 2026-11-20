@@ -9,7 +9,9 @@ const config: NextConfig = {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
+          // Same-origin framing lets the phone simulator show the workspace
+          // inside its smartphone frame; other sites still cannot frame it.
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
@@ -18,7 +20,7 @@ const config: NextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+              "frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'",
           },
         ],
       },

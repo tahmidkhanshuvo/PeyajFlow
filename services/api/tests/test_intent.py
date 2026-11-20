@@ -261,3 +261,10 @@ def test_a_spoken_loss_is_marked_so_it_cannot_become_an_addition():
     assert interpret("ওজন ৫ কেজি বেশি, সমন্বয় করুন").loss is False
     assert interpret("ওজন সমন্বয়").loss is False
     assert interpret("অফার গ্রহণ ২০০ কেজি").loss is False
+
+
+def test_a_change_that_names_another_crop_is_refused_but_reads_answer():
+    for phrase in ("আলুর ৫ কেজি পেঁয়াজ পচে গেছে", "potato 200 kg offer accept"):
+        result = interpret(phrase)
+        assert (result.status, result.reason) == ("unknown", "unsupported_product")
+    assert interpret("পেঁয়াজ আর আলুর দাম কত").tool == "prices"

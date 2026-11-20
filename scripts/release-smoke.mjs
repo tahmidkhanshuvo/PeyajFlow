@@ -93,7 +93,7 @@ assert.equal(
 );
 assert.equal(redirect.pathname, "/bn");
 assert.equal(workspace.status, 200, "Sign-in page");
-assert.equal(workspace.headers.get("x-frame-options"), "DENY");
+assert.equal(workspace.headers.get("x-frame-options"), "SAMEORIGIN");
 const signInPage = await workspace.text();
 assert.match(signInPage, /Sign in/);
 console.log(

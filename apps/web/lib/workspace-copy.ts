@@ -279,6 +279,22 @@ const errors: Record<string, [string, string]> = {
     "এই অ্যাকাউন্ট আইডি ইতিমধ্যে ব্যবহৃত হচ্ছে।",
     "This account ID is already in use.",
   ],
+  transcription_unavailable: [
+    "কথা লেখায় রূপান্তর এখন চালু নেই। লিখে পাঠান।",
+    "Speech transcription is not available. Type instead.",
+  ],
+  transcription_failed: [
+    "কথা লেখায় রূপান্তর করা যায়নি। আবার বলুন বা লিখুন।",
+    "The speech could not be transcribed. Speak again or type.",
+  ],
+  voice_too_long: [
+    "রেকর্ডিং অনেক লম্বা। ছোট করে বলুন।",
+    "The recording is too long. Say it more briefly.",
+  ],
+  no_listed_lot: [
+    "পরীক্ষার অফারের জন্য আগে একটি মজুত তালিকাভুক্ত করুন।",
+    "List a lot first to receive a test offer.",
+  ],
   otp_sent: [
     "নম্বরটি যাচাই করা অ্যাকাউন্টের হলে কয়েক মিনিটের মধ্যে একটি ৬ অঙ্কের কোড আসবে।",
     "If this number belongs to a verified account, a 6-digit code will arrive within a few minutes.",

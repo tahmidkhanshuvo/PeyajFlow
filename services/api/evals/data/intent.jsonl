@@ -275,3 +275,5 @@
 {"id": "joined-004", "split": "test", "lang": "bn", "category": "quantity_joiners", "text": "দুইশো বা তিনশো কেজির অফার নেব", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
 {"id": "joined-005", "split": "dev", "lang": "banglish", "category": "quantity_joiners", "text": "200 or 300 kg er offer nibo", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
 {"id": "joined-006", "split": "test", "lang": "en", "category": "quantity_joiners", "text": "accept offer two hundred and fifty kg", "status": "resolved", "tool": "accept", "quantity": "250", "unit": "kg"}
+{"id": "mixed-crop-001", "split": "test", "lang": "bn", "category": "mixed_crop", "text": "আলুর ৫ কেজি পেঁয়াজ পচে গেছে", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "mixed-crop-002", "split": "test", "lang": "en", "category": "mixed_crop", "text": "potato and onion 200 kg offer accept", "status": "unknown", "tool": null, "quantity": null, "unit": null}
