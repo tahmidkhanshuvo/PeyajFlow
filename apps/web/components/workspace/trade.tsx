@@ -13,6 +13,7 @@ import type {
 import { timeLabel } from "../../lib/workspace-values";
 import { DecimalField, Details, RequestKey } from "./fields";
 import { WorkspaceForm } from "./form";
+import { LocationIcon } from "./location-icon";
 import { taka } from "./market";
 import { OrderSettlement } from "./settlement";
 import { kg } from "./stock";
@@ -209,7 +210,9 @@ export function OfferCard({
             {offer.buyer_name} ({offer.buyer_verified ? t("যাচাইকৃত", "Verified") : t("স্বঘোষিত", "Unverified")})
           </span>
           <span className="trade-meta-dot">•</span>
-          <span>📍 {offer.delivery_district}</span>
+          <span className="trade-meta-location">
+            <LocationIcon size={13} /> {offer.delivery_district}
+          </span>
         </div>
       </div>
 
@@ -348,7 +351,9 @@ export function OrderCard({
         <div className="trade-card-meta-strip">
           <span>{order.offer.variety}</span>
           <span className="trade-meta-dot">•</span>
-          <span>📍 {order.offer.delivery_district}</span>
+          <span className="trade-meta-location">
+            <LocationIcon size={13} /> {order.offer.delivery_district}
+          </span>
         </div>
       </div>
 

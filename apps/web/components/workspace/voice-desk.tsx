@@ -17,6 +17,7 @@ import type { Profile } from "../../lib/workspace-api";
 import { errorText, local } from "../../lib/workspace-copy";
 import type { Lot, Offer, Order, Supply } from "../../lib/workspace-types";
 import { dhakaToday, timeLabel } from "../../lib/workspace-values";
+import { WorkspaceIcon } from "./icon";
 import { SpeechInput } from "./speech-input";
 
 const commands: Record<string, [string, string]> = {
@@ -244,29 +245,203 @@ export function VoiceDesk({
   );
   return (
     <>
-      <section className="work-panel">
-        <div className="work-row">
-          <h2>{t("সিমুলেটেড কল", "Simulated call")}</h2>
-          <span className="work-tag">{status(call.status)}</span>
+      {/* ─── 1. SIMULATED VOICE CALL STAGE (Waveform & Interactive Calling Dock) ─── */}
+      <section className="voice-call-hero-stage glass-1">
+        <div className="voice-call-hero-ambient" aria-hidden="true" />
+
+        {/* Top Status Bar */}
+        <div className="voice-call-status-bar">
+          <div className="voice-call-status-pill">
+            <span
+              className={`voice-live-dot ${active ? "is-live" : "is-ended"}`}
+              aria-hidden="true"
+            />
+            <span className="voice-call-status-text">
+              {active
+                ? t("সিমুলেটেড কল চলছে", "Simulated Call Active")
+                : t("কল সমাপ্ত", "Call Ended")}
+            </span>
+            <span className="voice-status-tag">{status(call.status)}</span>
+          </div>
+
+          <div className="voice-call-timer">
+            <span className="voice-timer-icon" aria-hidden="true">
+              ⏱️
+            </span>
+            <span>
+              {t("মেয়াদ", "Expires")}: {timeLabel(locale, call.expires_at)}
+            </span>
+          </div>
         </div>
-        <p>
-          {t("সিমুলেটরের মেয়াদ", "Session expires")} ·{" "}
-          {timeLabel(locale, call.expires_at)}
-        </p>
-        {active && (
-          <form action={submit} onSubmit={send} className="work-form">
-            <input name="mode" type="hidden" value="end" />
-            <button className="pilot-secondary" type="submit" disabled={busy}>
-              {t("কল শেষ করুন", "End call")}
+
+        {/* Dynamic Voice Waveform Visualizer (from user design) */}
+        <div className="voice-visualizer-container" aria-hidden="true">
+          <div
+            className={`voice-waveform-wrap ${active ? "is-active" : "is-ended"}`}
+          >
+            {Array.from({ length: 32 }).map((_, idx) => (
+              <span
+                key={idx}
+                className="voice-wave-bar"
+                style={{
+                  animationDelay: `${(idx % 10) * 0.12}s`,
+                  height: active
+                    ? `${Math.sin(idx * 0.42) * 22 + 28}px`
+                    : "6px",
+                  opacity: active ? undefined : 0.3,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Glowing Circular Microphone / Speaker Button with Ripples (from user design) */}
+        <div className="voice-hero-action-dock">
+          <div className="voice-call-trigger-form">
+            <button
+              type="button"
+              className={`voice-mic-main-btn ${active ? "is-calling" : "is-ended"}`}
+              title={
+                active
+                  ? t("বাংলায় শুনুন / কথা বলুন", "Play audio / Tap to speak")
+                  : t("কল শেষ হয়েছে", "Call ended")
+              }
+              aria-label={
+                active
+                  ? t("বাংলায় শুনুন / কথা বলুন", "Play audio / Tap to speak")
+                  : t("কল শেষ হয়েছে", "Call ended")
+              }
+              disabled={!active}
+              onClick={() => {
+                if (!active) return;
+                const lastEntry = call.entries[call.entries.length - 1];
+                if (lastEntry?.readback_bn) {
+                  speak(lastEntry.readback_bn);
+                } else {
+                  speak(
+                    t(
+                      "স্বাগতম! পেঁয়াজের মজুত, বাজারদর জানতে বা অফার তৈরি করতে বলুন।",
+                      "Welcome! Speak to query stock, market prices, or place offers.",
+                    ),
+                  );
+                }
+              }}
+            >
+              {active && (
+                <>
+                  <span
+                    className="voice-mic-ripple voice-ripple-1"
+                    aria-hidden="true"
+                  />
+                  <span
+                    className="voice-mic-ripple voice-ripple-2"
+                    aria-hidden="true"
+                  />
+                </>
+              )}
+              <span className="voice-mic-icon-pod" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="36"
+                  height="36"
+                  fill="none"
+                  stroke="#FFFFFF"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polygon
+                    points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"
+                    fill="rgba(255,255,255,0.2)"
+                  />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              </span>
             </button>
-          </form>
-        )}
+
+            <div className="voice-dock-copy">
+              <strong className="voice-dock-main-label">
+                {active
+                  ? t("সিমুলেটেড ভয়েস কল চলছে", "Simulated Voice Call in Progress")
+                  : t("কল সমাপ্ত হয়েছে", "Simulated Voice Call Ended")}
+              </strong>
+              <span className="voice-dock-sub-label">
+                {active
+                  ? t(
+                      "ট্যাপ করে সহকারী শুনুন · নিচে কণ্ঠ বা ফর্ম দিয়ে নির্দেশ দিন",
+                      "Tap to hear assistant · Speak or use form below to give commands",
+                    )
+                  : t(
+                      "এই কলটির মেয়াদ শেষ বা সমাপ্ত করা হয়েছে।",
+                      "This call has been completed or expired.",
+                    )}
+              </span>
+            </div>
+
+            {/* Call Controls: End Call or Return to Desk */}
+            <div className="voice-call-controls-row">
+              {active ? (
+                <form action={submit} onSubmit={send} className="voice-end-call-form">
+                  <input name="mode" type="hidden" value="end" />
+                  <button
+                    className="voice-call-end-btn"
+                    type="submit"
+                    disabled={busy}
+                    title={t("কল শেষ করুন", "End call")}
+                  >
+                    <span className="voice-end-call-icon" aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91" />
+                        <line x1="23" y1="1" x2="1" y2="23" />
+                      </svg>
+                    </span>
+                    <span>{t("কল শেষ করুন", "End call")}</span>
+                  </button>
+                </form>
+              ) : (
+                <Link className="voice-call-restart-btn" href={`${base}/voice`}>
+                  <span className="voice-restart-icon" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1 4v6h6" />
+                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                    </svg>
+                  </span>
+                  <span>{t("সহকারী ডেস্কে ফিরুন", "Back to Voice Assistant")}</span>
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+
         {state.error && (
-          <p role="alert" className="form-error">
+          <p role="alert" className="form-error voice-stage-alert">
             {errorText(locale, state.error)}
           </p>
         )}
-        {audio && <p role="status">{audio}</p>}
+        {audio && (
+          <p role="status" className="voice-stage-audio-note">
+            {audio}
+          </p>
+        )}
       </section>
       {active && !pending && (
         <section className="work-panel">

@@ -156,68 +156,49 @@ export async function VoicePage({
           </div>
         </div>
 
-        {/* Dynamic Voice Waveform Visualizer */}
-        <div className="voice-visualizer-container" aria-hidden="true">
-          <div className="voice-waveform-wrap">
-            {Array.from({ length: 32 }).map((_, idx) => (
-              <span
-                key={idx}
-                className="voice-wave-bar"
-                style={{
-                  animationDelay: `${(idx % 10) * 0.12}s`,
-                  height: `${Math.sin(idx * 0.42) * 22 + 28}px`,
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Hero Call Action Dock */}
-        <div className="voice-hero-action-dock">
+        {/* Voice Assistant Trigger CTA Button (Replaces waveform & circular mic on main page) */}
+        <div className="voice-assistant-cta-wrap">
           <form
             action={startSimulatedCall.bind(null, locale)}
-            className="voice-call-trigger-form"
+            className="voice-assistant-cta-form"
           >
             <button
               type="submit"
-              className="voice-mic-main-btn"
-              title={t("সিমুলেটেড কল শুরু করুন", "Start simulated call")}
-              aria-label={t("সিমুলেটেড কল শুরু করুন", "Start simulated call")}
+              className="voice-assistant-cta-btn"
+              title={t("ভয়েস সহকারী শুরু করুন", "Start Voice Assistant")}
             >
-              <span className="voice-mic-ripple voice-ripple-1" aria-hidden="true" />
-              <span className="voice-mic-ripple voice-ripple-2" aria-hidden="true" />
-              <span className="voice-mic-icon-pod" aria-hidden="true">
+              <span className="voice-cta-mic-badge" aria-hidden="true">
                 <svg
                   viewBox="0 0 24 24"
-                  width="36"
-                  height="36"
+                  width="22"
+                  height="22"
                   fill="none"
-                  stroke="#FFFFFF"
+                  stroke="currentColor"
                   strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <polygon
-                    points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"
-                    fill="rgba(255,255,255,0.2)"
-                  />
-                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="23" />
+                  <line x1="8" y1="23" x2="16" y2="23" />
                 </svg>
               </span>
-            </button>
-
-            <div className="voice-dock-copy">
-              <strong className="voice-dock-main-label">
-                {t("সিমুলেটেড কল শুরু করুন", "Start Simulated Voice Call")}
-              </strong>
-              <span className="voice-dock-sub-label">
-                {t(
-                  "ট্যাপ করে সরাসরি কথা বলুন · কিপ্যাড ও ভয়েস স্বীকৃতি প্রস্তুত",
-                  "Tap to speak · Automatic keypad & speech recognition ready",
-                )}
+              <span className="voice-cta-content">
+                <span className="voice-cta-title">
+                  {t("ভয়েস সহকারী শুরু করুন", "Start Voice Assistant")}
+                </span>
+                <span className="voice-cta-hint">
+                  {t(
+                    "সিমুলেটেড কল চালু করে লাইভ কথা বলুন ও লেনদেন করুন",
+                    "Launch simulated call to speak and trade directly",
+                  )}
+                </span>
               </span>
-            </div>
+              <span className="voice-cta-arrow" aria-hidden="true">
+                <WorkspaceIcon name="arrow" />
+              </span>
+            </button>
           </form>
         </div>
 

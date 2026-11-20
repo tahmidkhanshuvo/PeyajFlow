@@ -5,6 +5,7 @@ import { mutate, signOut } from "../../app/[locale]/workspace/actions";
 import { Field } from "./fields";
 import { WorkspaceForm } from "./form";
 import { WorkspaceIcon } from "./icon";
+import { LocationIcon } from "./location-icon";
 
 export function ProfilePage({
   locale,
@@ -33,7 +34,7 @@ export function ProfilePage({
                   {t(...roles[actor.role])}
                 </span>
                 <span className="profile-district-badge">
-                  📍 {actor.district}
+                  <LocationIcon size={13} /> {actor.district}
                 </span>
                 <span
                   className={`profile-status-badge ${

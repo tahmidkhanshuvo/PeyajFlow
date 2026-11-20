@@ -363,6 +363,7 @@ export function NotificationBell({
           <div className="work-notif-footer">
             <Link
               href={`${base}/alerts`}
+              prefetch={true}
               onClick={() => setIsOpen(false)}
               className="work-notif-see-more"
             >

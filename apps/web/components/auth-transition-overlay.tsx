@@ -59,15 +59,15 @@ export function AuthTransitionOverlay({ locale }: { locale: Locale }) {
       setFading(false);
       setActive(true);
 
-      // Safety timeout: auto-dismiss after 5s in case of unexpected network stall
+      // Fast safety timeout: auto-dismiss after 2s in case of unexpected network stall
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         setFading(true);
         setTimeout(() => {
           setActive(false);
           setFading(false);
-        }, 300);
-      }, 5000);
+        }, 150);
+      }, 2000);
     }
 
     function handleEnd() {
@@ -76,7 +76,7 @@ export function AuthTransitionOverlay({ locale }: { locale: Locale }) {
       setTimeout(() => {
         setActive(false);
         setFading(false);
-      }, 300);
+      }, 150);
     }
 
     function handleComplete(event: Event) {
@@ -89,45 +89,23 @@ export function AuthTransitionOverlay({ locale }: { locale: Locale }) {
         target === "guest"
       ) {
         if (timerRef.current) clearTimeout(timerRef.current);
-        // Small graceful pause so the animation looks smooth before fading
+        // Fade out immediately and smoothly without delay
+        setFading(true);
         setTimeout(() => {
-          setFading(true);
-          setTimeout(() => {
-            setActive(false);
-            setFading(false);
-          }, 300);
-        }, 350);
-      }
-    }
-
-    function handleClick(e: MouseEvent) {
-      const target = (e.target as HTMLElement | null)?.closest("[data-auth-trigger]");
-      if (!target) return;
-      const triggerMode = (target.getAttribute("data-auth-trigger") as AuthMode) || "signin";
-      handleStart(new CustomEvent("pf-auth-start", { detail: { mode: triggerMode } }));
-    }
-
-    function handleSubmit(e: SubmitEvent) {
-      const form = e.target as HTMLFormElement | null;
-      if (!form) return;
-      const triggerMode = form.getAttribute("data-auth-trigger") as AuthMode | null;
-      if (triggerMode) {
-        handleStart(new CustomEvent("pf-auth-start", { detail: { mode: triggerMode } }));
+          setActive(false);
+          setFading(false);
+        }, 150);
       }
     }
 
     window.addEventListener("pf-auth-start", handleStart);
     window.addEventListener("pf-auth-end", handleEnd);
     window.addEventListener("pf-auth-complete", handleComplete);
-    document.addEventListener("click", handleClick, true);
-    document.addEventListener("submit", handleSubmit, true);
 
     return () => {
       window.removeEventListener("pf-auth-start", handleStart);
       window.removeEventListener("pf-auth-end", handleEnd);
       window.removeEventListener("pf-auth-complete", handleComplete);
-      document.removeEventListener("click", handleClick, true);
-      document.removeEventListener("submit", handleSubmit, true);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [mode]);
@@ -143,15 +121,6 @@ export function AuthTransitionOverlay({ locale }: { locale: Locale }) {
       : isBn
         ? "সাইন আউট করা হচ্ছে…"
         : "Signing out…";
-
-  const subtitle =
-    mode === "signin"
-      ? isBn
-        ? "পাবনা থেকে ঢাকা পেঁয়াজ সরবরাহ শৃঙ্খলা"
-        : "PeyajFlow · National Onion Supply Network"
-      : isBn
-        ? "ওয়ার্কস্পেস সেশন সমাপ্ত হচ্ছে"
-        : "Ending your secure workspace session";
 
   return (
     <aside
@@ -324,7 +293,6 @@ export function AuthTransitionOverlay({ locale }: { locale: Locale }) {
         {/* Text and status */}
         <div className="pf-auth-status-text">
           <h3 className="pf-auth-title">{title}</h3>
-          <p className="pf-auth-subtitle">{subtitle}</p>
         </div>
 
         {/* Indeterminate luminous progress strip */}

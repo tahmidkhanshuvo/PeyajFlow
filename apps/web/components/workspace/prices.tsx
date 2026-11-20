@@ -13,6 +13,8 @@ import type { Filters } from "../../lib/workspace-types";
 import { numberLabel, timeLabel } from "../../lib/workspace-values";
 import { Details, Field } from "./fields";
 import { WorkspaceForm } from "./form";
+import { WorkspaceIcon } from "./icon";
+import { LocationIcon } from "./location-icon";
 import { taka } from "./market";
 
 const DAM = "https://market.dam.gov.bd/";
@@ -20,7 +22,7 @@ const CSV_HEADER =
   "observed_on,published_on,district,market,price_type,grade,unit,kg_per_maund,low,high,source_url,source_record";
 
 export const methods: Record<string, [string, string]> = {
-  last_value: ["সর্বশেষ দর", "Last observed price"],
+  last_value: ["সর্বশেষ পর্যবেক্ষণ দর", "Last observed price"],
   rolling_median: [
     "সর্বশেষ চার দরের মধ্যক",
     "Rolling median of four observations",
@@ -33,6 +35,15 @@ export const methods: Record<string, [string, string]> = {
   lagged_price_neighbors: ["দরের অনুরূপ প্রবণতার মডেল", "Price pattern model"],
 };
 
+const districts: Record<string, [string, string]> = {
+  Pabna: ["পাবনা", "Pabna"],
+  Dhaka: ["ঢাকা", "Dhaka"],
+  Rajshahi: ["রাজশাহী", "Rajshahi"],
+  Faridpur: ["ফরিদপুর", "Faridpur"],
+  Kushtia: ["কুষ্টিয়া", "Kushtia"],
+  Natore: ["নাটোর", "Natore"],
+};
+
 export function priceType(locale: Locale, type: string) {
   const names: Record<string, [string, string]> = {
     farmgate: ["খামারদর", "Farmgate"],
@@ -43,7 +54,13 @@ export function priceType(locale: Locale, type: string) {
 }
 
 export function seriesName(locale: Locale, row: PriceSeries) {
-  return `${row.market} · ${row.district} · ${priceType(locale, row.price_type)} · ${row.grade}${row.synthetic ? local(locale, " · কাল্পনিক", " · Synthetic") : ""}`;
+  const dist = districts[row.district]
+    ? local(locale, ...districts[row.district])
+    : row.district;
+  const gradeLabel = row.grade
+    ? local(locale, `গ্রেড ${row.grade}`, `Grade ${row.grade}`)
+    : "";
+  return `${row.market} · ${dist} · ${priceType(locale, row.price_type)}${gradeLabel ? ` · ${gradeLabel}` : ""}${row.synthetic ? local(locale, " · কাল্পনিক", " · Synthetic") : ""}`;
 }
 
 function batchStatus(locale: Locale, status: string) {
@@ -62,72 +79,153 @@ function Observations({
   locale: Locale;
   rows: Observation[];
 }) {
-  if (!rows.length)
-    return <p>{local(locale, "কোনো পর্যবেক্ষণ নেই।", "No observations.")}</p>;
+  const t = (bn: string, en: string) => local(locale, bn, en);
+
+  if (!rows.length) {
+    return (
+      <div className="price-empty-state">
+        <span className="price-empty-icon" aria-hidden="true">
+          <WorkspaceIcon name="inbox" size={32} />
+        </span>
+        <p>{t("কোনো অনুমোদিত পর্যবেক্ষণ পাওয়া যায়নি।", "No approved observations found.")}</p>
+      </div>
+    );
+  }
+
   return (
     <div
-      className="pilot-table"
+      className="price-table-wrapper"
       role="region"
-      aria-label={local(locale, "দরের পর্যবেক্ষণ", "Price observations")}
+      aria-label={t("দরের পর্যবেক্ষণ তালিকা", "Price observations table")}
       tabIndex={0}
     >
-      <table>
+      <table className="price-table">
         <thead>
           <tr>
-            <th scope="col">{local(locale, "পর্যবেক্ষণের তারিখ", "Observed")}</th>
-            <th scope="col">
-              {local(locale, "বাজার ও ধরন", "Market and type")}
+            <th scope="col" className="col-date">
+              <span className="th-content">{t("পর্যবেক্ষণের তারিখ", "Observed Date")}</span>
             </th>
-            <th scope="col">
-              {local(locale, "প্রতি কেজির দর", "Price per kg")}
+            <th scope="col" className="col-market">
+              <span className="th-content">{t("বাজার ও জাত", "Market & Variety")}</span>
             </th>
-            <th scope="col">{local(locale, "উৎস", "Source")}</th>
+            <th scope="col" className="col-price text-right">
+              <span className="th-content">{t("দর (প্রতি কেজি)", "Price / kg")}</span>
+            </th>
+            <th scope="col" className="col-source">
+              <span className="th-content">{t("উৎস ও রেকর্ড", "Source & Verification")}</span>
+            </th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.id}>
-              <td>
-                {timeLabel(locale, row.observed_on)}
-                {row.stale && (
-                  <p className="work-tag">{local(locale, "পুরোনো", "Stale")}</p>
-                )}
-              </td>
-              <td>
-                {row.market} · {row.district}
-                <br />
-                {priceType(locale, row.price_type)} · {row.grade}
-              </td>
-              <td>
-                {taka(locale, Number(row.low_bdt_kg).toFixed(2))} –{" "}
-                {taka(locale, Number(row.high_bdt_kg).toFixed(2))}
-                {row.unit === "maund" && (
-                  <small>
-                    {taka(locale, row.low)} – {taka(locale, row.high)}{" "}
-                    {local(locale, "প্রতি মণ", "per maund")} ·{" "}
-                    {numberLabel(locale, row.kg_per_maund ?? "0")}{" "}
-                    {local(locale, "কেজি/মণ", "kg/maund")}
-                  </small>
-                )}
-              </td>
-              <td>
-                {row.synthetic ? (
-                  <span className="work-tag">
-                    {local(locale, "কাল্পনিক নমুনা", "Synthetic sample")}
-                  </span>
-                ) : (
-                  <a className="work-link" href={row.source_url}>
-                    {row.source_record}
-                  </a>
-                )}
-                {row.synthetic && <small>{row.source_record}</small>}
-                <small>
-                  {local(locale, "প্রকাশিত", "Published")}{" "}
-                  {timeLabel(locale, row.published_on)}
-                </small>
-              </td>
-            </tr>
-          ))}
+          {rows.map((row) => {
+            const lowKg = Number(row.low_bdt_kg);
+            const highKg = Number(row.high_bdt_kg);
+            const isSingle = !isNaN(lowKg) && !isNaN(highKg) && lowKg === highKg;
+            const dist = districts[row.district]
+              ? local(locale, ...districts[row.district])
+              : row.district;
+
+            return (
+              <tr key={row.id}>
+                {/* 1. Date */}
+                <td className="col-date">
+                  <div className="price-date-cell">
+                    <span className="price-date-main">
+                      {timeLabel(locale, row.observed_on)}
+                    </span>
+                    {row.stale && (
+                      <span className="price-pill-stale">
+                        {t("পুরোনো তথ্য", "Stale")}
+                      </span>
+                    )}
+                  </div>
+                </td>
+
+                {/* 2. Market & Type */}
+                <td className="col-market">
+                  <div className="price-market-cell">
+                    <strong className="price-market-title">
+                      {row.market} · {dist}
+                    </strong>
+                    <div className="price-pill-row">
+                      <span className="price-type-pill">
+                        {priceType(locale, row.price_type)}
+                      </span>
+                      {row.grade && (
+                        <span className="price-grade-pill">
+                          {t(`গ্রেড ${row.grade}`, `Grade ${row.grade}`)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </td>
+
+                {/* 3. Price (Right aligned, non-breaking, bold formatted) */}
+                <td className="col-price text-right">
+                  <div className="price-val-cell">
+                    <div className="price-bdt-main">
+                      {isSingle ? (
+                        <span className="price-num">{taka(locale, lowKg.toFixed(2))}</span>
+                      ) : (
+                        <span className="price-num">
+                          {taka(locale, lowKg.toFixed(2))} – {taka(locale, highKg.toFixed(2))}
+                        </span>
+                      )}
+                      <span className="price-unit"> / {t("কেজি", "kg")}</span>
+                    </div>
+
+                    {row.unit === "maund" && (
+                      <div className="price-maund-sub">
+                        <span>
+                          {taka(locale, row.low)} – {taka(locale, row.high)} {t("/মণ", "/maund")}
+                        </span>
+                        <span className="price-dot-sep">·</span>
+                        <span>
+                          {numberLabel(locale, row.kg_per_maund ?? "0")} {t("কেজি/মণ", "kg/maund")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </td>
+
+                {/* 4. Source & Verification Record */}
+                <td className="col-source">
+                  <div className="price-source-cell">
+                    <div className="price-source-top">
+                      {row.synthetic ? (
+                        <span className="price-pill-synthetic">
+                          {t("কাল্পনিক নমুনা", "Synthetic Sample")}
+                        </span>
+                      ) : row.source_url ? (
+                        <a
+                          className="price-source-link"
+                          href={row.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span>{row.source_record || t("উৎস রেকর্ড", "View Record")}</span>
+                          <span aria-hidden="true">↗</span>
+                        </a>
+                      ) : (
+                        <span className="price-source-plain">
+                          {row.source_record || t("সরকারি রেকর্ড", "Official Record")}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="price-source-meta">
+                      {row.synthetic && row.source_record && (
+                        <span className="price-fixture-tag">{row.source_record}</span>
+                      )}
+                      <span className="price-published-date">
+                        {t("প্রকাশ:", "Published:")} {timeLabel(locale, row.published_on)}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -137,175 +235,267 @@ function Observations({
 function ForecastRange({
   locale,
   result,
+  variant = "primary",
 }: {
   locale: Locale;
   result: Pick<Forecast, "low_bdt_kg" | "middle_bdt_kg" | "high_bdt_kg">;
+  variant?: "primary" | "preview";
 }) {
-  const bounds = [
-    [local(locale, "নিম্ন", "Low"), result.low_bdt_kg],
-    [local(locale, "মধ্য", "Middle"), result.middle_bdt_kg],
-    [local(locale, "উচ্চ", "High"), result.high_bdt_kg],
+  const t = (bn: string, en: string) => local(locale, bn, en);
+  const isPreview = variant === "preview";
+
+  const cards = [
+    {
+      key: "low",
+      label: t("সর্বনিম্ন সম্ভাব্য দর", "Lower Bound (P10)"),
+      amount: result.low_bdt_kg,
+      badge: t("১০ম শতাংশ (Floor)", "10th Percentile"),
+      tone: "low",
+      iconName: "trendDown",
+    },
+    {
+      key: "middle",
+      label: t("প্রত্যাশিত মধ্যক দর", "Expected Price (Median)"),
+      amount: result.middle_bdt_kg,
+      badge: t("৫০তম শতাংশ (Benchmark)", "50th Percentile"),
+      tone: "median",
+      featured: true,
+      iconName: "target",
+    },
+    {
+      key: "high",
+      label: t("সর্বোচ্চ সম্ভাব্য দর", "Upper Bound (P90)"),
+      amount: result.high_bdt_kg,
+      badge: t("৯০তম শতাংশ (Ceiling)", "90th Percentile"),
+      tone: "high",
+      iconName: "trendUp",
+    },
   ];
+
   return (
-    <dl className="work-metrics">
-      {bounds.map(([label, amount]) => (
-        <div key={label}>
-          <dt>{label}</dt>
-          <dd>
-            {amount === null
-              ? "—"
-              : `${taka(locale, amount)} / ${local(locale, "কেজি", "kg")}`}
-          </dd>
+    <div className={`price-metrics-grid ${isPreview ? "is-preview-grid" : ""}`}>
+      {cards.map((card) => (
+        <div
+          key={card.key}
+          className={`price-metric-tile tone-${card.tone} ${card.featured && !isPreview ? "is-featured-median" : ""}`}
+        >
+          <div className="price-metric-top">
+            <span className="price-metric-icon" aria-hidden="true">
+              <WorkspaceIcon name={card.iconName} size={18} />
+            </span>
+            <span className="price-metric-label">{card.label}</span>
+            <span className="price-metric-badge">{card.badge}</span>
+          </div>
+
+          <div className="price-metric-value">
+            {card.amount === null ? (
+              <span className="price-metric-empty">—</span>
+            ) : (
+              <div className="price-metric-num-group">
+                <span className="price-metric-num">{taka(locale, card.amount)}</span>
+                <span className="price-metric-unit"> / {t("কেজি", "kg")}</span>
+              </div>
+            )}
+          </div>
         </div>
       ))}
-    </dl>
+    </div>
   );
 }
 
 function ForecastPanel({
   locale,
   result,
+  horizon,
 }: {
   locale: Locale;
   result: Forecast;
+  horizon: string;
 }) {
+  const t = (bn: string, en: string) => local(locale, bn, en);
   const name =
     result.method && methods[result.method]
       ? local(locale, ...methods[result.method])
       : null;
+
   return (
-    <section className="work-panel">
-      <h2>{local(locale, "দরের সম্ভাব্য পরিসর", "Price outlook")}</h2>
-      {result.synthetic && (
-        <p className="work-tag">
-          {local(locale, "কাল্পনিক নমুনা", "Synthetic sample")}
-        </p>
-      )}
+    <section className="price-forecast-card glass-1">
+      {/* Header Strip */}
+      <div className="price-forecast-header">
+        <div className="price-forecast-title-wrap">
+          <div className="section-eyebrow">
+            <span className="hero-dot" aria-hidden="true" />
+            <span>{t("মূল্য পূর্বাভাস ও পরিসর", "PRICE OUTLOOK")}</span>
+          </div>
+          <h2 className="price-forecast-title">
+            {t("দরের সম্ভাব্য পূর্বাভাস পরিসর", "Price Range Outlook")}
+          </h2>
+        </div>
+
+        <div className="price-forecast-badges">
+          {result.synthetic && (
+            <span className="price-pill-synthetic">
+              {t("কাল্পনিক নমুনা মডেল", "Synthetic Model")}
+            </span>
+          )}
+          <span className="price-pill-horizon">
+            ⏱️ {numberLabel(locale, horizon)} {t("দিনের পূর্বাভাস", "Days Horizon")}
+          </span>
+        </div>
+      </div>
+
       {name ? (
         <>
-          <p>
-            {name} · {timeLabel(locale, result.target_on)}
-          </p>
+          {/* Target & Method Meta Strip */}
+          <div className="price-target-strip">
+            <div className="price-target-item">
+              <span className="price-target-label">{t("ব্যবহৃত মডেল:", "Applied Model:")}</span>
+              <strong className="price-target-val">{name}</strong>
+            </div>
+            <div className="price-target-sep" aria-hidden="true">·</div>
+            <div className="price-target-item">
+              <span className="price-target-label">{t("পূর্বাভাস লক্ষ্য তারিখ:", "Target Date:")}</span>
+              <strong className="price-target-val">{timeLabel(locale, result.target_on)}</strong>
+            </div>
+          </div>
+
+          {/* Primary 3-Metric Bounds Cards */}
           <ForecastRange locale={locale} result={result} />
-          <p>
-            {local(
-              locale,
-              "ঐতিহাসিক ১০ম–৯০তম শতাংশের আনুমানিক পরিসর।",
-              "The range uses historical 10th–90th percentiles. See achieved coverage below.",
-            )}
+
+          <p className="price-outlook-footnote">
+            <span className="price-fn-icon" aria-hidden="true">
+              <WorkspaceIcon name="info" size={16} />
+            </span>
+            <span>
+              {t(
+                "ঐতিহাসিক ১০ম–৯০তম শতাংশের আনুমানিক পরিসর। নিচে মডেলের ঐতিহাসিক নির্ভুলতা ও কভারেজ যাচাই দেখুন।",
+                "Historical 10th–90th percentile forecast interval. See model evaluation scores and backtest metrics below.",
+              )}
+            </span>
           </p>
         </>
       ) : (
-        <p role="status">
-          {result.status === "stale"
-            ? local(
-                locale,
-                "সাম্প্রতিক দর নেই।",
-                "The latest observation is stale.",
-              )
-            : local(
-                locale,
-                "পরিসর নির্ধারণের জন্য যথেষ্ট ইতিহাস নেই।",
-                "There is insufficient history to estimate a range.",
-              )}
-        </p>
+        <div className="price-empty-state">
+          <p role="status">
+            {result.status === "stale"
+              ? t(
+                  "সাম্প্রতিক বাজারদর পাওয়া যায়নি। তথ্যের জন্য অপেক্ষা করুন।",
+                  "The latest price observation is stale. Awaiting fresh data.",
+                )
+              : t(
+                  "পরিসর নির্ধারণের জন্য পর্যাপ্ত ঐতিহাসিক বাজারদর নেই।",
+                  "There is insufficient historical data to estimate a price range.",
+                )}
+          </p>
+        </div>
       )}
+
+      {/* Experimental Model Preview (Encapsulated Subcard) */}
       {result.model_preview && (
-        <section>
-          <h3>{local(locale, "দর মডেলের নমুনা", "Price model preview")}</h3>
-          <p>
-            {local(
-              locale,
-              "নমুনা ইতিহাসে অনুরূপ দরের প্রবণতা থেকে তৈরি পরীক্ষামূলক পরিসর। বাস্তব বাজারে মডেলটি এখনও যাচাই করা হয়নি।",
-              "An experimental range learned from similar price patterns in the sample history. Real-market accuracy still needs validation.",
-            )}
-          </p>
-          <ForecastRange locale={locale} result={result.model_preview} />
-        </section>
-      )}
-      <p>
-        {local(locale, "ব্যবহৃত পর্যবেক্ষণের দিন", "Observation dates used")} ·{" "}
-        {numberLabel(locale, result.history_count)}
-        {result.last_observed &&
-          ` · ${timeLabel(locale, result.last_observed)}`}
-      </p>
-      {result.backtest.length > 0 && (
-        <Details label={local(locale, "ঐতিহাসিক যাচাই", "Historical backtest")}>
-          <p>
-            {local(
-              locale,
-              "প্রতিটি পূর্বাভাসের তারিখে প্রকাশিত তথ্যই ব্যবহার করা হয়েছে। পদ্ধতিভেদে পরীক্ষার সংখ্যা আলাদা হতে পারে।",
-              "Each replay uses reports published by its forecast date. Some methods have fewer eligible test dates.",
-            )}
-          </p>
-          <div
-            className="pilot-table"
-            role="region"
-            aria-label={local(
-              locale,
-              "ঐতিহাসিক যাচাইয়ের ফল",
-              "Backtest results",
-            )}
-            tabIndex={0}
-          >
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">{local(locale, "পদ্ধতি", "Method")}</th>
-                  <th scope="col">{local(locale, "পরীক্ষা", "Tests")}</th>
-                  <th scope="col">MAE (৳/kg)</th>
-                  <th scope="col">WAPE</th>
-                  <th scope="col">
-                    {local(locale, "পরিসরে পড়েছে", "Coverage")}
-                  </th>
-                  <th scope="col">
-                    {local(locale, "কোয়ান্টাইল ত্রুটি", "Pinball")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.backtest.map((metric) => (
-                  <tr key={metric.method}>
-                    <td>
-                      {local(
-                        locale,
-                        ...(methods[metric.method] ?? [
-                          metric.method,
-                          metric.method,
-                        ]),
-                      )}
-                    </td>
-                    <td>{numberLabel(locale, metric.observations)}</td>
-                    <td>
-                      {numberLabel(
-                        locale,
-                        Number(metric.mae_bdt_kg).toFixed(2),
-                      )}
-                    </td>
-                    <td>
-                      {metric.wape_pct === null
-                        ? "—"
-                        : `${numberLabel(locale, Number(metric.wape_pct).toFixed(1))}%`}
-                    </td>
-                    <td>
-                      {numberLabel(
-                        locale,
-                        Number(metric.interval_coverage_pct).toFixed(1),
-                      )}
-                      %
-                    </td>
-                    <td>
-                      {numberLabel(
-                        locale,
-                        Number(metric.pinball_bdt_kg).toFixed(2),
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="price-preview-subcard">
+          <div className="price-preview-header">
+            <span className="price-preview-icon" aria-hidden="true">
+              <WorkspaceIcon name="sparkles" size={18} />
+            </span>
+            <div>
+              <h3 className="price-preview-title">
+                {t("দরের অনুরূপ প্রবণতার পরীক্ষামূলক মডেল", "Pattern Matching Model Preview")}
+              </h3>
+              <p className="price-preview-desc">
+                {t(
+                  "নমুনা ইতিহাসে অনুরূপ দরের প্রবণতা থেকে তৈরি পরীক্ষামূলক পরিসর। বাস্তব বাজারে মডেলটি এখনও যাচাই করা হচ্ছে।",
+                  "An experimental range learned from similar price patterns in the sample history. Real-market accuracy still needs empirical validation.",
+                )}
+              </p>
+            </div>
           </div>
-        </Details>
+          <ForecastRange locale={locale} result={result.model_preview} variant="preview" />
+        </div>
+      )}
+
+      {/* Observation Meta Strip */}
+      <div className="price-obs-meta-strip">
+        <div className="price-obs-stat">
+          <span className="price-obs-icon" aria-hidden="true">
+            <WorkspaceIcon name="chartBar" size={18} />
+          </span>
+          <span>
+            {t("ব্যবহৃত পর্যবেক্ষণ সংখ্যা:", "Observation dates used:")}{" "}
+            <strong>{numberLabel(locale, result.history_count)} {t("দিন", "days")}</strong>
+          </span>
+        </div>
+        {result.last_observed && (
+          <div className="price-obs-stat">
+            <span className="price-obs-icon" aria-hidden="true">
+              <WorkspaceIcon name="calendar" size={16} />
+            </span>
+            <span>
+              {t("সর্বশেষ তথ্য রেকর্ড:", "Last observed record:")}{" "}
+              <strong>{timeLabel(locale, result.last_observed)}</strong>
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Historical Backtest Details Accordion */}
+      {result.backtest.length > 0 && (
+        <div className="price-backtest-wrap">
+          <Details label={t("ঐতিহাসিক মডেল নির্ভুলতা যাচাই (Historical Backtest)", "Historical Backtest Evaluation")}>
+            <p className="price-backtest-desc">
+              {t(
+                "প্রতিটি পূর্বাভাসের তারিখে প্রকাশিত তথ্যের ভিত্তিতে মডেলগুলো পুনরায় পরীক্ষা করে ত্রুটির হার (MAE/WAPE) এবং পরিসর নির্ভুলতা তুলনা করা হয়েছে।",
+                "Each replay evaluated historical forecasts against actual outcomes using reports available at that time.",
+              )}
+            </p>
+            <div
+              className="price-table-wrapper"
+              role="region"
+              aria-label={t("ঐতিহাসিক যাচাইয়ের ফলাফল", "Backtest metrics")}
+              tabIndex={0}
+            >
+              <table className="price-table backtest-table">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">{t("পদ্ধতি", "Method")}</th>
+                    <th scope="col" className="text-right">{t("পরীক্ষা", "Tests")}</th>
+                    <th scope="col" className="text-right">{t("MAE (৳/কেজি)", "MAE (৳/kg)")}</th>
+                    <th scope="col" className="text-right">{t("WAPE (%)", "WAPE (%)")}</th>
+                    <th scope="col" className="text-right">{t("পরিসরে কভারেজ", "Coverage")}</th>
+                    <th scope="col" className="text-right">{t("কোয়ান্টাইল ত্রুটি", "Pinball Loss")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.backtest.map((metric) => {
+                    const coverage = Number(metric.interval_coverage_pct);
+                    return (
+                      <tr key={metric.method}>
+                        <td className="text-left font-medium">
+                          {local(
+                            locale,
+                            ...(methods[metric.method] ?? [metric.method, metric.method]),
+                          )}
+                        </td>
+                        <td className="text-right tabular-nums">{numberLabel(locale, metric.observations)}</td>
+                        <td className="text-right tabular-nums">৳{numberLabel(locale, Number(metric.mae_bdt_kg).toFixed(2))}</td>
+                        <td className="text-right tabular-nums">
+                          {metric.wape_pct === null
+                            ? "—"
+                            : `${numberLabel(locale, Number(metric.wape_pct).toFixed(1))}%`}
+                        </td>
+                        <td className="text-right tabular-nums">
+                          <span className={`price-coverage-pill ${coverage >= 80 ? "is-good" : "is-fair"}`}>
+                            {numberLabel(locale, coverage.toFixed(1))}%
+                          </span>
+                        </td>
+                        <td className="text-right tabular-nums">{numberLabel(locale, Number(metric.pinball_bdt_kg).toFixed(2))}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Details>
+        </div>
       )}
     </section>
   );
@@ -320,6 +510,7 @@ export async function PricePage({
   base: string;
   filters: Filters;
 }) {
+  const t = (bn: string, en: string) => local(locale, bn, en);
   const series = await api<PriceSeries[]>("/v1/market/series");
   const choice =
     series.find((item) => item.series === filters.series) ?? series[0];
@@ -335,60 +526,208 @@ export async function PricePage({
         ),
       ])
     : [[], null];
+
+  const latestObs = rows[0];
+  const activeDistrict = choice
+    ? districts[choice.district]
+      ? local(locale, ...districts[choice.district])
+      : choice.district
+    : "";
+
   return (
-    <>
-      {choice ? (
-        <section className="work-panel">
-          <form action={`${base}/prices`} method="get" className="work-form">
-            <div className="work-grid">
-              <Field label={local(locale, "বাজারের দরধারা", "Market series")}>
-                <select name="series" defaultValue={choice.series}>
-                  {series.map((row) => (
-                    <option key={row.series} value={row.series}>
-                      {seriesName(locale, row)}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label={local(locale, "কত দিন পর", "Forecast horizon")}>
-                <select name="horizon" defaultValue={horizon}>
-                  {[7, 14, 28].map((days) => (
-                    <option key={days} value={days}>
-                      {numberLabel(locale, days)} {local(locale, "দিন", "days")}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+    <div className="price-page-wrap">
+      {/* ─── 1. EXECUTIVE HERO HEADER ─── */}
+      <section className="price-hero-header glass-1">
+        <div className="price-hero-ambient" aria-hidden="true" />
+        <div className="price-hero-top">
+          <div className="price-hero-badge">
+            <span className="price-pulse-dot" aria-hidden="true" />
+            <span>{t("লাইভ বাজারদর ও মূল্য বিশ্লেষণ", "Market Benchmarks & Outlook")}</span>
+          </div>
+          {choice?.synthetic && (
+            <span className="price-hero-tag">
+              {t("নমুনা ও প্রক্ষেপণ মডেল", "Synthetic Model Active")}
+            </span>
+          )}
+        </div>
+
+        <div className="price-hero-main">
+          <h1 className="price-hero-title">
+            <span className="headline-primary">
+              {t("বাজারদর ও ভবিষ্যৎ মূল্য পূর্বাভাস", "Market Prices & Price Outlook")}
+            </span>
+          </h1>
+          <p className="price-hero-desc">
+            {t(
+              "পাবনা মোকাম ও প্রধান পাইকারি বাজারের দৈনিক দর পর্যালোচনা, ঐতিহাসিক ধারা ও ভবিষ্যৎ মূল্য পূর্বাভাস এক নজরে দেখুন।",
+              "Track verified farmgate and wholesale market rates, historical observations, and quantitative price forecasts.",
+            )}
+          </p>
+        </div>
+
+        {/* Live Market Quick Stat Cards */}
+        {choice && latestObs && (
+          <div className="price-hero-stats">
+            <div className="price-stat-pill">
+              <span className="price-stat-icon" aria-hidden="true">
+                <LocationIcon size={22} />
+              </span>
+              <div className="price-stat-info">
+                <small>{t("বর্তমান বাজার", "Active Market")}</small>
+                <strong>{choice.market} · {activeDistrict}</strong>
+              </div>
             </div>
-            <button className="refresh" type="submit">
-              {local(locale, "দর দেখুন", "View prices")}
+
+            <div className="price-stat-pill">
+              <span className="price-stat-icon" aria-hidden="true">🏷️</span>
+              <div className="price-stat-info">
+                <small>{t("সর্বশেষ দর", "Latest Observation")}</small>
+                <strong>
+                  {Number(latestObs.low_bdt_kg) === Number(latestObs.high_bdt_kg)
+                    ? `${taka(locale, Number(latestObs.low_bdt_kg).toFixed(2))} / ${t("কেজি", "kg")}`
+                    : `${taka(locale, Number(latestObs.low_bdt_kg).toFixed(2))} – ${taka(locale, Number(latestObs.high_bdt_kg).toFixed(2))} / ${t("কেজি", "kg")}`}
+                </strong>
+              </div>
+            </div>
+
+            <div className="price-stat-pill">
+              <span className="price-stat-icon" aria-hidden="true">📅</span>
+              <div className="price-stat-info">
+                <small>{t("পর্যবেক্ষণ তারিখ", "Observed On")}</small>
+                <strong>{timeLabel(locale, latestObs.observed_on)}</strong>
+              </div>
+            </div>
+
+            <div className="price-stat-pill">
+              <span className="price-stat-icon" aria-hidden="true">📊</span>
+              <div className="price-stat-info">
+                <small>{t("মোট পর্যবেক্ষণ", "Total Observations")}</small>
+                <strong>{numberLabel(locale, rows.length)} {t("দিন", "days")}</strong>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ─── 2. SERIES & HORIZON FILTER CARD ─── */}
+      {choice ? (
+        <section className="price-filter-card glass-1">
+          <form action={`${base}/prices`} method="get" className="price-filter-form">
+            <div className="price-filter-fields">
+              <div className="price-field-group">
+                <label htmlFor="series-select" className="price-field-label">
+                  <span className="price-field-icon" aria-hidden="true">📈</span>
+                  <span>{t("বাজারের দরধারা", "Market Series")}</span>
+                </label>
+                <div className="price-select-wrap">
+                  <select
+                    id="series-select"
+                    name="series"
+                    defaultValue={choice.series}
+                    className="price-select"
+                  >
+                    {series.map((row) => (
+                      <option key={row.series} value={row.series}>
+                        {seriesName(locale, row)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="price-field-group price-field-horizon">
+                <label htmlFor="horizon-select" className="price-field-label">
+                  <span className="price-field-icon" aria-hidden="true">⏱️</span>
+                  <span>{t("পূর্বাভাস সময়সীমা", "Forecast Horizon")}</span>
+                </label>
+                <div className="price-select-wrap">
+                  <select
+                    id="horizon-select"
+                    name="horizon"
+                    defaultValue={horizon}
+                    className="price-select"
+                  >
+                    {[7, 14, 28].map((days) => (
+                      <option key={days} value={days}>
+                        {numberLabel(locale, days)} {t("দিন পর", "days ahead")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button className="price-submit-btn" type="submit">
+              <span className="price-btn-icon" aria-hidden="true">🔍</span>
+              <span>{t("দর পর্যালোচনা করুন", "View Prices")}</span>
             </button>
           </form>
         </section>
       ) : (
-        <p className="work-panel">
-          {local(
-            locale,
-            "এখনও অনুমোদিত বাজারদর নেই।",
-            "No approved market observations yet.",
-          )}
-        </p>
+        <div className="work-panel" role="status">
+          <p>{t("এখনও অনুমোদিত বাজারদর নেই।", "No approved market observations yet.")}</p>
+        </div>
       )}
-      {forecast && <ForecastPanel locale={locale} result={forecast} />}
+
+      {/* ─── 3. QUANTITATIVE FORECAST OUTLOOK ─── */}
+      {forecast && <ForecastPanel locale={locale} result={forecast} horizon={horizon} />}
+
+      {/* ─── 4. PUBLISHED OBSERVATIONS TABLE ─── */}
       {choice && (
-        <section className="work-panel">
-          <h2>{local(locale, "প্রকাশিত পর্যবেক্ষণ", "Published observations")}</h2>
+        <section className="price-observations-card glass-1">
+          <div className="price-section-header">
+            <div>
+              <div className="section-eyebrow">
+                <span className="hero-dot" aria-hidden="true" />
+                <span>{t("বাজারদর উপাত্ত", "HISTORICAL DATA")}</span>
+              </div>
+              <h2 className="price-section-title">
+                {t("প্রকাশিত পর্যবেক্ষণসমূহ", "Published Observations")}
+              </h2>
+            </div>
+            <div className="price-section-count">
+              <span className="price-count-chip">
+                {numberLabel(locale, rows.length)} {t("টি রেকর্ড", "records")}
+              </span>
+            </div>
+          </div>
+
           <Observations locale={locale} rows={rows} />
         </section>
       )}
-      <a className="work-link" href={DAM}>
-        {local(
-          locale,
-          "কৃষি বিপণন অধিদপ্তরের দর পোর্টাল",
-          "Department of Agricultural Marketing price portal",
-        )}
-      </a>
-    </>
+
+      {/* ─── 5. OFFICIAL DAM GOVERNMENT PORTAL BANNER ─── */}
+      <aside className="price-dam-banner glass-1">
+        <div className="price-dam-content">
+          <div className="price-dam-icon-wrap" aria-hidden="true">
+            🏛️
+          </div>
+          <div className="price-dam-text">
+            <strong className="price-dam-title">
+              {t(
+                "সরকারি কৃষি বিপণন অধিদপ্তর (DAM) দর পোর্টাল",
+                "Department of Agricultural Marketing (DAM) Price Portal",
+              )}
+            </strong>
+            <p className="price-dam-desc">
+              {t(
+                "বাংলাদেশের সকল বিভাগ ও মোকামের প্রাতিষ্ঠানিক পাইকারি ও খুচরা দর সরাসরি সরকারি ডাটাবেজ থেকে যাচাই করতে পোর্টাল দেখুন।",
+                "Visit the official Bangladesh government agricultural price portal for verified daily commodity benchmark feeds.",
+              )}
+            </p>
+          </div>
+        </div>
+        <a
+          className="price-dam-cta-btn"
+          href={DAM}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span>{t("DAM পোর্টাল খুলুন", "Open DAM Portal")}</span>
+          <span className="price-dam-cta-arrow" aria-hidden="true">↗</span>
+        </a>
+      </aside>
+    </div>
   );
 }
 

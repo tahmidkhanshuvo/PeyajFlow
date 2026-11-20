@@ -9,6 +9,10 @@ import {
 } from "react";
 import type { Locale } from "../../lib/copy";
 import { errorText, local } from "../../lib/workspace-copy";
+import {
+  triggerAuthTransition,
+  dismissAuthTransition,
+} from "../auth-transition-overlay";
 
 export type FormState = { error?: string };
 export type FormAction = (
@@ -38,7 +42,7 @@ export function WorkspaceForm({
 
   useEffect(() => {
     if (authType && (state.error || uploadError)) {
-      window.dispatchEvent(new CustomEvent("pf-auth-end"));
+      dismissAuthTransition();
     }
   }, [authType, state.error, uploadError]);
 
@@ -46,7 +50,6 @@ export function WorkspaceForm({
     <form
       action={submit}
       className="work-form"
-      data-auth-trigger={authType}
       onSubmit={async (event) => {
         event.preventDefault();
         if (preparing || pending) return;
@@ -71,6 +74,9 @@ export function WorkspaceForm({
           } finally {
             setPreparing(false);
           }
+        }
+        if (authType) {
+          triggerAuthTransition(authType);
         }
         startTransition(() => submit(data));
       }}

@@ -43,10 +43,12 @@ export async function AgentsPage({
           </Field>
           <label className="checkbox">
             <input type="checkbox" name="confirm" required />
-            {t(
-              "আমি এই সহায়তাকারীকে আমার মজুত দেখতে ও সহায়তা করতে দিচ্ছি।",
-              "I authorize this agent to access and assist with my lots.",
-            )}
+            <span>
+              {t(
+                "আমি এই সহায়তাকারীকে আমার মজুত দেখতে ও সহায়তা করতে দিচ্ছি।",
+                "I authorize this agent to access and assist with my lots.",
+              )}
+            </span>
           </label>
         </WorkspaceForm>
       </section>
@@ -76,10 +78,12 @@ export async function AgentsPage({
                 >
                   <label className="checkbox">
                     <input type="checkbox" name="confirm" required />
-                    {t(
-                      "আমি এই সহায়তাকারীর অনুমতি সরাতে চাই।",
-                      "I want to remove this agent’s access.",
-                    )}
+                    <span>
+                      {t(
+                        "আমি এই সহায়তাকারীর অনুমতি সরাতে চাই।",
+                        "I want to remove this agent’s access.",
+                      )}
+                    </span>
                   </label>
                 </WorkspaceForm>
               </Details>

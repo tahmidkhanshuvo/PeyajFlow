@@ -134,7 +134,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             />
           </nav>
 
-          <Link className="hero-contact-btn" href={workspace} data-auth-trigger="signin">
+          <Link className="hero-contact-btn" href={workspace} prefetch={true}>
             <span>{t("ওয়ার্কস্পেস খুলুন", "Open Workspace")}</span>
             <span className="hero-arrow-chip" aria-hidden="true">
               <WorkspaceIcon name="arrow" />
@@ -166,7 +166,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
           </p>
 
           <div className="hero-action-row">
-            <Link className="hero-cta-btn" href={workspace} data-auth-trigger="signin">
+            <Link className="hero-cta-btn" href={workspace} prefetch={true}>
               <span>{t("শুরু করুন", "GET STARTED")}</span>
               <span className="hero-cta-arrow" aria-hidden="true">
                 <WorkspaceIcon name="arrow" />
@@ -348,7 +348,7 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             <a href="#about">{t("আমাদের লক্ষ্য", "About Us")}</a>
             <a href="#how">{t("প্রক্রিয়া", "Process")}</a>
             <a href="#personas">{t("ব্যবহারকারী", "Who It's For")}</a>
-            <Link href={workspace} data-auth-trigger="signin">{t("ওয়ার্কস্পেস", "Workspace")}</Link>
+            <Link href={workspace} prefetch={true}>{t("ওয়ার্কস্পেস", "Workspace")}</Link>
             <Link href={`/${alternate}`} lang={alternate}>
               {t("English", "বাংলা")}
             </Link>

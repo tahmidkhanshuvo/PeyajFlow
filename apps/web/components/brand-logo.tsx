@@ -1,23 +1,73 @@
 import Image from "next/image";
-import logoDefault from "../public/peyajflow-logo.png";
-import logoWhite from "../public/peyajflow-logo-white.png";
+import logoLight from "../public/peyajflow-logo-light.png";
+import logoDark from "../public/peyajflow-logo-dark.png";
+
+export type BrandLogoVariant = "auto" | "default" | "white" | "dark" | "light";
 
 export function BrandLogo({
-  variant = "default",
+  variant = "auto",
   className = "",
+  width = 145,
+  height = 35,
 }: {
-  variant?: "default" | "white";
+  variant?: BrandLogoVariant;
   className?: string;
+  width?: number;
+  height?: number;
 }) {
-  const src = variant === "white" ? logoWhite : logoDefault;
+  // Explicit dark/white variant (always shows white-text logo for dark surfaces)
+  if (variant === "dark" || variant === "white") {
+    return (
+      <Image
+        src={logoDark}
+        alt="PeyajFlow"
+        className={`brand-logo brand-logo-dark ${className}`.trim()}
+        width={width}
+        height={height}
+        priority
+        unoptimized
+      />
+    );
+  }
+
+  // Explicit light variant (always shows dark-text logo for light surfaces)
+  if (variant === "light") {
+    return (
+      <Image
+        src={logoLight}
+        alt="PeyajFlow"
+        className={`brand-logo brand-logo-light ${className}`.trim()}
+        width={width}
+        height={height}
+        priority
+        unoptimized
+      />
+    );
+  }
+
+  // Auto/Default variant: Render both light and dark logos so CSS dynamically switches
+  // them based on theme (html[data-theme], .dark / .light, or prefers-color-scheme)
+  // with zero flash and zero layout shift.
   return (
-    <Image
-      src={src}
-      alt="PeyajFlow"
-      className={`brand-logo ${variant === "white" ? "brand-logo-white" : ""} ${className}`.trim()}
-      width={162}
-      height={31}
-      unoptimized
-    />
+    <span className={`brand-logo-wrap brand-logo-auto ${className}`.trim()}>
+      <Image
+        src={logoLight}
+        alt="PeyajFlow"
+        className="brand-logo brand-logo-light"
+        width={width}
+        height={height}
+        priority
+        unoptimized
+      />
+      <Image
+        src={logoDark}
+        alt="PeyajFlow"
+        className="brand-logo brand-logo-dark"
+        width={width}
+        height={height}
+        priority
+        unoptimized
+      />
+    </span>
   );
 }

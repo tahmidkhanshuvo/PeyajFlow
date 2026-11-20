@@ -20,6 +20,7 @@ import { VoicePage } from "../../../../components/workspace/voice";
 import { ProfilePage } from "../../../../components/workspace/profile";
 import { ThemeToggle } from "../../../../components/theme-toggle";
 import { QuickSearch, type SearchItem } from "../../../../components/workspace/quick-search";
+import { RouteWarmer } from "../../../../components/workspace/route-warmer";
 import { Details, Field } from "../../../../components/workspace/fields";
 import { WorkspaceForm } from "../../../../components/workspace/form";
 import {
@@ -61,6 +62,7 @@ import {
   signupAction,
 } from "../actions";
 import { AuthCompleted } from "../../../../components/auth-transition-overlay";
+import { SignOutButton } from "../../../../components/workspace/signout-button";
 
 export const dynamic = "force-dynamic";
 
@@ -219,27 +221,43 @@ export default async function WorkspacePage({
       alternateQuery.set(key, value);
   }
   let content: ReactNode;
+  let notificationsResult = { items: [] as NotificationItem[], unread: 0 };
   if (actor) {
-    try {
-      content = await panel(locale, actor, base, section, filters);
-    } catch (exception) {
-      if (!(exception instanceof ApiError)) throw exception;
-      content = (
-        <section className="work-panel" role="alert">
-          <h1>
-            {local(
-              locale,
-              "এই পৃষ্ঠাটি খোলা যায়নি",
-              "This page could not be opened",
-            )}
-          </h1>
-          <p>{errorText(locale, exception.code)}</p>
-          <Link className="work-link" href={base}>
-            {local(locale, "ওয়ার্কস্পেসে ফিরুন", "Back to workspace")}
-          </Link>
-        </section>
-      );
-    }
+    const contentPromise = panel(locale, actor, base, section, filters).catch(
+      (exception) => {
+        if (!(exception instanceof ApiError)) throw exception;
+        return (
+          <section className="work-panel" role="alert">
+            <h1>
+              {local(
+                locale,
+                "এই পৃষ্ঠাটি খোলা যায়নি",
+                "This page could not be opened",
+              )}
+            </h1>
+            <p>{errorText(locale, exception.code)}</p>
+            <Link className="work-link" href={base}>
+              {local(locale, "ওয়ার্কস্পেসে ফিরুন", "Back to workspace")}
+            </Link>
+          </section>
+        );
+      },
+    );
+
+    const notificationsPromise = api<{
+      items: NotificationItem[];
+      unread: number;
+    }>("/v1/notifications?offset=0").catch(() => ({
+      items: [] as NotificationItem[],
+      unread: 0,
+    }));
+
+    const [resolvedContent, resolvedNotifs] = await Promise.all([
+      contentPromise,
+      notificationsPromise,
+    ]);
+    content = resolvedContent;
+    notificationsResult = resolvedNotifs;
   }
   if (actor) {
     const navItems = destinations(locale, actor);
@@ -289,25 +307,25 @@ export default async function WorkspacePage({
     const formatTaka = (val: string | number) => `৳${numberLabel(locale, val)}`;
     const formatStatus = (st: string) => local(locale, ...(orderStatuses[st] ?? [st, st]));
 
-    // Fetch live workspace entities for rich keyword searching and top bar notification bell
-    const [lotsResult, offersResult, ordersResult, notificationsResult] =
-      await Promise.all([
-        actor.role !== "buyer"
-          ? api<Lot[]>("/v1/lots").catch(() => [])
-          : Promise.resolve([]),
-        actor.role !== "agent"
-          ? api<Offer[]>("/v1/offers").catch(() => [])
-          : Promise.resolve([]),
-        actor.role !== "agent"
-          ? api<Order[]>("/v1/orders").catch(() => [])
-          : Promise.resolve([]),
-        api<{ items: NotificationItem[]; unread: number }>(
-          "/v1/notifications?offset=0",
-        ).catch(() => ({
-          items: [] as NotificationItem[],
-          unread: 0,
-        })),
-      ]);
+    // Only fetch search entities on overview page to keep all subpage routing instant
+    const isOverview = !sec0;
+    const shouldFetchLots = isOverview && actor.role !== "buyer";
+    const shouldFetchOffers = isOverview && actor.role !== "agent";
+    const shouldFetchOrders = isOverview && actor.role !== "agent";
+
+    const [lotsResult, offersResult, ordersResult] = isOverview
+      ? await Promise.all([
+          shouldFetchLots
+            ? api<Lot[]>("/v1/lots").catch(() => [])
+            : Promise.resolve([]),
+          shouldFetchOffers
+            ? api<Offer[]>("/v1/offers").catch(() => [])
+            : Promise.resolve([]),
+          shouldFetchOrders
+            ? api<Order[]>("/v1/orders").catch(() => [])
+            : Promise.resolve([]),
+        ])
+      : [[], [], []];
 
     const searchItems: SearchItem[] = [];
 
@@ -372,7 +390,7 @@ export default async function WorkspacePage({
         href: `${base}/stock/${lot.id}`,
         icon: "stock",
         badge: lot.grade ? `Grade ${lot.grade}` : undefined,
-        detail: `${lot.variety} · 📍 ${lot.district} · ${local(locale, "অবশিষ্ট", "Available")}: ${formatKg(lot.sellable_kg)} · ${lot.storage_type}`,
+        detail: `${lot.variety} · ${lot.district} · ${local(locale, "অবশিষ্ট", "Available")}: ${formatKg(lot.sellable_kg)} · ${lot.storage_type}`,
         keywords: `${lot.id} ${shortId} #${shortId} ${lot.label} ${lot.variety} ${lot.district} ${lot.storage_type} ${lot.grade} lot stock মজুত গুদাম পেঁয়াজ`,
       });
     }
@@ -410,6 +428,7 @@ export default async function WorkspacePage({
     return (
       <div className="work-shell work-shell-signed">
         <AuthCompleted target="signed" />
+        <RouteWarmer base={base} paths={navItems.map(([path]) => path)} />
         <a className="skip-link" href="#main">
           {local(locale, "মূল অংশে যান", "Skip to main content")}
         </a>
@@ -418,7 +437,7 @@ export default async function WorkspacePage({
         {/* Desktop Sidebar (Solid) */}
         <aside className="work-sidebar">
           <div className="work-sidebar-header">
-            <Link className="brand-link" href={base}>
+            <Link className="brand-link" href={base} prefetch={true}>
               <BrandLogo />
             </Link>
           </div>
@@ -438,6 +457,7 @@ export default async function WorkspacePage({
                   <Link
                     key={path}
                     href={path ? `${base}/${path}` : base}
+                    prefetch={true}
                     aria-current={isCurrent ? "page" : undefined}
                     className={`work-nav-link ${isCurrent ? "active" : ""}`}
                   >
@@ -455,6 +475,7 @@ export default async function WorkspacePage({
             </div>
             <Link
               href={`${base}/profile`}
+              prefetch={true}
               aria-current={(section[0] ?? "") === "profile" ? "page" : undefined}
               className={`work-nav-link ${(section[0] ?? "") === "profile" ? "active" : ""}`}
             >
@@ -466,6 +487,7 @@ export default async function WorkspacePage({
             </Link>
             <Link
               href={`${base}/help`}
+              prefetch={true}
               aria-current={(section[0] ?? "") === "help" ? "page" : undefined}
               className={`work-nav-link ${(section[0] ?? "") === "help" ? "active" : ""}`}
             >
@@ -481,6 +503,7 @@ export default async function WorkspacePage({
             <div className="work-user-chip glass-1">
               <Link
                 href={`${base}/profile`}
+                prefetch={true}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -502,20 +525,10 @@ export default async function WorkspacePage({
                   </small>
                 </div>
               </Link>
-              <form
+              <SignOutButton
                 action={logoutAction.bind(null, locale)}
-                className="work-user-signout"
-                data-auth-trigger="signout"
-              >
-                <button
-                  type="submit"
-                  className="work-icon-btn"
-                  title={local(locale, "সাইন আউট", "Sign out")}
-                  aria-label={local(locale, "সাইন আউট", "Sign out")}
-                >
-                  <WorkspaceIcon name="logout" />
-                </button>
-              </form>
+                title={local(locale, "সাইন আউট", "Sign out")}
+              />
             </div>
           </div>
         </aside>
@@ -580,6 +593,7 @@ export default async function WorkspacePage({
               <Link
                 key={path}
                 href={path ? `${base}/${path}` : base}
+                prefetch={true}
                 aria-current={isCurrent ? "page" : undefined}
                 className={`work-mobile-tab ${isCurrent ? "active" : ""}`}
               >

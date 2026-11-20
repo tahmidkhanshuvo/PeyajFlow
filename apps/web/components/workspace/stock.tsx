@@ -7,6 +7,7 @@ import type { Delegation, Lot, LotDetail } from "../../lib/workspace-types";
 import { dhakaToday, numberLabel, timeLabel } from "../../lib/workspace-values";
 import { DecimalField, Details, Field, GradeField, RequestKey } from "./fields";
 import { WorkspaceForm } from "./form";
+import { LocationIcon } from "./location-icon";
 
 const movements: Record<string, [string, string]> = {
   HARVEST_ADDED: ["মজুত নিবন্ধন", "Stock registered"],
@@ -206,7 +207,9 @@ export function StockCard({
           </Link>
         </h2>
         <div className="trade-card-meta-strip">
-          <span>📍 {lot.district}</span>
+          <span className="trade-meta-location">
+            <LocationIcon size={13} /> {lot.district}
+          </span>
           <span className="trade-meta-dot">•</span>
           <span>{lot.storage_type}</span>
         </div>
