@@ -17,6 +17,7 @@ from app import (
     auth,
     credentials,
     demand,
+    documentation,
     forecast,
     hardening,
     inspection,
@@ -102,6 +103,7 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 
     engine = database_engine()
     application.state.database_engine = engine
+    application.state.docs_statistics = None
     application.state.migration_heads = heads
     workers = (
         [
@@ -142,6 +144,7 @@ app.include_router(telephony.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)
 app.include_router(settlement.router)
+app.include_router(documentation.router)
 
 
 @app.get("/health/live", response_model=Liveness, tags=["Health"])

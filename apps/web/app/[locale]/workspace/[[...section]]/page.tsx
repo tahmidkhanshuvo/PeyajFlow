@@ -563,6 +563,24 @@ export default async function WorkspacePage({
           </nav>
 
           <div className="work-sidebar-footer">
+            {actor.role === "admin" && actor.verified && !actor.is_demo && (
+              <Link
+                prefetch={false}
+                className="work-nav-link"
+                href="/docs/manage"
+              >
+                <span className="work-nav-icon">
+                  <WorkspaceIcon name="help" />
+                </span>
+                <span className="work-nav-label">
+                  {local(
+                    locale,
+                    "ডকুমেন্টেশন প্রকাশনা",
+                    "Documentation publishing",
+                  )}
+                </span>
+              </Link>
+            )}
             <div className="work-user-chip glass-1">
               <Link
                 href={`${base}/profile`}

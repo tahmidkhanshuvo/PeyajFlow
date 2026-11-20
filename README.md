@@ -39,6 +39,14 @@ Next.js and React serve the bilingual workspace. FastAPI, SQLAlchemy and Alembic
 
 [Bangla mobile workspace](docs/design-reviews/portfolio-farmer-bn-mobile.png) · [Operations workspace](docs/design-reviews/portfolio-operations.png)
 
+## Live documentation
+
+The application serves its pitch deck, technical reference and live activity at `/docs`. The initial public window runs from June 10, 2027 at 00:00 through June 14 at 23:59 in Asia/Dhaka. A verified operational administrator can open **Documentation publishing** from the workspace or visit `/docs/manage` to turn access on or off, schedule a fixed window or start a timed window.
+
+Save content as a draft and publish it with a changelog note. Visibility and publishing are separate controls, so an edition can be prepared while the public page is closed. The team editor accepts approved contact information and HTTPS photos. The public reader includes Markdown, a browser print layout for PDF, and the running API’s OpenAPI contract.
+
+Deploy the API and web from the same release. The API startup applies Alembic revision `0022_docs` before the documentation screen can use its publishing settings. The checked-in Render blueprint has automatic deployment turned off.
+
 ## Run locally
 
 Install Node.js 22 or later, pnpm 10.34.9, and Docker with Compose. Python 3.13 and uv are required for host-native API development. Copy `apps/web/.env.example` to `apps/web/.env.local` for the local HTTP session cookie setting.

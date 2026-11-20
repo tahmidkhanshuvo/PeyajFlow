@@ -1,6 +1,13 @@
 # PeyajFlow work status
 
-Last updated November 19, 2026 (Asia/Dhaka).
+Last updated November 20, 2026 (Asia/Dhaka).
+
+## Live documentation and publishing (November 20, 2026)
+
+- The web app serves a pitch deck, search, a technical reference with editable SVG flows, an OpenAPI inventory, a team showcase and a live system snapshot at `/docs`. Public views separate operational records from demo activity. Downloads and refresh requests use the same visibility gate.
+- Verified operational administrators use `/docs/manage` to edit and reorder sections, maintain approved team profiles, save drafts, publish versioned editions, and set manual or scheduled access. The initial window is June 10–14, 2027 in Asia/Dhaka. No team profiles are prepopulated.
+- The new Alembic revision rolled back and reapplied on disposable PostgreSQL. Alembic metadata, Ruff and all 190 API tests passed. Production deployment requires matching API and web releases. The checked-in Render blueprint has automatic API deployment disabled.
+- The production web build and nine web unit tests passed. Edge verified administrator sign-in, draft isolation, section reordering, team cards, candidate publication and revocation, live refresh, endpoint inspection, Markdown download, print-to-PDF and the 390 px layout.
 
 ## Bangla assistant access for farmers and buyers (November 19, 2026)
 

@@ -395,6 +395,9 @@ export default async function Home({ params }: PageProps<"/[locale]">) {
             <Link href={`/${alternate}`} lang={alternate}>
               {t("English", "বাংলা")}
             </Link>
+            <Link prefetch={false} href="/docs">
+              {t("ডকুমেন্টেশন", "Documentation")}
+            </Link>
           </nav>
         </div>
         <div className="home-footer-bottom">

@@ -25,6 +25,16 @@ const config: NextConfig = {
         ],
       },
       {
+        source: "/docs/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "private, no-store, max-age=0, must-revalidate",
+          },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
         // The photo worker may run only scripts from this site (the vendored
         // transformers.js runtime) and fetch only this site and the pinned
         // model files on Hugging Face. A worker follows the policy delivered
