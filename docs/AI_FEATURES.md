@@ -30,6 +30,13 @@ The simulator used to recognise 30 exact phrases. `app/intent.py` now resolves n
 
 Negation and "whether" questions do not block read commands, because reading changes nothing.
 
+**Two quantities for one slot.** Two numbers in a row, or numbers joined by and, or, বা, অথবা, এবং, আর or ও, are refused as `multiple_quantities`. Examples: "accept offer 200 and 300 kg", "২০০ ৩০০ কেজি" and "200-300 kg". English "two hundred and fifty" is still one number.
+
+**Spoken losses.** A stock-movement command described as a loss ("৫ কেজি পচে গেছে") is marked as a loss:
+- The form preselects the loss type.
+- A positive amount entered for a loss is stored as a negative change.
+- The API refuses such a phrase if it is sent as a weight addition (`voice_loss_mismatch`).
+
 **A negation in an earlier clause.** "no thanks, reject it", "এই দামে দিব না, অফারটা বাদ দিন" and "আমি বুঝতে পারছি না, একজন মানুষের সাথে কথা বলতে চাই" end with a plain command, and the negation refers to something else. When a sentence would otherwise be refused as negated, the resolver splits typed text at commas, দাঁড়ি, semicolons and full stops. It uses the last clause only if all of these hold:
 
 - that clause holds a change command with no negation and no "whether" or "or" (কিনা, নাকি) of its own;
@@ -55,7 +62,12 @@ The resolver abstains (`number_words`) in these cases:
 A number said in words next to টাকা is a price, not a quantity, the same as digits. Banglish number words that are also English words (at, sat, tin) count only when the phrase reads as a number, so "accept offer at 200 kg" is still 200 kg. নয় (nine) is also the negation "is not", so it is always treated as a negation.
 
 4. **Check against the form.** The selected command must match the phrase (`voice_tool_mismatch`). A spoken quantity must equal the quantity in the offer or form, after converting maunds with the lot's recorded kg-per-maund (`voice_quantity_mismatch`). This applies to acceptance, counteroffers, stock losses, lot registration and buyer offers.
-5. **Confirm.** A resolved change is staged with a Bangla read-back and a 4-digit code that expires after 2 minutes. The user is warned before the last of three attempts, can cancel a pending change, and inventory changes only after confirmation.
+5. **Confirm.** A resolved change is staged with a Bangla read-back and a confirmation step that expires after 2 minutes. The user is warned before the last of three attempts, can cancel a pending change, and inventory changes only after confirmation.
+   - **Demo and showcase accounts** see a one-time 4-digit code, as before.
+   - **Real accounts** confirm with a personal voice PIN (4–6 digits). The PIN is set on the assistant page after re-entering the account passphrase and is stored with scrypt, like passphrases. It is never displayed or sent to the client.
+   - Trivial PINs (one repeated digit, a run such as 1234, or a repeating pattern) are refused.
+   - Five wrong PINs across any actions lock the PIN for 15 minutes and cancel the pending change.
+   - This is a second secret, not a second device. Carrier keypad entry of the same PIN awaits live telephony.
 
 The web form calls `POST /v1/voice/resolve` after speech or **Check command** to show what was understood and fill the matching quantity field. Browser speech recognition returns up to three alternatives, and the first one the API understands is used.
 
@@ -100,6 +112,7 @@ The suggestion and human review are connected as follows:
 
 ### Measured results
 
+- **Measuring it.** `apps/web/scripts/photo-eval.mjs` runs the real browser model on a folder of photos labelled by people (`labels.csv`: file, label, lot). It reports accuracy, abstention rate, per-class precision and recall, the number of problem photos called clear, and a confusion table. It produces figures only from photos someone supplies; none have been supplied yet.
 - **No accuracy figure exists yet.** The repository holds one real onion photo and there are no reviewed pilot pairs, so an agreement rate will appear only after real reviews accumulate.
 - **One functional check passed.** On November 18, 2026 the real worker ran in Edge on `services/api/app/fixtures/onion-storage.webp`. The first run took 17 s, including the model download. The top score was 0.451, below the threshold, so the model abstained and the API stored `uncertain_or_low_quality` with the pinned model and rule.
 - **Self-hosted runtime check.** On November 20, 2026 the production build ran in Edge, served by `next start`. The worker ran under its new policy on `onion-storage.webp`, sent with no API re-encoding. It made no CDN requests and reported no policy violations, and fetched weights from `huggingface.co` and `us.aws.cdn.hf.co`. It took 25 s with a cold cache, abstained (top score 0.399), and reported the pinned model and rule. The score differs from the earlier run, which used the API's re-encoded JPEG of the same photo.
@@ -114,6 +127,6 @@ Spoken hold/sell advice now uses the verified-weight loss trend when at least th
 ## Known limitations
 
 - The voice grammar covers the command set of the simulator, not open conversation. It reads numbers said in words only directly before kg or maund. It does not read English "one and a half" or ordinal numbers. Dialect coverage is limited to what the datasets contain.
-- Verified farmers and buyers can use the workspace call simulator. All enabled demo and showcase roles can also use it. Live carrier calls, carrier speech recognition and OTP are not enabled.
+- Verified farmers and buyers can use the workspace call simulator. All enabled demo and showcase roles can also use it. Live carrier calls and carrier speech recognition are not enabled. SMS sign-in codes are built but need a configured SMS provider and operator-verified phone numbers.
 - Photo suggestions are experimental and uncalibrated. A labelled photo dataset is needed to measure them.
 - Field validation with real farmers, market series and storage measurements remains open for every feature.

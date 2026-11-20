@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { pilotMutate } from "../../app/[locale]/workspace/pilot-actions";
 import type { Locale } from "../../lib/copy";
-import type { PriceSeries, VoiceCall, VoiceTask } from "../../lib/pilot-types";
+import type {
+  PriceSeries,
+  VoiceCall,
+  VoicePinStatus,
+  VoiceTask,
+} from "../../lib/pilot-types";
 import { api, type Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
 import type {
@@ -58,7 +63,10 @@ export async function VoicePage({
       </>
     );
   }
-  const tasks = await api<VoiceTask[]>("/v1/voice/tasks");
+  const [tasks, pin] = await Promise.all([
+    api<VoiceTask[]>("/v1/voice/tasks"),
+    api<VoicePinStatus>("/v1/voice/pin"),
+  ]);
   return (
     <>
       <h1>{t("বাংলা কল সিমুলেটর", "Bangla call simulator")}</h1>
@@ -84,6 +92,58 @@ export async function VoicePage({
           label={t("সিমুলেটেড কল শুরু করুন", "Start simulated call")}
         />
       </section>
+      {pin.required && (
+        <section className="work-panel">
+          <h2>{t("ভয়েস পিন", "Voice PIN")}</h2>
+          <p>
+            {pin.locked_until
+              ? t(
+                  "অনেকবার ভুল পিন দেওয়ায় পিন সাময়িকভাবে বন্ধ। পরে আবার চেষ্টা করুন।",
+                  "Your PIN is locked after too many wrong attempts. Try again later.",
+                )
+              : pin.set
+                ? t(
+                    "পিন ঠিক করা আছে। পরিবর্তন নিশ্চিত করতে এই পিন দিন। পিন কখনো দেখানো হয় না।",
+                    "Your PIN is set. Enter it to confirm changes. It is never displayed.",
+                  )
+                : t(
+                    "পরিবর্তন নিশ্চিত করতে ৪–৬ অঙ্কের একটি গোপন পিন ঠিক করুন।",
+                    "Set a secret 4–6 digit PIN to confirm changes.",
+                  )}
+          </p>
+          <WorkspaceForm
+            locale={locale}
+            action={pilotMutate.bind(null, locale, "voice-pin", "", "")}
+            label={
+              pin.set
+                ? t("পিন বদলান", "Change PIN")
+                : t("পিন ঠিক করুন", "Set PIN")
+            }
+          >
+            <label>
+              {t("নতুন পিন (৪–৬ অঙ্ক)", "New PIN (4–6 digits)")}
+              <input
+                name="pin"
+                type="password"
+                inputMode="numeric"
+                autoComplete="off"
+                minLength={4}
+                maxLength={6}
+                required
+              />
+            </label>
+            <label>
+              {t("আপনার পাসফ্রেজ", "Your passphrase")}
+              <input
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+              />
+            </label>
+          </WorkspaceForm>
+        </section>
+      )}
       <section className="work-panel">
         <h2>
           {t("পরিদর্শন ও সহায়তার অনুরোধ", "Inspection and support requests")}

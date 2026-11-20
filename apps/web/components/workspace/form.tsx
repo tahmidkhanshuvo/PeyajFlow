@@ -9,7 +9,7 @@ import {
 import type { Locale } from "../../lib/copy";
 import { errorText, local } from "../../lib/workspace-copy";
 
-export type FormState = { error?: string };
+export type FormState = { error?: string; notice?: string };
 export type FormAction = (
   state: FormState,
   form: FormData,
@@ -68,6 +68,11 @@ export function WorkspaceForm({
       {error && (
         <p className="form-error" role="alert">
           {errorText(locale, error)}
+        </p>
+      )}
+      {!error && state.notice && (
+        <p className="work-feedback" role="status">
+          {errorText(locale, state.notice)}
         </p>
       )}
       <button type="submit" className="refresh" disabled={pending || preparing}>

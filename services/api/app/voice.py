@@ -7,11 +7,19 @@ from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field, ValidationError
+from fastapi import APIRouter, HTTPException, Response
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SecretStr,
+    StringConstraints,
+    ValidationError,
+)
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     ForeignKey,
@@ -28,7 +36,7 @@ from sqlalchemy import (
 from sqlalchemy.engine import RowMapping
 from sqlalchemy.orm import Session
 
-from app import advice, logistics, lots, market_data, trade
+from app import advice, credentials, logistics, lots, market_data, trade
 from app import intent as grammar
 from app.auth import (
     Actor,
@@ -40,6 +48,7 @@ from app.auth import (
     require_role,
 )
 from app.database import DB, metadata
+from app.rate_limits import enforce
 
 router = APIRouter(prefix="/v1/voice", tags=["Bangla call simulator"])
 DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
@@ -72,6 +81,23 @@ actions = Table(
         "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
     ),
 )
+# A personal PIN confirms changes for real accounts. Unlike the per-action
+# code shown to demo accounts, it is never displayed, so a confirmation
+# proves knowledge of a secret the account holder chose.
+voice_pins = Table(
+    "voice_pins",
+    metadata,
+    Column("membership_id", ForeignKey("memberships.id"), primary_key=True),
+    Column("pin_digest", String(97), nullable=False),
+    Column("failures", Integer, nullable=False, default=0),
+    Column("locked_until", DateTime(timezone=True)),
+    Column(
+        "updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()
+    ),
+    CheckConstraint("failures >= 0", name="voice_pin_failures"),
+)
+PIN_FAILURES = 5
+PIN_LOCK = timedelta(minutes=15)
 tasks = Table(
     "assistant_tasks",
     metadata,
@@ -112,6 +138,7 @@ class Resolution(BaseModel):
     match: Literal["exact", "pattern"] | None
     candidates: list[str]
     error: str | None
+    loss: bool = False
 
 
 class Lookup(Input):
@@ -142,7 +169,23 @@ class AssistanceInput(TaskInput):
 
 class Confirm(Input):
     action_id: UUID
-    digits: Annotated[str, Field(min_length=4, max_length=4)]
+    digits: Annotated[str, Field(min_length=4, max_length=6)]
+
+
+class PinInput(Input):
+    # Passphrases may begin or end with spaces, as at sign-in.
+    model_config = ConfigDict(str_strip_whitespace=False)
+
+    pin: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=4, max_length=6)
+    ]
+    password: Annotated[SecretStr, Field(min_length=1, max_length=256)]
+
+
+class PinStatus(BaseModel):
+    required: bool
+    set: bool
+    locked_until: datetime | None = None
 
 
 class Entry(BaseModel):
@@ -274,6 +317,98 @@ def code_hash(action_id: UUID, code: str) -> str:
     return hashlib.sha256(f"{action_id}:{code}".encode()).hexdigest()
 
 
+def weak_pin(pin: str) -> bool:
+    """Refuse PINs that are easy to guess: one digit, a run or a repeat."""
+    if len(set(pin)) == 1:
+        return True
+    steps = {int(b) - int(a) for a, b in zip(pin, pin[1:], strict=False)}
+    if steps in ({1}, {-1}):
+        return True
+    return pin == (pin[:2] * 3)[: len(pin)] or pin == (pin[:3] * 2)[: len(pin)]
+
+
+def kdf_matches(secret: str, digest: str) -> bool:
+    salt, expected = digest.split(":")
+    if not credentials.KDF_SLOTS.acquire(blocking=False):
+        raise HTTPException(429, "rate_limited", headers={"Retry-After": "2"})
+    try:
+        actual = credentials.derive(secret, bytes.fromhex(salt)).hex()
+    finally:
+        credentials.KDF_SLOTS.release()
+    return hmac.compare_digest(actual, expected)
+
+
+def pin_row(db: Session, actor: Profile, *, lock=False):
+    stmt = select(voice_pins).where(voice_pins.c.membership_id == actor.membership_id)
+    return db.execute(stmt.with_for_update() if lock else stmt).mappings().one_or_none()
+
+
+def require_pin(db: Session, actor: Profile) -> None:
+    """Real accounts confirm with their own PIN, so they must have one."""
+    if actor.is_demo:
+        return
+    row = pin_row(db, actor)
+    if row is None:
+        raise HTTPException(409, "voice_pin_required")
+    if row["locked_until"] and row["locked_until"] > trade.now():
+        raise HTTPException(409, "voice_pin_locked")
+
+
+@router.get("/pin", response_model=PinStatus)
+def pin_status(actor: Actor, db: DB):
+    gate(actor)
+    if actor.is_demo:
+        return PinStatus(required=False, set=False)
+    row = pin_row(db, actor)
+    locked = row["locked_until"] if row else None
+    return PinStatus(
+        required=True,
+        set=row is not None,
+        locked_until=locked if locked and locked > trade.now() else None,
+    )
+
+
+@router.put("/pin", status_code=204)
+def set_pin(body: PinInput, actor: Actor, db: DB):
+    """Set or change the voice PIN after re-entering the account passphrase."""
+    gate(actor)
+    if actor.is_demo:
+        raise HTTPException(409, "voice_pin_demo")
+    pin = body.pin.translate(DIGITS)
+    if not re.fullmatch("[0-9]{4,6}", pin):
+        raise HTTPException(422, "voice_pin_invalid")
+    if weak_pin(pin):
+        raise HTTPException(422, "voice_pin_weak")
+    # Limits passphrase guessing; format mistakes above are not counted.
+    enforce(db, "voice-pin-set", str(actor.membership_id), limit=5, seconds=900)
+    digest = db.scalar(
+        select(credentials.credentials.c.password_digest).where(
+            credentials.credentials.c.membership_id == actor.membership_id
+        )
+    )
+    if digest is None:
+        raise HTTPException(403, "role_forbidden")
+    if not kdf_matches(body.password.get_secret_value(), digest):
+        raise HTTPException(401, "credentials_invalid")
+    salt = secrets.token_bytes(16)
+    with credentials.KDF_SLOTS:
+        pin_digest = f"{salt.hex()}:{credentials.derive(pin, salt).hex()}"
+    values = {"pin_digest": pin_digest, "failures": 0, "locked_until": None}
+    if pin_row(db, actor, lock=True) is None:
+        db.execute(
+            insert(voice_pins).values(membership_id=actor.membership_id, **values)
+        )
+    else:
+        db.execute(
+            update(voice_pins)
+            .where(voice_pins.c.membership_id == actor.membership_id)
+            .values(**values, updated_at=func.now())
+        )
+    audit(db, actor, "voice.pin_set", actor.membership_id)
+    db.commit()
+    return Response(status_code=204)
+
+
 def read_tool(db: Session, actor: Profile, tool: str, body: Lookup) -> str:
     if tool == "prices":
         series = body.series
@@ -387,6 +522,7 @@ def prepare(
     params: dict,
     action_id: UUID,
     spoken: tuple[Decimal, str] | None = None,
+    loss: bool = False,
 ) -> tuple[dict, str]:
     if tool in RESPONSES:
         require_role(actor, Role.FARMER, Role.BUYER)
@@ -440,6 +576,9 @@ def prepare(
     if tool == "movement":
         require_role(actor, Role.FARMER, Role.AGENT)
         movement = MovementAction.model_validate({**params, "request_key": action_id})
+        if loss and movement.event_type != "LOSS_REPORTED":
+            # "৫ কেজি পচে গেছে" must never be staged as stock being added.
+            raise HTTPException(422, "voice_loss_mismatch")
         lot = lots.get_lot(db, actor, movement.lot_id)
         kg = lots.kilograms(movement.quantity, movement.unit, movement.kg_per_maund)
         check_spoken(
@@ -595,6 +734,7 @@ def resolve_phrases(body: ResolveInput, actor: Actor):
                 match=result.match,
                 candidates=list(result.candidates),
                 error=error_code(result),
+                loss=result.loss,
             )
         )
     return results
@@ -679,11 +819,16 @@ def intent(call_id: UUID, body: Intent, actor: Actor, db: DB):
                 )
             ):
                 raise HTTPException(409, "voice_pending")
+            require_pin(db, actor)
             state = "pending"
-            args, readback = prepare(db, actor, tool, body.params, action_id, spoken)
-            code = f"{secrets.randbelow(10000):04d}"
+            args, readback = prepare(
+                db, actor, tool, body.params, action_id, spoken, result.loss
+            )
             deadline = min(call["expires_at"], trade.now() + timedelta(minutes=2))
-            digest = code_hash(action_id, code)
+            if actor.is_demo:
+                # Demo and showcase accounts see a one-time code instead.
+                code = f"{secrets.randbelow(10000):04d}"
+                digest = code_hash(action_id, code)
     except ValidationError as error:
         raise HTTPException(422, "invalid_input") from error
     row = (
@@ -724,19 +869,66 @@ def confirm(call_id: UUID, body: Confirm, actor: Actor, db: DB):
     if row is None:
         raise HTTPException(404, "not_found")
     digits = body.digits.translate(DIGITS)
-    valid = bool(
-        re.fullmatch("[0-9]{4}", digits)
-        and row["code_hash"]
-        and hmac.compare_digest(row["code_hash"], code_hash(body.action_id, digits))
-    )
-    if row["state"] == "committed" and valid:
-        return entry_view(row)
+    pin = None if actor.is_demo else pin_row(db, actor, lock=True)
+    if row["state"] == "committed":
+        # A retried confirmation returns the result, never a second change.
+        if actor.is_demo:
+            replay = bool(
+                re.fullmatch("[0-9]{4}", digits)
+                and row["code_hash"]
+                and hmac.compare_digest(
+                    row["code_hash"], code_hash(body.action_id, digits)
+                )
+            )
+        else:
+            replay = bool(
+                pin
+                and re.fullmatch("[0-9]{4,6}", digits)
+                and kdf_matches(digits, pin["pin_digest"])
+            )
+        if replay:
+            return entry_view(row)
     if (
         not active(call)
         or row["state"] != "pending"
         or row["expires_at"] <= trade.now()
     ):
         raise HTTPException(409, "voice_confirmation_expired")
+    if actor.is_demo:
+        valid = bool(
+            re.fullmatch("[0-9]{4}", digits)
+            and row["code_hash"]
+            and hmac.compare_digest(row["code_hash"], code_hash(body.action_id, digits))
+        )
+    else:
+        if pin is None:
+            raise HTTPException(409, "voice_pin_required")
+        if pin["locked_until"] and pin["locked_until"] > trade.now():
+            raise HTTPException(409, "voice_pin_locked")
+        valid = bool(
+            re.fullmatch("[0-9]{4,6}", digits)
+            and kdf_matches(digits, pin["pin_digest"])
+        )
+        failures = 0 if valid else pin["failures"] + 1
+        locked = failures >= PIN_FAILURES
+        db.execute(
+            update(voice_pins)
+            .where(voice_pins.c.membership_id == actor.membership_id)
+            .values(
+                failures=0 if locked else failures,
+                locked_until=trade.now() + PIN_LOCK if locked else pin["locked_until"],
+            )
+        )
+        if locked:
+            # Too many wrong PINs across actions: cancel and lock the PIN.
+            db.execute(
+                update(actions)
+                .where(actions.c.id == body.action_id)
+                .values(attempts=row["attempts"] + 1, state="cancelled")
+            )
+            audit(db, actor, "voice.pin_locked", actor.membership_id)
+            db.commit()
+            raise HTTPException(409, "voice_pin_locked")
     if not valid:
         attempts = row["attempts"] + 1
         db.execute(

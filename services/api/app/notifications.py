@@ -315,15 +315,20 @@ def resume_after(instant: datetime, start: int, end: int) -> datetime:
     ).astimezone(UTC)
 
 
+NOTICE = "PeyajFlow: You have a new workspace notification. Sign in to view it."
+
+
 def send_sms(
-    config: twilio.Settings, sender: str, phone: str
+    config: twilio.Settings,
+    sender: str,
+    phone: str,
+    body: str = NOTICE,
+    *,
+    callback: bool = True,
 ) -> tuple[str, str | None]:
-    fields = {
-        "To": phone,
-        "MessagingServiceSid": sender,
-        "Body": "PeyajFlow: You have a new workspace notification. Sign in to view it.",
-        "StatusCallback": f"{config.origin}{SMS_PATH}/status",
-    }
+    fields = {"To": phone, "MessagingServiceSid": sender, "Body": body}
+    if callback:
+        fields["StatusCallback"] = f"{config.origin}{SMS_PATH}/status"
     authorization = base64.b64encode(
         f"{config.account_sid}:{config.auth_token}".encode()
     ).decode()

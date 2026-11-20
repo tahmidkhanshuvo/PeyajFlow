@@ -86,8 +86,12 @@ export function VoiceDesk({
     quantity: string;
     unit: "kg" | "maund";
   } | null>(null);
+  // A stock movement described as a loss preselects the loss type.
+  const [loss, setLoss] = useState(false);
   const [prefill, setPrefill] = useState(0);
   const pending = call.entries.find((entry) => entry.state === "pending");
+  // Demo accounts type the displayed 4-digit code; real accounts their PIN.
+  const pinLength = actor.is_demo ? 4 : 6;
   const active = call.status === "active";
   const buyer = actor.role === "buyer";
   const farmer = actor.role === "farmer";
@@ -136,6 +140,7 @@ export function VoiceDesk({
           : null;
       setTool(usable.tool);
       setSpoken(amount);
+      setLoss(Boolean(usable.loss));
       setPrefill((count) => count + 1);
       setHeard({
         ok: true,
@@ -379,12 +384,18 @@ export function VoiceDesk({
                 <>
                   <label>
                     {t("পরিবর্তনের ধরন", "Movement type")}
-                    <select name="event_type">
+                    <select
+                      key={`event-${prefill}`}
+                      name="event_type"
+                      defaultValue={
+                        loss ? "LOSS_REPORTED" : "WEIGHED_ADJUSTMENT"
+                      }
+                    >
                       <option value="WEIGHED_ADJUSTMENT">
                         {t("ওজন সমন্বয় (+/−)", "Weight adjustment (+/−)")}
                       </option>
                       <option value="LOSS_REPORTED">
-                        {t("ক্ষতি (ঋণাত্মক)", "Loss (negative)")}
+                        {t("ক্ষতি (যতটা কমেছে)", "Loss (amount lost)")}
                       </option>
                     </select>
                   </label>
@@ -570,22 +581,26 @@ export function VoiceDesk({
           >
             {t("বাংলায় শুনুন", "Play Bangla read-back")}
           </button>
-          {state.code && state.pendingId === pending.id ? (
+          {!actor.is_demo || (state.code && state.pendingId === pending.id) ? (
             <form action={submit} onSubmit={send} className="work-form">
               <input type="hidden" name="mode" value="confirm" />
               <input type="hidden" name="action_id" value={pending.id} />
-              <p>
-                {actor.is_demo
-                  ? t("ডেমো কোড", "Demo keypad code")
-                  : t("কিপ্যাড কোড", "Keypad code")}{" "}
-                <strong>{state.code}</strong>
-              </p>
+              {actor.is_demo && (
+                <p>
+                  {t("ডেমো কোড", "Demo keypad code")}{" "}
+                  <strong>{state.code}</strong>
+                </p>
+              )}
               <label>
-                {t("চার অঙ্কের নিশ্চিতকরণ", "Four-digit confirmation")}
+                {actor.is_demo
+                  ? t("চার অঙ্কের নিশ্চিতকরণ", "Four-digit confirmation")
+                  : t("আপনার ভয়েস পিন", "Your voice PIN")}
                 <input
                   name="digits"
+                  type={actor.is_demo ? "text" : "password"}
+                  autoComplete="off"
                   inputMode="numeric"
-                  maxLength={4}
+                  maxLength={pinLength}
                   value={digits}
                   onChange={(event) => setDigits(event.target.value)}
                   required
@@ -598,7 +613,7 @@ export function VoiceDesk({
                     type="button"
                     key={n}
                     onClick={() =>
-                      setDigits((value) => `${value}${n}`.slice(0, 4))
+                      setDigits((value) => `${value}${n}`.slice(0, pinLength))
                     }
                   >
                     {n}
@@ -616,7 +631,9 @@ export function VoiceDesk({
                 <button
                   className="refresh"
                   type="submit"
-                  disabled={busy || digits.length !== 4}
+                  disabled={
+                    busy || digits.length < 4 || digits.length > pinLength
+                  }
                 >
                   {t("কিপ্যাডে নিশ্চিত করুন", "Confirm by keypad")}
                 </button>

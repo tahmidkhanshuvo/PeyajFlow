@@ -628,6 +628,14 @@ HUNDRED_SUFFIXES = (nfc("শত"), nfc("শো"), nfc("শ"), "shoto", "sho")
 # Tokens shaped like a hundreds word that the table cannot read ("…শো").
 HUNDREDS_SHAPE = re.compile(nfc(r"\S+(?:শো|শত)"))
 ENGLISH_MULTIPLIERS = frozenset({"hundred", "thousand", "lakh", "lakhs"})
+# Words that join two numbers. Only "and" can be part of one English number
+# ("two hundred and fifty"); "২০০ বা ৩০০ কেজি" names two quantities.
+JOINERS = frozenset(
+    map(
+        nfc,
+        ("and", "or", "ba", "ar", "othoba", "ebong", "বা", "অথবা", "এবং", "আর", "ও"),
+    )
+)
 MAX_SPOKEN = Decimal(999_999_999)
 
 
@@ -792,7 +800,7 @@ def is_numeral(tokens: list[str], index: int) -> bool:
     following = tokens[index + 1] if index + 1 < len(tokens) else ""
     if token == "a":  # "a hundred kg"
         return following in ENGLISH_MULTIPLIERS
-    if token == "and":  # "two hundred and fifty"
+    if token in JOINERS:  # "two hundred and fifty", "২০০ বা ৩০০"
         return index > 0 and following != "" and is_numeral(tokens, index + 1)
     return False
 
@@ -802,7 +810,7 @@ def number_runs(tokens: list[str]) -> list[tuple[int, int]]:
     runs = []
     index = 0
     while index < len(tokens):
-        if tokens[index] == "and" or not is_numeral(tokens, index):
+        if tokens[index] in JOINERS or not is_numeral(tokens, index):
             index += 1
             continue
         start = index
@@ -880,9 +888,14 @@ class Interpretation:
     match: Literal["exact", "pattern"] | None = None
     reason: str | None = None
     candidates: tuple[str, ...] = field(default=())
+    # A stock movement described as a loss ("পচে গেছে"), so the form and the
+    # API can require the loss type instead of an addition.
+    loss: bool = False
 
 
-Quantities = tuple[list[tuple[Decimal, Unit]], bool, bool]
+# (number, unit) pairs, a number without a unit, an unreadable number word,
+# and several numbers where one quantity belongs.
+Quantities = tuple[list[tuple[Decimal, Unit]], bool, bool, bool]
 
 
 def digit_quantities(tokens: list[str], start: int, end: int) -> Quantities:
@@ -902,44 +915,52 @@ def digit_quantities(tokens: list[str], start: int, end: int) -> Quantities:
             bare = True
         else:
             pairs.append((Decimal(token), unit))
-    return pairs, bare, False
+    return pairs, bare, False, False
 
 
 def run_quantities(tokens: list[str], start: int, end: int) -> Quantities:
     if start >= end:
-        return [], False, False
+        return [], False, False, False
     run = tokens[start:end]
-    if all(NUMBER.fullmatch(token) for token in run):
-        return digit_quantities(tokens, start, end)
     previous = tokens[start - 1] if start else ""
     following = tokens[end] if end < len(tokens) else ""
-    if previous in CURRENCY or following in CURRENCY:
-        return [], False, False  # a price said in words, not a quantity
+    priced = previous in CURRENCY or following in CURRENCY
+    if all(NUMBER.fullmatch(token) or token in JOINERS for token in run):
+        if not priced and sum(bool(NUMBER.fullmatch(token)) for token in run) > 1:
+            # "200 and 300 kg", "২০০ ৩০০ কেজি": two numbers, one quantity.
+            return [], False, False, True
+        return digit_quantities(tokens, start, end)
+    if priced:
+        return [], False, False, False  # a price said in words, not a quantity
     unit = UNITS.get(following)
     value = read_number(run)
     if value is not None and unit is not None:
-        return [(value, unit)], False, False
+        return [(value, unit)], False, False, False
     if droppable(run[0]):
         # A leading Banglish word ("at 200 kg") may not be a number at all,
         # so read the rest without it.
         return run_quantities(tokens, start + 1, end)
+    if any(token in JOINERS - {"and"} for token in run):
+        return [], False, False, True  # "দুইশো বা তিনশো কেজি"
     if any(not NUMBER.fullmatch(token) and not droppable(token) for token in run):
-        return [], False, True
+        return [], False, True, False
     return digit_quantities(tokens, start, end)
 
 
 def quantities(text: str) -> Quantities:
-    """Return (number, unit) pairs, whether a number had no unit, and whether
-    a number said in words could not be read."""
+    """Return (number, unit) pairs, whether a number had no unit, whether a
+    number said in words could not be read, and whether several numbers were
+    given where one quantity belongs."""
     tokens = text.split()
     pairs: list[tuple[Decimal, Unit]] = []
-    bare = unread = False
+    bare = unread = several = False
     for start, end in number_runs(tokens):
-        found, run_bare, run_unread = run_quantities(tokens, start, end)
+        found, run_bare, run_unread, run_several = run_quantities(tokens, start, end)
         pairs.extend(found)
         bare = bare or run_bare
         unread = unread or run_unread
-    return pairs, bare, unread
+        several = several or run_several
+    return pairs, bare, unread, several
 
 
 def affirmed_clause(text: str) -> str | None:
@@ -1011,18 +1032,19 @@ def interpret(text: str) -> Interpretation:
 
     if tool not in QUANTITY_TOOLS:
         return Interpretation("resolved", tool, match="pattern")
-    pairs, bare, unread = quantities(normalized)
+    loss = tool == "movement" and bool(re.search(LOSS, normalized))
+    pairs, bare, unread, several = quantities(normalized)
     if unread:
         return Interpretation("unknown", reason="number_words", candidates=(tool,))
-    if len(pairs) > 1:
+    if several or len(pairs) > 1:
         return Interpretation(
             "ambiguous", reason="multiple_quantities", candidates=(tool,)
         )
     if not pairs:
         if bare:
             return Interpretation("unknown", reason="unit_missing", candidates=(tool,))
-        return Interpretation("resolved", tool, match="pattern")
+        return Interpretation("resolved", tool, match="pattern", loss=loss)
     amount, unit = pairs[0]
     if amount <= 0:
         return Interpretation("unknown", reason="invalid_quantity", candidates=(tool,))
-    return Interpretation("resolved", tool, amount, unit, match="pattern")
+    return Interpretation("resolved", tool, amount, unit, match="pattern", loss=loss)

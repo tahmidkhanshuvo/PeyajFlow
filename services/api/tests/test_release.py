@@ -4,14 +4,14 @@ from urllib.parse import urlencode
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 from test_pilot import login, new_lot, new_offer, reply
 from test_pilot import pilot as pilot
 
 from app import notifications as alerts
-from app import telephony, twilio
-from app.auth import Role, demo_id
+from app import rate_limits, telephony, twilio
+from app.auth import Role, audit_log, demo_id
 from app.credentials import provision, rotate
 
 requires_db = pytest.mark.skipif(
@@ -381,3 +381,98 @@ def test_hosted_account_chooser_requires_code_for_simulated_calls(pilot, monkeyp
     assert simulated.json()["mode"] == "simulation"
     monkeypatch.delenv("SHOWCASE_ACCESS_KEY")
     assert client.get("/v1/me", headers=headers).status_code == 401
+
+
+@requires_db
+def test_sms_sign_in_codes_are_single_use_and_reveal_no_accounts(pilot, monkeypatch):
+    import re
+
+    client, engine, _ = pilot
+    # Rate-limit windows persist in the database; start from a clean count.
+    with Session(engine) as db, db.begin():
+        db.execute(delete(rate_limits.buckets))
+    assert client.get("/v1/auth/otp").json() == {"available": False}
+    off = client.post("/v1/auth/otp/request", json={"phone": "+8801700000000"})
+    assert (off.status_code, off.json()["detail"]) == (503, "otp_unavailable")
+
+    provider_env(monkeypatch, sms=True)
+    assert client.get("/v1/auth/otp").json() == {"available": True}
+    phone = f"+88019{uuid4().int % 100_000_000:08d}"
+    account(client, engine, phone=phone)
+    sent: list[tuple[str, str]] = []
+    outcome = {"status": "accepted"}
+
+    def sender(_config, _sender, recipient, body, *, callback=True):
+        assert callback is False
+        sent.append((recipient, re.search(r"\b([0-9]{6})\b", body).group(1)))
+        return outcome["status"], None
+
+    monkeypatch.setattr(alerts, "send_sms", sender)
+    request = "/v1/auth/otp/request"
+    verify = "/v1/auth/otp/verify"
+
+    # An unknown number gets the same reply and no message.
+    unknown = f"+88018{uuid4().int % 100_000_000:08d}"
+    assert client.post(request, json={"phone": unknown}).status_code == 202
+    assert sent == []
+    assert client.post(verify, json={"phone": unknown, "code": "123456"}).json() == {
+        "detail": "otp_invalid"
+    }
+
+    assert client.post(request, json={"phone": phone}).status_code == 202
+    assert [recipient for recipient, _ in sent] == [phone]
+    first = sent[-1][1]
+    # A new request replaces the earlier code.
+    assert client.post(request, json={"phone": phone}).status_code == 202
+    second = sent[-1][1]
+    if first != second:
+        stale = client.post(verify, json={"phone": phone, "code": first})
+        assert stale.json()["detail"] == "otp_invalid"
+    wrong = "000000" if second != "000000" else "111111"
+    assert client.post(verify, json={"phone": phone, "code": wrong}).status_code == 401
+    bangla = second.translate(str.maketrans("0123456789", "০১২৩৪৫৬৭৮৯"))
+    signed_in = client.post(verify, json={"phone": phone, "code": bangla})
+    assert signed_in.status_code == 201, signed_in.text
+    auth = {"Authorization": f"Bearer {signed_in.json()['token']}"}
+    assert client.get("/v1/me", headers=auth).json()["role"] == "farmer"
+    # A code works once.
+    reused = client.post(verify, json={"phone": phone, "code": second})
+    assert reused.json()["detail"] == "otp_invalid"
+    # Three requests per number per 15 minutes.
+    assert client.post(request, json={"phone": phone}).status_code == 202
+    limited = client.post(request, json={"phone": phone})
+    assert (limited.status_code, limited.json()["detail"]) == (429, "rate_limited")
+
+    # Five wrong codes end a challenge; a failed send ends it at once.
+    other = f"+88017{uuid4().int % 100_000_000:08d}"
+    account(client, engine, phone=other)
+    assert client.post(request, json={"phone": other}).status_code == 202
+    good = sent[-1][1]
+    bad = "222222" if good != "222222" else "333333"
+    for _ in range(5):
+        assert (
+            client.post(verify, json={"phone": other, "code": bad}).status_code == 401
+        )
+    assert client.post(verify, json={"phone": other, "code": good}).status_code == 401
+    outcome["status"] = "failed"
+    assert client.post(request, json={"phone": other}).status_code == 202
+    undelivered = sent[-1][1]
+    assert (
+        client.post(verify, json={"phone": other, "code": undelivered}).status_code
+        == 401
+    )
+    with Session(engine) as db:
+        actions = set(
+            db.scalars(
+                select(audit_log.c.action).where(
+                    audit_log.c.action.in_(
+                        (
+                            "auth.otp_requested",
+                            "auth.otp_signed_in",
+                            "auth.otp_rejected",
+                        )
+                    )
+                )
+            )
+        )
+    assert actions == {"auth.otp_requested", "auth.otp_signed_in", "auth.otp_rejected"}

@@ -76,6 +76,45 @@ export async function passwordSignIn(
   );
 }
 
+export async function requestOtp(
+  locale: Locale,
+  _state: FormState,
+  form: FormData,
+): Promise<FormState> {
+  if (!isLocale(locale)) return { error: "invalid_input" };
+  try {
+    await api(
+      "/v1/auth/otp/request",
+      json({ phone: asciiDigits(String(form.get("phone") ?? "").trim()) }),
+    );
+  } catch (error) {
+    return errorState(error);
+  }
+  // The same notice is shown whether or not the number has an account.
+  return { notice: "otp_sent" };
+}
+
+export async function otpSignIn(
+  locale: Locale,
+  _state: FormState,
+  form: FormData,
+): Promise<FormState> {
+  if (!isLocale(locale)) return { error: "invalid_input" };
+  try {
+    const session = await api<{ token: string; expires_at: string }>(
+      "/v1/auth/otp/verify",
+      json({
+        phone: asciiDigits(String(form.get("phone") ?? "").trim()),
+        code: asciiDigits(String(form.get("code") ?? "").trim()),
+      }),
+    );
+    await saveSession(session);
+  } catch (error) {
+    return errorState(error);
+  }
+  redirect(`/${locale}/workspace`);
+}
+
 export async function signupAction(
   locale: Locale,
   _state: FormState,

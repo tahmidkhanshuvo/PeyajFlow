@@ -228,3 +228,36 @@ def test_voice_maps_each_outcome_to_a_specific_error():
         resolve("অজানা")
     assert raised.value.detail == "voice_repeat"
     assert resolve("অফার গ্রহণ ৫ মণ") == ("accept", (Decimal(5), "maund"))
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "accept offer 200 and 300 kg",
+        "অফার গ্রহণ ২০০ ৩০০ কেজি",
+        "২০০ বা ৩০০ কেজি অফার নেব",
+        "200-300 kg offer accept",
+        "দুইশো বা তিনশো কেজির অফার নেব",
+        "200 or 300 kg er offer nibo",
+    ],
+)
+def test_two_quantities_for_one_slot_are_refused(phrase):
+    result = interpret(phrase)
+    assert (result.status, result.tool, result.reason) == (
+        "ambiguous",
+        None,
+        "multiple_quantities",
+    )
+
+
+def test_a_joined_english_number_and_prices_still_read():
+    assert interpret("accept offer two hundred and fifty kg").quantity == Decimal(250)
+    assert interpret("counter at 40 taka per kg").tool == "counter"
+
+
+def test_a_spoken_loss_is_marked_so_it_cannot_become_an_addition():
+    assert interpret("সাড়ে তিন মণ পেঁয়াজ পচে গেছে").loss is True
+    assert interpret("৫ কেজি নষ্ট হয়েছে").loss is True
+    assert interpret("ওজন ৫ কেজি বেশি, সমন্বয় করুন").loss is False
+    assert interpret("ওজন সমন্বয়").loss is False
+    assert interpret("অফার গ্রহণ ২০০ কেজি").loss is False

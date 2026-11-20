@@ -134,6 +134,30 @@ const errors: Record<string, [string, string]> = {
     "এই কাজটি কলে করা যায় না। ওয়ার্কস্পেস থেকে করুন।",
     "That action is not available by call. Use the workspace instead.",
   ],
+  voice_pin_required: [
+    "পরিবর্তন নিশ্চিত করতে আগে আপনার ভয়েস পিন ঠিক করুন।",
+    "Set your voice PIN before confirming changes.",
+  ],
+  voice_pin_locked: [
+    "অনেকবার ভুল পিন দেওয়া হয়েছে। ১৫ মিনিট পরে আবার চেষ্টা করুন।",
+    "Too many wrong PINs. Try again in 15 minutes.",
+  ],
+  voice_pin_weak: [
+    "পিনটি সহজে অনুমান করা যায়। একই অঙ্ক, পরপর অঙ্ক বা পুনরাবৃত্তি ছাড়া পিন দিন।",
+    "That PIN is easy to guess. Avoid repeated, sequential or repeating-pattern digits.",
+  ],
+  voice_pin_invalid: [
+    "পিন হবে ৪ থেকে ৬ অঙ্কের।",
+    "The PIN must be 4 to 6 digits.",
+  ],
+  voice_pin_demo: [
+    "ডেমো অ্যাকাউন্ট দেখানো কোড দিয়ে নিশ্চিত করে।",
+    "Demo accounts confirm with the displayed code.",
+  ],
+  voice_loss_mismatch: [
+    "বক্তব্যে ক্ষতির কথা আছে। পরিবর্তনের ধরন “ক্ষতি” বেছে নিন।",
+    "The command describes a loss. Choose the loss movement type.",
+  ],
   voice_tool_mismatch: [
     "বেছে নেওয়া কাজ আর বক্তব্যের কাজ আলাদা। একটি মিলিয়ে নিন।",
     "The selected command and the spoken command differ. Make them match.",
@@ -254,6 +278,22 @@ const errors: Record<string, [string, string]> = {
   username_taken: [
     "এই অ্যাকাউন্ট আইডি ইতিমধ্যে ব্যবহৃত হচ্ছে।",
     "This account ID is already in use.",
+  ],
+  otp_sent: [
+    "নম্বরটি যাচাই করা অ্যাকাউন্টের হলে কয়েক মিনিটের মধ্যে একটি ৬ অঙ্কের কোড আসবে।",
+    "If this number belongs to a verified account, a 6-digit code will arrive within a few minutes.",
+  ],
+  otp_invalid: [
+    "কোডটি সঠিক নয় বা মেয়াদ শেষ। নতুন কোড চেয়ে আবার চেষ্টা করুন।",
+    "The code is wrong or has expired. Request a new code and try again.",
+  ],
+  otp_unavailable: [
+    "এসএমএস কোড দিয়ে প্রবেশ এখন চালু নেই। পাসফ্রেজ দিয়ে প্রবেশ করুন।",
+    "SMS code sign-in is not available. Sign in with your passphrase.",
+  ],
+  nid_invalid: [
+    "এনআইডি নম্বর ১০, ১৩ বা ১৭ অঙ্কের হয়। কার্ডে যেমন আছে তেমন লিখুন।",
+    "An NID number has 10, 13 or 17 digits. Enter it as printed on the card.",
   ],
   nid_taken: [
     "এই এনআইডি নম্বর ইতিমধ্যে নিবন্ধিত।",

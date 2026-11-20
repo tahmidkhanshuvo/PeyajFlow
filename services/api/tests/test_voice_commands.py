@@ -4,15 +4,15 @@ from decimal import Decimal
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy import insert, update
+from sqlalchemy import insert, select, update
 from sqlalchemy.orm import Session
 from test_market_and_voice import batch_payload, observation
 from test_pilot import login, new_lot, new_offer
 from test_pilot import pilot as pilot
-from test_signup import bearer, password_login, registration, staff
+from test_signup import PASSWORD, bearer, password_login, registration, staff
 
-from app import advice
-from app.auth import Role, audit_log
+from app import advice, voice
+from app.auth import Role, audit_log, users
 from app.forecast import ForecastView
 from app.lots import lot_events, today
 from app.trade import now
@@ -34,6 +34,13 @@ def say(client, headers, path, phrase, params=None, tool=None):
     if tool:
         body["tool"] = tool
     return client.post(f"{path}/intent", headers=headers, json=body)
+
+
+def set_pin(client, headers, pin, password=PASSWORD):
+    response = client.put(
+        "/v1/voice/pin", headers=headers, json={"pin": pin, "password": password}
+    )
+    assert response.status_code == 204, response.text
 
 
 def cancel(client, headers, path, staged):
@@ -99,14 +106,23 @@ def test_verified_traders_use_simulator_without_demo_or_showcase(pilot, monkeypa
         assert say(client, actor, path, phrase).json()["entry"]["state"] == "answered"
 
         note = "Fictional production voice support request"
+        # A real account must set its own PIN before staging a change.
+        refused = say(client, actor, path, "সহায়তা", {"note": note})
+        assert (refused.status_code, refused.json()["detail"]) == (
+            409,
+            "voice_pin_required",
+        )
+        set_pin(client, actor, "4826")
         staged = say(client, actor, path, "সহায়তা", {"note": note}).json()
         assert staged["entry"]["state"] == "pending"
+        # The confirmation secret is never sent to the client.
+        assert staged["demo_code"] is None
         tasks = "/v1/voice/tasks"
         assert client.get(tasks, headers=actor).json() == []
         confirmed = client.post(
             f"{path}/confirm",
             headers=actor,
-            json={"action_id": staged["entry"]["id"], "digits": staged["demo_code"]},
+            json={"action_id": staged["entry"]["id"], "digits": "৪৮২৬"},
         )
         assert confirmed.json()["state"] == "committed"
         assert [row["note"] for row in client.get(tasks, headers=actor).json()] == [
@@ -281,6 +297,13 @@ def test_spoken_quantities_are_checked_for_counter_loss_and_buyer_offer(pilot):
         say(client, farmer, path, "৫ কেজি পেঁয়াজ পচে গেছে", loss).json()["detail"]
         == "voice_quantity_mismatch"
     )
+    # A spoken loss can never be staged as stock being added.
+    added = {**loss, "event_type": "WEIGHED_ADJUSTMENT", "quantity": "5"}
+    refused = say(client, farmer, path, "৫ কেজি পেঁয়াজ পচে গেছে", added)
+    assert (refused.status_code, refused.json()["detail"]) == (
+        422,
+        "voice_loss_mismatch",
+    )
     staged = say(
         client, farmer, path, "৫ কেজি পেঁয়াজ পচে গেছে", {**loss, "quantity": "-5"}
     ).json()
@@ -393,3 +416,102 @@ def test_prices_ask_for_a_series_and_advice_states_its_loss_basis(pilot, monkeyp
     assert "অপেক্ষায়" in modeled
     manual = read_advice(unmeasured)
     assert "খরচ ও ওজন ক্ষতি শূন্য ধরে তুলনা; ওজনের যথেষ্ট যাচাই নেই" in manual
+
+
+@requires_database
+def test_real_accounts_confirm_with_a_personal_pin_that_locks(pilot, monkeypatch):
+    client, _, _ = pilot
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("DEMO_MODE", "false")
+    monkeypatch.delenv("SHOWCASE_ACCESS_KEY", raising=False)
+    entry = registration(role="farmer")
+    created = client.post("/v1/auth/signup", json=entry)
+    assert created.status_code == 201, created.text
+    _, engine, _ = pilot
+    with Session(engine) as db, db.begin():
+        db.execute(
+            update(users)
+            .where(users.c.nid == entry["nid"])
+            .values(verification_status="verified", verified=True)
+        )
+    farmer = bearer(password_login(client, entry))
+
+    pin = "/v1/voice/pin"
+    assert client.get(pin, headers=farmer).json() == {
+        "required": True,
+        "set": False,
+        "locked_until": None,
+    }
+    for weak in ("1111", "1234", "9876", "1212", "123123"):
+        response = client.put(
+            pin, headers=farmer, json={"pin": weak, "password": PASSWORD}
+        )
+        assert response.json()["detail"] == "voice_pin_weak", weak
+    for invalid in ("12a4", "1 23"):
+        response = client.put(
+            pin, headers=farmer, json={"pin": invalid, "password": PASSWORD}
+        )
+        assert response.json()["detail"] == "voice_pin_invalid", invalid
+    wrong = client.put(
+        pin, headers=farmer, json={"pin": "4826", "password": "not the passphrase"}
+    )
+    assert (wrong.status_code, wrong.json()["detail"]) == (401, "credentials_invalid")
+    set_pin(client, farmer, "4826")
+    assert client.get(pin, headers=farmer).json()["set"] is True
+    # Demo accounts keep the displayed code and cannot set a PIN.
+    monkeypatch.setenv("APP_ENV", "test")
+    monkeypatch.setenv("DEMO_MODE", "true")
+    demo = login(client, "farmer")
+    assert client.put(
+        pin, headers=demo, json={"pin": "4826", "password": PASSWORD}
+    ).json()["detail"] == ("voice_pin_demo")
+    assert client.get(pin, headers=demo).json()["required"] is False
+
+    path = start(client, farmer)
+    note = {"note": "Fictional PIN check"}
+
+    def stage():
+        staged = say(client, farmer, path, "সহায়তা", note)
+        assert staged.status_code == 200, staged.text
+        assert staged.json()["demo_code"] is None
+        return staged.json()["entry"]["id"]
+
+    def confirm(action, digits):
+        return client.post(
+            f"{path}/confirm",
+            headers=farmer,
+            json={"action_id": action, "digits": digits},
+        )
+
+    first = stage()
+    codes = [confirm(first, "0000").json()["detail"] for _ in range(3)]
+    assert codes == [
+        "voice_wrong_digits",
+        "voice_wrong_digits_last",
+        "voice_confirmation_cancelled",
+    ]
+    second = stage()
+    assert confirm(second, "1111").json()["detail"] == "voice_wrong_digits"
+    # The fifth wrong PIN across actions locks the PIN and cancels the action.
+    locked = confirm(second, "2222")
+    assert (locked.status_code, locked.json()["detail"]) == (409, "voice_pin_locked")
+    assert client.get(pin, headers=farmer).json()["locked_until"] is not None
+    refused = say(client, farmer, path, "সহায়তা", note)
+    assert refused.json()["detail"] == "voice_pin_locked"
+
+    with Session(engine) as db, db.begin():
+        db.execute(update(voice.voice_pins).values(locked_until=now()))
+    third = stage()
+    committed = confirm(third, "4826")
+    assert committed.json()["state"] == "committed", committed.text
+    # A retried confirmation returns the same result and changes nothing more.
+    assert confirm(third, "4826").json()["state"] == "committed"
+    tasks = client.get("/v1/voice/tasks", headers=farmer).json()
+    assert [task["note"] for task in tasks] == ["Fictional PIN check"]
+    with Session(engine) as db:
+        events = db.scalars(
+            select(audit_log.c.action).where(
+                audit_log.c.action.in_(("voice.pin_set", "voice.pin_locked"))
+            )
+        ).all()
+    assert {"voice.pin_set", "voice.pin_locked"} <= set(events)

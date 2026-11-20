@@ -118,6 +118,33 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - The new rows were written by the same author as the rules.
   - Spoken numbers need review by native speakers and testing on recorded speech.
 
+### Voice PIN, SMS sign-in, NID format, loss sign and quantity joiners (November 20, 2026)
+
+**What changed:**
+
+- **Voice PIN.** Real accounts confirm call-simulator changes with a personal 4–6 digit PIN. The PIN is scrypt-hashed, never displayed, set after re-entering the passphrase, refused if trivial, and locked for 15 minutes after five wrong entries. Demo accounts keep the displayed code. This is migration `0019_voicepin`.
+- **SMS sign-in codes.** These are 6 digits, last 5 minutes, allow 5 attempts and work once. They go only to operator-verified phone numbers, are rate-limited per device and per number, and give the same reply for unknown numbers. The code is sent after the response, so timing does not reveal accounts. They switch on only with `SMS_PROVIDER=twilio`. This is migration `0020_otp`.
+- **NID format.** Signup accepts only Bangladesh NID formats (10, 13 or 17 digits). A wrong format returns `nid_invalid`.
+- **Spoken losses.** They preselect the loss type. A positive loss amount is stored as negative, and the API refuses a loss phrase sent as an addition (`voice_loss_mismatch`).
+- **Two quantities.** Two numbers for one quantity, such as "200 and 300 kg" or "২০০ বা ৩০০ কেজি", are refused as `multiple_quantities`.
+- **Photo harness.** `apps/web/scripts/photo-eval.mjs` measures the browser photo model on human-labelled photos.
+
+**Checks, run on a fresh PostgreSQL 16:**
+
+- **Migrations:** `alembic check` is clean. Upgrade, downgrade to `0018_signup` and re-upgrade passed for both new migrations, with a single head.
+- **API:** 155 tests passed. They include PIN lockout and replay, the OTP flow with a mocked sender (unknown number, single use, replacement, attempt limit, failed send, rate limit) and NID formats.
+- **Web:** format, lint, typecheck and 9 unit tests passed.
+- **Evaluations:** both passed at 1.000 with zero wrong change commands, after adding 6 joiner rows (saved as `intent-quantity-joiners` and `intent-challenge-quantity-joiners`).
+
+**Not possible without real-world inputs:**
+
+- live Twilio calls and SMS, which need an account, numbers and consent checks;
+- photo accuracy, which needs labelled field photos;
+- forecasts on a real market series;
+- storage-loss validation on field weights;
+- dialect speech testing with native speakers;
+- NID ownership checks, which need an Election Commission service.
+
 ### Self-hosted photo-model runtime (November 20, 2026)
 
 - **What changed.** The inspection worker no longer imports transformers.js from jsDelivr. `apps/web/scripts/vendor-photo-model.mjs` runs before `pnpm dev` and `pnpm build`. It fetches the pinned 3.8.1 npm tarball, verifies npm's sha512 integrity and a SHA-384 per file, and writes the library, the ONNX runtime and the license to the git-ignored `public/vendor/`. The worker sets `wasmPaths` to that folder. `/condition-model.js` now has its own policy: `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src` limited to the site and Hugging Face. Vendored files are cached as immutable. Model weights still come from Hugging Face at the pinned revision.
@@ -127,8 +154,18 @@ Field validation remains open for market forecasts, photo suggestions, storage m
   - The real worker in Edge classified `onion-storage.webp` with zero CDN requests and no policy violations, then abstained with the pinned model and rule.
 - **Open.**
   - Builds now need access to `registry.npmjs.org`. Without it, the build stops instead of falling back to the CDN.
-  - Playwright end-to-end tests and the hosted deployment were not run for this change.
-  - The full browser inspection flow (upload, then saved prediction) still needs an end-to-end run.
+  - The hosted deployment has not been updated or checked; these commits are not pushed.
+
+### End-to-end verification of the November 20 changes
+
+- **Setup.** Commit `c4f8065`, production build, Edge, fresh PostgreSQL 16, seeded with `app.seed`. The setup matched the CI web job on alternate ports (web 3100, API 8100).
+- **Playwright: 5 of 5 workflows passed.**
+  - Market review, outlook, advice, simulated acceptance and freight booking.
+  - The shared farmer, buyer and agent pilot workflow, including the inspection upload and saved photo suggestion.
+  - Bangla signup.
+  - Agent signup review. It ran with a disposable agent provisioned through `app.credentials.provision`, so it was not skipped.
+  - Alerts, operations and offline states across locales and viewport sizes.
+- **Release smoke:** passed with `SMOKE_DEMO_ID=farmer`.
 
 ### Clause-scoped negation (November 20, 2026)
 

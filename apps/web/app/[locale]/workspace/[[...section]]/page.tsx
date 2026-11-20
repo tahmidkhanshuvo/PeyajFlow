@@ -46,7 +46,9 @@ import { errorText, local, roles } from "../../../../lib/workspace-copy";
 import type { Filters } from "../../../../lib/workspace-types";
 import {
   mutate,
+  otpSignIn,
   passwordSignIn,
+  requestOtp,
   signIn,
   signOut,
   signupAction,
@@ -252,11 +254,18 @@ export default async function WorkspacePage({
   let actor: Profile | undefined;
   let error: string | undefined;
   let identities: DemoIdentity[] = [];
+  let smsSignIn = false;
   try {
     actor = await api<Profile>("/v1/me");
   } catch (exception) {
     if (!(exception instanceof ApiError)) throw exception;
     if (exception.status !== 401) error = exception.code;
+  }
+  if (!actor && !error) {
+    // SMS codes are offered only when the API has a configured SMS provider.
+    smsSignIn = await api<{ available: boolean }>("/v1/auth/otp")
+      .then((result) => result.available)
+      .catch(() => false);
   }
   if (!actor && !error && !reviewingSignups) {
     try {
@@ -462,6 +471,67 @@ export default async function WorkspacePage({
                   </Field>
                 </WorkspaceForm>
               </section>
+              {smsSignIn && (
+                <section className="work-panel">
+                  <h2>
+                    {local(
+                      locale,
+                      "এসএমএস কোডে প্রবেশ",
+                      "Sign in with SMS code",
+                    )}
+                  </h2>
+                  <p>
+                    {local(
+                      locale,
+                      "যাচাই করা ফোন নম্বরে কোড পাঠানো হয়। কোড কাউকে জানাবেন না।",
+                      "A code is sent to your verified phone number. Never share it.",
+                    )}
+                  </p>
+                  <WorkspaceForm
+                    locale={locale}
+                    action={requestOtp.bind(null, locale)}
+                    label={local(locale, "কোড পাঠান", "Send code")}
+                  >
+                    <Field label={local(locale, "ফোন নম্বর", "Phone number")}>
+                      <input
+                        name="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        inputMode="tel"
+                        placeholder="+8801XXXXXXXXX"
+                        maxLength={16}
+                        required
+                      />
+                    </Field>
+                  </WorkspaceForm>
+                  <WorkspaceForm
+                    locale={locale}
+                    action={otpSignIn.bind(null, locale)}
+                    label={local(locale, "কোড দিয়ে প্রবেশ", "Sign in with code")}
+                  >
+                    <Field label={local(locale, "ফোন নম্বর", "Phone number")}>
+                      <input
+                        name="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        inputMode="tel"
+                        maxLength={16}
+                        required
+                      />
+                    </Field>
+                    <Field label={local(locale, "৬ অঙ্কের কোড", "6-digit code")}>
+                      <input
+                        name="code"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        minLength={6}
+                        required
+                      />
+                    </Field>
+                  </WorkspaceForm>
+                </section>
+              )}
               <section className="work-panel">
                 <h2>
                   {local(locale, "নতুন অ্যাকাউন্ট খুলুন", "Create new account")}
@@ -555,14 +625,14 @@ export default async function WorkspacePage({
                     <input
                       name="nid"
                       inputMode="numeric"
-                      pattern="[0-9০-৯]{10,20}"
-                      maxLength={20}
+                      pattern="[0-9০-৯]{10}|[0-9০-৯]{13}|[0-9০-৯]{17}"
+                      maxLength={17}
                       required
                       minLength={10}
                       title={local(
                         locale,
-                        "জাতীয় পরিচয়পত্র নম্বর দিন।",
-                        "Enter your National ID number.",
+                        "জাতীয় পরিচয়পত্র নম্বর দিন: ১০, ১৩ বা ১৭ অঙ্ক।",
+                        "Enter your National ID number: 10, 13 or 17 digits.",
                       )}
                     />
                   </Field>

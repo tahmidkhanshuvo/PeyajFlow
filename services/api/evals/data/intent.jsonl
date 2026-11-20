@@ -269,3 +269,9 @@
 {"id": "clause-010", "split": "test", "lang": "en", "category": "clause_negation", "text": "no thanks reject it", "status": "negated", "tool": null, "quantity": null, "unit": null}
 {"id": "clause-011", "split": "dev", "lang": "bn", "category": "clause_negation", "text": "ট্রাক লাগবে নাকি লাগবে না জানি না", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
 {"id": "clause-012", "split": "test", "lang": "en", "category": "clause_negation", "text": "no, accept offer kina", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "joined-001", "split": "dev", "lang": "en", "category": "quantity_joiners", "text": "accept offer 200 and 300 kg", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "joined-002", "split": "test", "lang": "bn", "category": "quantity_joiners", "text": "অফার গ্রহণ ২০০ ৩০০ কেজি", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "joined-003", "split": "dev", "lang": "bn", "category": "quantity_joiners", "text": "২০০ বা ৩০০ কেজির অফার নেব", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "joined-004", "split": "test", "lang": "bn", "category": "quantity_joiners", "text": "দুইশো বা তিনশো কেজির অফার নেব", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "joined-005", "split": "dev", "lang": "banglish", "category": "quantity_joiners", "text": "200 or 300 kg er offer nibo", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "joined-006", "split": "test", "lang": "en", "category": "quantity_joiners", "text": "accept offer two hundred and fifty kg", "status": "resolved", "tool": "accept", "quantity": "250", "unit": "kg"}
