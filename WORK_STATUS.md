@@ -2,6 +2,11 @@
 
 Last updated November 21, 2026 (Asia/Dhaka).
 
+## Restore Meem's final workspace UI (November 21, 2026)
+
+- Compared the current main with the latest fetched Meem_v1.0 commit e3ee52b. The integration had reintroduced assistant and simulator sidebar entries and appended the older voice panels to the redesigned dialer.
+- Restored Meem's dialer-only landing screen and dashboard navigation. The existing chatbot remains the entry point to the dialer. Standalone API workflows keep their authorization checks.
+
 ## Showcase copy and hosted API check (November 21, 2026)
 
 - Updated the starter pitch and technical reference around the implemented phone simulator, decision-support controls and evaluation methods. The roadmap expresses measurable product outcomes.

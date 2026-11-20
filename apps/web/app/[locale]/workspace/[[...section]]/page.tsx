@@ -98,11 +98,6 @@ function destinations(locale: Locale, actor: Profile) {
       ["orders", local(locale, "অর্ডার", "Orders")],
     );
   pages.push(["prices", local(locale, "বাজারদর", "Market prices")]);
-  if (canUseVoice(actor))
-    pages.push(
-      ["voice", local(locale, "বাংলা সহকারী", "Bangla assistant")],
-      ["simulator", local(locale, "ফোন সিমুলেটর", "Phone simulator")],
-    );
   if (actor.role === "agent" && actor.verified && !actor.is_demo)
     pages.push([
       "verifications",
@@ -153,7 +148,7 @@ async function panel(
   if (!page) return <Overview {...context} filters={filters} />;
   if (
     page !== "alerts" &&
-    !(page === "voice" && canUseVoice(actor)) &&
+    !((page === "voice" || page === "simulator") && canUseVoice(actor)) &&
     !destinations(locale, actor).some(([path]) => path === page)
   ) {
     if (page === "verifications") {
