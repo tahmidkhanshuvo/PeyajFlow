@@ -547,7 +547,7 @@ export function VoiceDesk({
                   </button>
                 </form>
               ) : (
-                <Link className="voice-call-restart-btn" href={`${base}/voice`}>
+                <Link className="voice-call-restart-btn" href={base.includes("call-simulator") ? base : `/${locale}/call-simulator`}>
                   <span className="voice-restart-icon" aria-hidden="true">
                     <WorkspaceIcon name="voice" size={18} />
                   </span>

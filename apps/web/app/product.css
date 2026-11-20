@@ -10028,6 +10028,62 @@ html[data-theme="dark"] .chatbot-input-bar {
   transform: scale(1.08);
 }
 
+.chatbot-mic-btn.is-listening {
+  background: #E11D48 !important;
+  color: #FFFFFF !important;
+  border-color: #E11D48 !important;
+  animation: chatbotMicPulse 1.3s ease-in-out infinite;
+}
+
+@keyframes chatbotMicPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.65);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(225, 29, 72, 0);
+    transform: scale(1.06);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+    transform: scale(1);
+  }
+}
+
+.chatbot-speech-hint-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  margin: 0 12px 6px;
+  border-radius: var(--r-pill, 9999px);
+  background: rgba(225, 29, 72, 0.08);
+  border: 1px solid rgba(225, 29, 72, 0.2);
+  font-size: 0.76rem;
+  font-weight: 650;
+  color: #E11D48;
+}
+
+.dark .chatbot-speech-hint-bar {
+  background: rgba(225, 29, 72, 0.16);
+  border-color: rgba(225, 29, 72, 0.35);
+  color: #FDA4AF;
+}
+
+.chatbot-speech-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E11D48;
+  animation: chatbotLiveDot 1s infinite alternate;
+}
+
+@keyframes chatbotLiveDot {
+  0% { opacity: 0.4; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.15); }
+}
+
+
 .dark .chatbot-mic-btn,
 html.dark .chatbot-mic-btn,
 html[data-theme="dark"] .chatbot-mic-btn {
@@ -15475,3 +15531,132 @@ html[data-theme="dark"] .demand-card:hover {
   color: #a38e97;
   border-color: rgba(222, 106, 143, 0.16);
 }
+<<<<<<< Updated upstream
+=======
+
+/* ─────────────────────────────────────────────────────────────
+   STANDALONE CALL SIMULATOR PAGE (DECOUPLED FROM DASHBOARD)
+   ───────────────────────────────────────────────────────────── */
+.call-simulator-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--bg);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+.call-simulator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(168, 42, 85, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.dark .call-simulator-header {
+  background: rgba(20, 9, 17, 0.85);
+  border-bottom-color: rgba(222, 106, 143, 0.18);
+}
+
+.call-simulator-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.call-simulator-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill, 9999px);
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.dark .call-simulator-tag {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34D399;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.call-simulator-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  animation: voiceLiveBlink 1.8s ease-in-out infinite;
+}
+
+.call-simulator-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.call-simulator-workspace-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--r-pill, 9999px);
+  font-size: 0.84rem;
+  font-weight: 650;
+  background: rgba(168, 42, 85, 0.08);
+  color: var(--onion-600);
+  border: 1px solid rgba(168, 42, 85, 0.2);
+  text-decoration: none;
+  transition: all var(--dur-fast);
+}
+
+.call-simulator-workspace-link:hover {
+  background: var(--onion-600);
+  color: #FFFFFF !important;
+  border-color: var(--onion-600);
+  transform: translateY(-1px);
+}
+
+.dark .call-simulator-workspace-link {
+  background: rgba(222, 106, 143, 0.14);
+  color: #F8EAEE;
+  border-color: rgba(222, 106, 143, 0.25);
+}
+
+.dark .call-simulator-workspace-link:hover {
+  background: var(--onion-500);
+  color: #FFFFFF !important;
+}
+
+.call-simulator-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px 48px;
+}
+
+.call-simulator-dialer-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.call-simulator-desk-stage {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+
+>>>>>>> Stashed changes

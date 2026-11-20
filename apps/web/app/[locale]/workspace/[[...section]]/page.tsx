@@ -17,7 +17,6 @@ import {
   PricePage,
 } from "../../../../components/workspace/prices";
 import { VerificationsPage } from "../../../../components/workspace/verifications";
-import { VoicePage } from "../../../../components/workspace/voice";
 import { ProfilePage } from "../../../../components/workspace/profile";
 import { ThemeToggle } from "../../../../components/theme-toggle";
 import {
@@ -51,7 +50,6 @@ import { isLocale, type Locale } from "../../../../lib/copy";
 import {
   api,
   ApiError,
-  canUseVoice,
   type DemoIdentity,
   type Profile,
 } from "../../../../lib/workspace-api";
@@ -145,10 +143,16 @@ async function panel(
   if (page === "operations") {
     redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
   }
+  if (page === "voice") {
+    redirect(`/${locale}/call-simulator${id ? `/${id}` : ""}`);
+  }
   if (!page) return <Overview {...context} filters={filters} />;
   if (
     page !== "alerts" &&
+<<<<<<< Updated upstream
     !((page === "voice" || page === "simulator") && canUseVoice(actor)) &&
+=======
+>>>>>>> Stashed changes
     !destinations(locale, actor).some(([path]) => path === page)
   ) {
     if (page === "verifications") {
@@ -191,9 +195,12 @@ async function panel(
     if (page === "profile") return ProfilePage(context);
   }
   if (page === "imports" && !child) return ImportsPage({ ...context, id });
+<<<<<<< Updated upstream
   if (page === "voice" && !child) return VoicePage({ ...context, id });
   if (page === "simulator" && !id && canUseVoice(context.actor))
     return SimulatorPage(context);
+=======
+>>>>>>> Stashed changes
   if (id && page === "stock") {
     if (!child) return LotPage({ ...context, id });
     if (child === "inspections") return InspectionsPage({ ...context, id });
@@ -218,6 +225,10 @@ export default async function WorkspacePage({
   if (section[0] === "operations") {
     const filters = await searchParams;
     redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
+  }
+  if (section[0] === "voice") {
+    const id = section[1];
+    redirect(`/${locale}/call-simulator${id ? `/${id}` : ""}`);
   }
   const reviewingSignups =
     section.length === 1 && section[0] === "verifications";
