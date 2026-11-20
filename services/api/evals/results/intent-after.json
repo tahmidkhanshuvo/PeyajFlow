@@ -1,0 +1,258 @@
+{
+  "label": "after",
+  "resolver": "rules",
+  "commit": "94554e9",
+  "dataset": "evals/data/intent.jsonl",
+  "run_at": "2026-11-18T09:38:26+00:00",
+  "rows": 239,
+  "intent": {
+    "total": 239,
+    "accuracy": 1.0,
+    "labels": [
+      "abstain",
+      "accept",
+      "advice",
+      "counter",
+      "inspection",
+      "movement",
+      "offers",
+      "orders",
+      "prices",
+      "register",
+      "reject",
+      "send_offer",
+      "stock",
+      "support",
+      "transport"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 48
+      },
+      "accept": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 39
+      },
+      "advice": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "counter": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "offers": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "orders": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "prices": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 18
+      },
+      "register": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "reject": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "send_offer": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 16
+      },
+      "support": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "transport": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      }
+    },
+    "macro": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 48
+      },
+      "accept": {
+        "accept": 39
+      },
+      "advice": {
+        "advice": 10
+      },
+      "counter": {
+        "counter": 10
+      },
+      "inspection": {
+        "inspection": 10
+      },
+      "movement": {
+        "movement": 12
+      },
+      "offers": {
+        "offers": 11
+      },
+      "orders": {
+        "orders": 10
+      },
+      "prices": {
+        "prices": 18
+      },
+      "register": {
+        "register": 12
+      },
+      "reject": {
+        "reject": 10
+      },
+      "send_offer": {
+        "send_offer": 11
+      },
+      "stock": {
+        "stock": 16
+      },
+      "support": {
+        "support": 10
+      },
+      "transport": {
+        "transport": 12
+      }
+    }
+  },
+  "status_accuracy": 1.0,
+  "quantity": {
+    "rows": 33,
+    "exact_accuracy": 1.0,
+    "unit_accuracy": 1.0
+  },
+  "abstention": {
+    "rows": 48,
+    "false_action_rate": 0.0,
+    "false_actions": []
+  },
+  "wrong_write_actions": [],
+  "accuracy_by": {
+    "split": {
+      "dev": {
+        "rows": 122,
+        "accuracy": 1.0
+      },
+      "test": {
+        "rows": 117,
+        "accuracy": 1.0
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 46,
+        "accuracy": 1.0
+      },
+      "bn": {
+        "rows": 108,
+        "accuracy": 1.0
+      },
+      "en": {
+        "rows": 71,
+        "accuracy": 1.0
+      },
+      "mixed": {
+        "rows": 14,
+        "accuracy": 1.0
+      }
+    },
+    "category": {
+      "ambiguous": {
+        "rows": 7,
+        "accuracy": 1.0
+      },
+      "banglish": {
+        "rows": 42,
+        "accuracy": 1.0
+      },
+      "canonical": {
+        "rows": 34,
+        "accuracy": 1.0
+      },
+      "english": {
+        "rows": 37,
+        "accuracy": 1.0
+      },
+      "invalid": {
+        "rows": 22,
+        "accuracy": 1.0
+      },
+      "mixed": {
+        "rows": 14,
+        "accuracy": 1.0
+      },
+      "negation": {
+        "rows": 19,
+        "accuracy": 1.0
+      },
+      "negation_read": {
+        "rows": 2,
+        "accuracy": 1.0
+      },
+      "paraphrase": {
+        "rows": 47,
+        "accuracy": 1.0
+      },
+      "spelling": {
+        "rows": 15,
+        "accuracy": 1.0
+      }
+    }
+  },
+  "failures": []
+}

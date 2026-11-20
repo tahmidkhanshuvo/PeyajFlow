@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { pilotMutate } from "../../app/[locale]/workspace/pilot-actions";
 import type { Locale } from "../../lib/copy";
-import type { PriceSeries, VoiceCall, VoiceTask } from "../../lib/pilot-types";
+import type { PriceSeries, VoiceCall } from "../../lib/pilot-types";
 import { api, type Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
 import type {
@@ -11,9 +10,9 @@ import type {
   PageResult,
   Supply,
 } from "../../lib/workspace-types";
-import { timeLabel } from "../../lib/workspace-values";
-import { WorkspaceForm } from "./form";
+import { WorkspaceIcon } from "./icon";
 import { VoiceDesk } from "./voice-desk";
+import { PhoneDialer } from "./phone-dialer";
 
 export async function VoicePage({
   locale,
@@ -27,6 +26,7 @@ export async function VoicePage({
   id?: string;
 }) {
   const t = (bn: string, en: string) => local(locale, bn, en);
+
   if (id) {
     const [call, lots, offers, orders, supply, series] = await Promise.all([
       api<VoiceCall>(`/v1/voice/calls/${id}`),
@@ -39,11 +39,13 @@ export async function VoicePage({
       api<PriceSeries[]>("/v1/market/series"),
     ]);
     return (
-      <>
-        <Link className="work-link" href={`${base}/voice`}>
-          {t("সিমুলেটরে ফিরুন", "Back to simulator")}
+      <div className="voice-active-page">
+        <Link className="voice-back-btn" href={`${base}/voice`}>
+          <span className="voice-back-arrow" aria-hidden="true">
+            <WorkspaceIcon name="arrow" />
+          </span>
+          <span>{t("সহকারী ডেস্কে ফিরুন", "Back to Voice Assistant")}</span>
         </Link>
-        <h1>{t("বাংলা কল সিমুলেটর", "Bangla call simulator")}</h1>
         <VoiceDesk
           locale={locale}
           base={base}
@@ -55,74 +57,13 @@ export async function VoicePage({
           supply={supply}
           series={series}
         />
-      </>
+      </div>
     );
   }
-  const tasks = await api<VoiceTask[]>("/v1/voice/tasks");
+
   return (
-    <>
-      <h1>{t("বাংলা কল সিমুলেটর", "Bangla call simulator")}</h1>
-      <section className="work-panel">
-        <span className="work-tag">{t("সিমুলেশন", "Simulation")}</span>
-        <p>
-          {t(
-            "বাংলায় বলুন বা লিখুন, শর্ত যাচাই করুন এবং কিপ্যাডে নিশ্চিত করুন।",
-            "Speak or type your request in Bangla, review the read-back and confirm with the keypad.",
-          )}
-        </p>
-        <WorkspaceForm
-          locale={locale}
-          action={pilotMutate.bind(null, locale, "start-call", "", "")}
-          label={t("সিমুলেটেড কল শুরু করুন", "Start simulated call")}
-        />
-      </section>
-      <section className="work-panel">
-        <h2>
-          {t("পরিদর্শন ও সহায়তার অনুরোধ", "Inspection and support requests")}
-        </h2>
-        {!tasks.length && (
-          <p>{t("এখনও কোনো অনুরোধ নেই।", "No requests yet.")}</p>
-        )}
-        <ul className="work-history">
-          {tasks.map((task) => (
-            <li key={task.id}>
-              <strong>
-                {task.kind === "inspection"
-                  ? t("পরিদর্শন", "Inspection")
-                  : t("সহায়তা", "Support")}
-              </strong>
-              <span>
-                {task.note} ·{" "}
-                {task.status === "resolved"
-                  ? t("সম্পন্ন", "Resolved")
-                  : t("খোলা", "Open")}{" "}
-                · {timeLabel(locale, task.created_at)}
-              </span>
-              {task.lot_id && (
-                <Link
-                  className="work-link"
-                  href={`${base}/stock/${task.lot_id}/inspections`}
-                >
-                  {t("মজুতের পরিদর্শন", "Lot inspections")}
-                </Link>
-              )}
-              {task.can_resolve && (
-                <WorkspaceForm
-                  locale={locale}
-                  action={pilotMutate.bind(
-                    null,
-                    locale,
-                    "resolve-task",
-                    task.id,
-                    "",
-                  )}
-                  label={t("সম্পন্ন হিসেবে চিহ্নিত করুন", "Mark resolved")}
-                />
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-    </>
+    <div className="voice-page-wrap voice-clean-dialer-page">
+      <PhoneDialer locale={locale} />
+    </div>
   );
 }

@@ -1,0 +1,131 @@
+/* Glass utility classes */
+
+/* Ambient background blobs — static, no animation */
+.canvas-blobs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.canvas-blobs::before,
+.canvas-blobs::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+.canvas-blobs::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(168,42,85,.18) 0%, transparent 70%);
+  top: -100px;
+  right: -100px;
+}
+.canvas-blobs::after {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(201,143,63,.14) 0%, transparent 70%);
+  bottom: 100px;
+  left: -80px;
+}
+/* grain overlay */
+.canvas-blobs + * { position: relative; z-index: 1; }
+
+/* Glass level 1 — cards/panels */
+.glass-1 {
+  background: var(--glass-1-bg);
+  backdrop-filter: blur(var(--glass-1-blur)) saturate(var(--glass-1-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-1-blur)) saturate(var(--glass-1-saturate));
+  border: 1px solid var(--glass-1-border);
+  box-shadow: var(--shadow-glass);
+  border-radius: var(--r-lg);
+  position: relative;
+  overflow: hidden;
+}
+.glass-1::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Glass level 2 — sidebar, topbar, pill nav */
+.glass-2 {
+  background: var(--glass-2-bg);
+  backdrop-filter: blur(var(--glass-2-blur)) saturate(var(--glass-2-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-2-blur)) saturate(var(--glass-2-saturate));
+  border: 1px solid var(--glass-2-border);
+  box-shadow: var(--shadow-glass);
+  position: relative;
+}
+.glass-2::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 50%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Glass level 3 — sheets, modals */
+.glass-3 {
+  background: var(--glass-3-bg);
+  backdrop-filter: blur(var(--glass-3-blur)) saturate(var(--glass-3-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-3-blur)) saturate(var(--glass-3-saturate));
+  border: 1px solid var(--glass-3-border);
+  box-shadow: var(--shadow-glass);
+  border-radius: var(--r-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fallbacks */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-1 { background: rgba(251,246,243,.94); }
+  .glass-2 { background: rgba(251,246,243,.97); }
+  .glass-3 { background: rgba(251,246,243,.99); }
+  .dark .glass-1 { background: rgba(18,5,9,.94); }
+  .dark .glass-2 { background: rgba(18,5,9,.97); }
+  .dark .glass-3 { background: rgba(18,5,9,.99); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass-1 { background: var(--surface); backdrop-filter: none; }
+  .glass-2 { background: var(--surface); backdrop-filter: none; }
+  .glass-3 { background: var(--surface); backdrop-filter: none; }
+}
+/* Mobile blur reduction */
+@media (max-width: 639px) {
+  .glass-1 { backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4); }
+  .glass-2 { backdrop-filter: blur(16px) saturate(1.6); -webkit-backdrop-filter: blur(16px) saturate(1.6); }
+  .glass-3 { backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6); }
+}
+
+/* Concentric onion-ring motif (SVG-based, used as bg image) */
+.onion-rings-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Ccircle cx='200' cy='200' r='180' fill='none' stroke='%23A82A55' stroke-width='1' opacity='0.08'/%3E%3Ccircle cx='200' cy='200' r='140' fill='none' stroke='%23A82A55' stroke-width='1' opacity='0.08'/%3E%3Ccircle cx='200' cy='200' r='100' fill='none' stroke='%23A82A55' stroke-width='1' opacity='0.08'/%3E%3Ccircle cx='200' cy='200' r='60' fill='none' stroke='%23A82A55' stroke-width='1' opacity='0.08'/%3E%3Ccircle cx='200' cy='200' r='25' fill='none' stroke='%23A82A55' stroke-width='1' opacity='0.08'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Sliding nav pill for active state */
+.nav-pill {
+  position: absolute;
+  background: var(--glass-1-bg);
+  backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid var(--glass-1-border);
+  border-radius: var(--r-sm);
+  transition: top var(--dur-base) var(--ease-glass), 
+              height var(--dur-base) var(--ease-glass);
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Utility: press feedback */
+.press:active { transform: scale(0.98); }
+
+/* Motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

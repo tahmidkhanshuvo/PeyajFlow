@@ -78,7 +78,6 @@ export async function AlertsPage({
   const t = (bn: string, en: string) => local(locale, bn, en);
   return (
     <>
-      <h1>{t("বিজ্ঞপ্তি", "Alerts")}</h1>
       <section className="work-panel">
         <div className="work-row">
           <h2>{t("প্রাপ্ত বিজ্ঞপ্তি", "Inbox")}</h2>

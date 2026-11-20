@@ -138,6 +138,16 @@ export type VoiceCall = {
   entries: VoiceEntry[];
   mode: "simulation";
 };
+export type VoiceResolution = {
+  phrase: string;
+  status: "resolved" | "ambiguous" | "negated" | "unknown";
+  tool: string | null;
+  quantity: string | null;
+  unit: "kg" | "maund" | null;
+  match: "exact" | "pattern" | null;
+  candidates: string[];
+  error: string | null;
+};
 export type VoiceTask = {
   id: string;
   kind: string;

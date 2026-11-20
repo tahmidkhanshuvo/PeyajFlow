@@ -1,0 +1,58 @@
+{"id": "challenge-001", "split": "challenge", "lang": "bn", "category": "challenge", "text": "ভাই আজকে পাবনায় পেঁয়াজ কত টাকা কেজি যাচ্ছে", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "challenge-002", "split": "challenge", "lang": "bn", "category": "challenge", "text": "ঢাকার পাইকারি বাজারে এখন কেমন দাম", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "challenge-003", "split": "challenge", "lang": "banglish", "category": "challenge", "text": "vai ajke peyaj koto taka kg", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "challenge-004", "split": "challenge", "lang": "en", "category": "challenge", "text": "how much is onion selling for", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "challenge-005", "split": "challenge", "lang": "en", "category": "challenge", "text": "what's the going rate in Dhaka", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "challenge-006", "split": "challenge", "lang": "bn", "category": "challenge", "text": "আমার ঘরে কত মণ পেঁয়াজ রাখা আছে", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "challenge-007", "split": "challenge", "lang": "banglish", "category": "challenge", "text": "amar ghore koto mon peyaj ache", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "challenge-008", "split": "challenge", "lang": "en", "category": "challenge", "text": "what do I have left in storage", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "challenge-009", "split": "challenge", "lang": "bn", "category": "challenge", "text": "এখন বেচে দেওয়া ভালো নাকি আরও কিছুদিন রেখে দেব", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "challenge-010", "split": "challenge", "lang": "en", "category": "challenge", "text": "is it better to sell now or wait two weeks", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "challenge-011", "split": "challenge", "lang": "banglish", "category": "challenge", "text": "ekhon bikri korle labh hobe naki pore", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "challenge-012", "split": "challenge", "lang": "bn", "category": "challenge", "text": "কেউ কি আমার পেঁয়াজ কিনতে চেয়েছে", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "challenge-013", "split": "challenge", "lang": "en", "category": "challenge", "text": "did any buyer send me an offer", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "challenge-014", "split": "challenge", "lang": "bn", "category": "challenge", "text": "নাদিয়ার অফারটা দেখান তো", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "challenge-015", "split": "challenge", "lang": "bn", "category": "challenge", "text": "আমার মাল কবে পৌঁছাবে", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "challenge-016", "split": "challenge", "lang": "en", "category": "challenge", "text": "where is my delivery", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "challenge-017", "split": "challenge", "lang": "bn", "category": "challenge", "text": "ঠিক আছে, অফারটা নিয়ে নিলাম", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "challenge-018", "split": "challenge", "lang": "bn", "category": "challenge", "text": "হ্যাঁ ভাই, দুইশো কেজির অফারে আমি রাজি", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "challenge-019", "split": "challenge", "lang": "banglish", "category": "challenge", "text": "thik ache offer ta niye nilam", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "challenge-020", "split": "challenge", "lang": "en", "category": "challenge", "text": "ok go ahead and accept that offer", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "challenge-021", "split": "challenge", "lang": "bn", "category": "challenge", "text": "অফার গ্রহণ ২০০ কেজি করুন", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "challenge-022", "split": "challenge", "lang": "bn", "category": "challenge", "text": "৪ মণের অফারটা নিয়ে নিন", "status": "resolved", "tool": "accept", "quantity": "4", "unit": "maund"}
+{"id": "challenge-023", "split": "challenge", "lang": "en", "category": "challenge", "text": "accept 150kg", "status": "resolved", "tool": "accept", "quantity": "150", "unit": "kg"}
+{"id": "challenge-024", "split": "challenge", "lang": "bn", "category": "challenge", "text": "এই দামে দিব না, অফারটা বাদ দিন", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "challenge-025", "split": "challenge", "lang": "en", "category": "challenge", "text": "no thanks, reject it", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "challenge-026", "split": "challenge", "lang": "bn", "category": "challenge", "text": "দাম আরেকটু বাড়িয়ে পাল্টা অফার দিন", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "challenge-027", "split": "challenge", "lang": "en", "category": "challenge", "text": "counter at 40 taka per kg", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "challenge-028", "split": "challenge", "lang": "bn", "category": "challenge", "text": "গতকাল ওজন করে দেখি ২০ কেজি কম", "status": "resolved", "tool": "movement", "quantity": "20", "unit": "kg"}
+{"id": "challenge-029", "split": "challenge", "lang": "bn", "category": "challenge", "text": "বস্তা থেকে ৮ কেজি পেঁয়াজ নষ্ট হয়ে গেছে", "status": "resolved", "tool": "movement", "quantity": "8", "unit": "kg"}
+{"id": "challenge-030", "split": "challenge", "lang": "en", "category": "challenge", "text": "about 3 kg went bad this week", "status": "resolved", "tool": "movement", "quantity": "3", "unit": "kg"}
+{"id": "challenge-031", "split": "challenge", "lang": "bn", "category": "challenge", "text": "নতুন ফসল তুলেছি, মজুত হিসেবে যোগ করতে চাই", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "challenge-032", "split": "challenge", "lang": "en", "category": "challenge", "text": "I harvested a new batch, add it as a lot", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "challenge-033", "split": "challenge", "lang": "bn", "category": "challenge", "text": "নাসিরের লটের জন্য ২৫০ কেজির অফার দেব", "status": "resolved", "tool": "send_offer", "quantity": "250", "unit": "kg"}
+{"id": "challenge-034", "split": "challenge", "lang": "en", "category": "challenge", "text": "I want to buy 500 kg from that lot", "status": "resolved", "tool": "send_offer", "quantity": "500", "unit": "kg"}
+{"id": "challenge-035", "split": "challenge", "lang": "bn", "category": "challenge", "text": "ঢাকায় পাঠানোর জন্য একটা পিকআপ ঠিক করে দিন", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "challenge-036", "split": "challenge", "lang": "en", "category": "challenge", "text": "arrange a lorry for pickup tomorrow", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "challenge-037", "split": "challenge", "lang": "bn", "category": "challenge", "text": "আমার গুদামের পেঁয়াজ একবার কেউ এসে চেক করুক", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "challenge-038", "split": "challenge", "lang": "en", "category": "challenge", "text": "can someone check my onions for rot", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "challenge-039", "split": "challenge", "lang": "bn", "category": "challenge", "text": "আমি বুঝতে পারছি না, একজন মানুষের সাথে কথা বলতে চাই", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "challenge-040", "split": "challenge", "lang": "en", "category": "challenge", "text": "connect me to a person", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "challenge-041", "split": "challenge", "lang": "bn", "category": "challenge", "text": "না না, অফার গ্রহণ করবেন না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-042", "split": "challenge", "lang": "bn", "category": "challenge", "text": "এখন পরিবহন দরকার নাই", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-043", "split": "challenge", "lang": "banglish", "category": "challenge", "text": "na vai offer nibo na", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-044", "split": "challenge", "lang": "en", "category": "challenge", "text": "please don't send the offer yet", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-045", "split": "challenge", "lang": "en", "category": "challenge", "text": "stop, do not accept", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-046", "split": "challenge", "lang": "bn", "category": "challenge", "text": "অফারটা নেব নাকি বাদ দেব বুঝছি না", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-047", "split": "challenge", "lang": "en", "category": "challenge", "text": "accept 200 kg or maybe 300 kg", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-048", "split": "challenge", "lang": "bn", "category": "challenge", "text": "অফার গ্রহণ করে ট্রাকও ঠিক করুন", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-049", "split": "challenge", "lang": "bn", "category": "challenge", "text": "পেঁয়াজ", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-050", "split": "challenge", "lang": "en", "category": "challenge", "text": "hello is anyone there", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-051", "split": "challenge", "lang": "bn", "category": "challenge", "text": "রসুনের দাম বলেন", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-052", "split": "challenge", "lang": "en", "category": "challenge", "text": "transfer money to my bank", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-053", "split": "challenge", "lang": "bn", "category": "challenge", "text": "আমার অর্ডারটা ক্যানসেল করুন", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-054", "split": "challenge", "lang": "en", "category": "challenge", "text": "accept offer 2 boxes", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-055", "split": "challenge", "lang": "bn", "category": "challenge", "text": "অফার গ্রহণ দুইশো", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-056", "split": "challenge", "lang": "en", "category": "challenge", "text": "what is your name", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-057", "split": "challenge", "lang": "bn", "category": "challenge", "text": "বৃষ্টি হবে কি আজ", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "challenge-058", "split": "challenge", "lang": "en", "category": "challenge", "text": "1234", "status": "unknown", "tool": null, "quantity": null, "unit": null}

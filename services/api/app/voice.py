@@ -2,7 +2,6 @@ import hashlib
 import hmac
 import re
 import secrets
-import unicodedata
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Literal
@@ -30,6 +29,7 @@ from sqlalchemy.engine import RowMapping
 from sqlalchemy.orm import Session
 
 from app import advice, logistics, lots, market_data, trade
+from app import intent as grammar
 from app.auth import (
     Actor,
     Input,
@@ -37,9 +37,7 @@ from app.auth import (
     Role,
     ShortText,
     audit,
-    demo_enabled,
     require_role,
-    showcase_access_key,
 )
 from app.database import DB, metadata
 
@@ -90,9 +88,30 @@ tasks = Table(
 )
 
 
+Tool = Literal[grammar.TOOLS]
+
+
 class Intent(Input):
     phrase: ShortText
     params: dict = Field(default_factory=dict, max_length=20)
+    # The command the user picked in the form. When present it must agree with
+    # the phrase, so form fields and spoken words cannot describe two actions.
+    tool: Tool | None = None
+
+
+class ResolveInput(Input):
+    phrases: Annotated[list[ShortText], Field(min_length=1, max_length=3)]
+
+
+class Resolution(BaseModel):
+    phrase: str
+    status: Literal["resolved", "ambiguous", "negated", "unknown"]
+    tool: str | None
+    quantity: Decimal | None
+    unit: Literal["kg", "maund"] | None
+    match: Literal["exact", "pattern"] | None
+    candidates: list[str]
+    error: str | None
 
 
 class Lookup(Input):
@@ -158,64 +177,75 @@ class Task(BaseModel):
     can_resolve: bool
 
 
-ALIASES = {
-    "দর": "prices",
-    "বাজার দর": "prices",
-    "prices": "prices",
-    "মজুত": "stock",
-    "আমার মজুত": "stock",
-    "stock": "stock",
-    "পরামর্শ": "advice",
-    "advice": "advice",
-    "অফার": "offers",
-    "offers": "offers",
-    "অর্ডার": "orders",
-    "orders": "orders",
-    "অফার গ্রহণ": "accept",
-    "accept offer": "accept",
-    "অফার প্রত্যাখ্যান": "reject",
-    "reject offer": "reject",
-    "পাল্টা অফার": "counter",
-    "counter offer": "counter",
-    "ওজন সমন্বয়": "movement",
-    "adjust stock": "movement",
-    "মজুত নিবন্ধন": "register",
-    "register lot": "register",
-    "অফার পাঠান": "send_offer",
-    "send offer": "send_offer",
-    "পরিবহন চাই": "transport",
-    "request transport": "transport",
-    "পরিদর্শন চাই": "inspection",
-    "request inspection": "inspection",
-    "সহায়তা": "support",
-    "agent help": "support",
-}
-READS = {"prices", "stock", "advice", "offers", "orders"}
+READS = set(grammar.READS)
 RESPONSES = {"accept", "reject", "counter"}
+ERRORS = {
+    "negated": "voice_negated",
+    "ambiguous": "voice_ambiguous",
+    "unit_missing": "voice_say_quantity",
+    "number_words": "voice_say_quantity",
+    "invalid_quantity": "voice_say_quantity",
+    "unsupported_product": "voice_onion_only",
+    "unsupported_action": "voice_unsupported",
+}
+
+
+def error_code(result: grammar.Interpretation) -> str | None:
+    if result.status == "resolved":
+        return None
+    if result.status == "ambiguous":
+        return "voice_ambiguous"
+    return ERRORS.get(result.reason or "", "voice_repeat")
 
 
 def resolve(phrase: str) -> tuple[str, tuple[Decimal, str] | None]:
-    normalized = (
-        re.sub(r"\s+", " ", unicodedata.normalize("NFC", phrase))
-        .casefold()
-        .strip(" ।!?")
+    return accepted(grammar.interpret(phrase))
+
+
+def accepted(
+    result: grammar.Interpretation,
+) -> tuple[str, tuple[Decimal, str] | None]:
+    code = error_code(result)
+    if code or result.tool is None:
+        raise HTTPException(422, code or "voice_repeat")
+    spoken = (
+        (result.quantity, result.unit)
+        if result.quantity is not None and result.unit is not None
+        else None
     )
-    tool = ALIASES.get(normalized)
-    if tool is not None:
-        return tool, None
-    match = re.fullmatch(
-        r"(?:অফার গ্রহণ|accept offer) ([0-9]{1,9}(?:\.[0-9]{1,3})?)\s*(কেজি|মণ|kg|maund)",
-        normalized.translate(DIGITS),
+    return result.tool, spoken
+
+
+def lot_conversion(db: Session, lot_id: UUID) -> Decimal | None:
+    return db.scalar(
+        select(lots.lot_events.c.kg_per_maund)
+        .where(
+            lots.lot_events.c.lot_id == lot_id,
+            lots.lot_events.c.kg_per_maund.is_not(None),
+        )
+        .order_by(lots.lot_events.c.recorded_at.desc(), lots.lot_events.c.id)
+        .limit(1)
     )
-    if match:
-        amount, unit = match.groups()
-        return "accept", (Decimal(amount), "maund" if unit in {"মণ", "maund"} else "kg")
-    raise HTTPException(422, "voice_repeat")
+
+
+def check_spoken(
+    spoken: tuple[Decimal, str] | None, kg: Decimal, conversion: Decimal | None
+) -> None:
+    """Reject a spoken quantity that differs from the quantity in the form."""
+    if spoken is None:
+        return
+    amount, unit = spoken
+    said = lots.kilograms(amount, unit, conversion if unit == "maund" else None)
+    if said != abs(kg):
+        raise HTTPException(409, "voice_quantity_mismatch")
 
 
 def gate(actor: Profile) -> None:
-    if not actor.is_demo or not (demo_enabled() or showcase_access_key()):
-        raise HTTPException(404, "demo_disabled")
+    if actor.is_demo:
+        return
+    require_role(actor, Role.FARMER, Role.BUYER)
+    if not actor.verified:
+        raise HTTPException(403, "role_forbidden")
 
 
 def call_for(db: Session, actor: Profile, call_id: UUID, *, lock=False):
@@ -246,7 +276,18 @@ def code_hash(action_id: UUID, code: str) -> str:
 
 def read_tool(db: Session, actor: Profile, tool: str, body: Lookup) -> str:
     if tool == "prices":
-        rows = market_data.list_prices(actor, db, body.series, 1)
+        series = body.series
+        if series is None:
+            available = db.scalars(
+                select(market_data.prices.c.series)
+                .where(market_data.approved(actor))
+                .distinct()
+                .limit(2)
+            ).all()
+            if len(available) > 1:
+                raise HTTPException(422, "voice_choose_series")
+            series = available[0] if available else None
+        rows = market_data.list_prices(actor, db, series, 1)
         if not rows:
             return "অনুমোদিত বাজারদর পাওয়া যায়নি।"
         row = rows[0]
@@ -271,7 +312,10 @@ def read_tool(db: Session, actor: Profile, tool: str, body: Lookup) -> str:
         if body.lot_id is None:
             raise HTTPException(422, "voice_choose_lot")
         result = advice.evaluate(
-            db, actor, body.lot_id, advice.AdviceInput(series=body.series)
+            db,
+            actor,
+            body.lot_id,
+            advice.AdviceInput(series=body.series, use_loss_model=True),
         )
         labels = {
             "SELL": "বিক্রি",
@@ -287,8 +331,14 @@ def read_tool(db: Session, actor: Profile, tool: str, body: Lookup) -> str:
         }
         notes = " ".join(reasons[key] for key in result.reasons if key in reasons)
         if result.sell_now_net_bdt is not None and result.hold_low_bdt is not None:
+            basis = (
+                f"খরচ শূন্য এবং যাচাই করা ওজনের প্রবণতা থেকে আনুমানিক "
+                f"{result.loss_pct:.2f}% ওজন ক্ষতি ধরে তুলনা"
+                if result.loss_source == "experimental_model"
+                else "খরচ ও ওজন ক্ষতি শূন্য ধরে তুলনা; ওজনের যথেষ্ট যাচাই নেই"
+            )
             notes += (
-                f" খরচ ও ওজন ক্ষতি শূন্য ধরে তুলনা: এখন {result.sell_now_net_bdt:.2f} টাকা, "
+                f" {basis}: এখন {result.sell_now_net_bdt:.2f} টাকা, "
                 f"অপেক্ষায় {result.hold_low_bdt:.2f} থেকে {result.hold_high_bdt:.2f} টাকা।"
             )
         return f"পরামর্শ: {labels[result.recommendation]}। {notes} খরচ ও ক্ষতি ওয়ার্কস্পেসে লিখে তুলনা করুন।"
@@ -363,20 +413,8 @@ def prepare(
             body.quantity_kg or offer["quantity_kg"],
             body.price_bdt_kg or offer["price_bdt_kg"],
         )
-        conversion = db.scalar(
-            select(lots.lot_events.c.kg_per_maund)
-            .where(
-                lots.lot_events.c.lot_id == body.lot_id,
-                lots.lot_events.c.kg_per_maund.is_not(None),
-            )
-            .order_by(lots.lot_events.c.recorded_at.desc(), lots.lot_events.c.id)
-            .limit(1)
-        )
-        if spoken is not None:
-            amount, unit = spoken
-            kg = lots.kilograms(amount, unit, conversion if unit == "maund" else None)
-            if kg != quantity:
-                raise HTTPException(409, "voice_quantity_mismatch")
+        conversion = lot_conversion(db, body.lot_id)
+        check_spoken(spoken, quantity, conversion)
         maunds = (
             f" (প্রায় {quantity / conversion:.3f} মণ, প্রতি মণে {conversion:.3f} কেজি)"
             if conversion
@@ -404,6 +442,11 @@ def prepare(
         movement = MovementAction.model_validate({**params, "request_key": action_id})
         lot = lots.get_lot(db, actor, movement.lot_id)
         kg = lots.kilograms(movement.quantity, movement.unit, movement.kg_per_maund)
+        check_spoken(
+            spoken,
+            kg,
+            movement.kg_per_maund or lot_conversion(db, movement.lot_id),
+        )
         if (
             not kg
             or (movement.event_type == "LOSS_REPORTED" and kg >= 0)
@@ -421,6 +464,7 @@ def prepare(
         kg = lots.kilograms(
             registration.quantity, registration.unit, registration.kg_per_maund
         )
+        check_spoken(spoken, kg, registration.kg_per_maund)
         return (
             registration.model_dump(mode="json"),
             f"{registration.label}, {registration.district}, {registration.variety}, {kg:.3f} কেজি নিবন্ধন।",
@@ -441,6 +485,7 @@ def prepare(
         if candidate is None:
             raise HTTPException(404, "not_found")
         trade.check_lot(candidate, candidate, offer.quantity_kg)
+        check_spoken(spoken, offer.quantity_kg, lot_conversion(db, offer.lot_id))
         gross = advice.bdt(offer.quantity_kg * offer.price_bdt_kg)
         return offer.model_dump(mode="json"), (
             f"{candidate['variety']}, {candidate['district']} মজুতের জন্য {offer.quantity_kg:.3f} কেজি, "
@@ -532,6 +577,29 @@ def queue_task(db: Session, actor: Profile, kind: str, body: TaskInput) -> UUID:
     return task_id
 
 
+@router.post("/resolve", response_model=list[Resolution])
+def resolve_phrases(body: ResolveInput, actor: Actor):
+    """Interpret transcripts without staging anything, so the form can show
+    what was understood before the user sends it."""
+    gate(actor)
+    results = []
+    for phrase in body.phrases:
+        result = grammar.interpret(phrase)
+        results.append(
+            Resolution(
+                phrase=phrase,
+                status=result.status,
+                tool=result.tool,
+                quantity=result.quantity,
+                unit=result.unit,
+                match=result.match,
+                candidates=list(result.candidates),
+                error=error_code(result),
+            )
+        )
+    return results
+
+
 @router.post("/calls", response_model=Call, status_code=201)
 def start_call(actor: Actor, db: DB):
     gate(actor)
@@ -582,7 +650,10 @@ def intent(call_id: UUID, body: Intent, actor: Actor, db: DB):
     call = call_for(db, actor, call_id, lock=True)
     if not active(call):
         raise HTTPException(409, "voice_call_expired")
-    tool, spoken = resolve(body.phrase)
+    result = grammar.interpret(body.phrase)
+    tool, spoken = accepted(result)
+    if body.tool is not None and body.tool != tool:
+        raise HTTPException(422, "voice_tool_mismatch")
     if (
         db.scalar(
             select(func.count())
@@ -633,7 +704,7 @@ def intent(call_id: UUID, body: Intent, actor: Actor, db: DB):
         .mappings()
         .one()
     )
-    audit(db, actor, "voice.intent", action_id, tool=tool)
+    audit(db, actor, "voice.intent", action_id, tool=tool, match=result.match)
     db.commit()
     return Turn(entry=entry_view(row), demo_code=code)
 
@@ -678,7 +749,14 @@ def confirm(call_id: UUID, body: Confirm, actor: Actor, db: DB):
         )
         audit(db, actor, "voice.keypad_rejected", body.action_id)
         db.commit()
-        raise HTTPException(422, "voice_wrong_digits")
+        raise HTTPException(
+            422,
+            "voice_confirmation_cancelled"
+            if attempts >= 3
+            else "voice_wrong_digits_last"
+            if attempts == 2
+            else "voice_wrong_digits",
+        )
     try:
         with db.begin_nested():
             result = execute(db, actor, row["tool"], row["arguments"])
@@ -699,6 +777,40 @@ def confirm(call_id: UUID, body: Confirm, actor: Actor, db: DB):
         .one()
     )
     audit(db, actor, f"voice.{state}", body.action_id, tool=row["tool"])
+    db.commit()
+    return entry_view(updated)
+
+
+@router.post("/calls/{call_id}/actions/{action_id}/cancel", response_model=Entry)
+def cancel_action(call_id: UUID, action_id: UUID, actor: Actor, db: DB):
+    """Withdraw a pending change, for example after its code was lost."""
+    call_for(db, actor, call_id, lock=True)
+    row = (
+        db.execute(
+            select(actions)
+            .where(actions.c.call_id == call_id, actions.c.id == action_id)
+            .with_for_update()
+        )
+        .mappings()
+        .one_or_none()
+    )
+    if row is None:
+        raise HTTPException(404, "not_found")
+    if row["state"] in {"committed", "failed"}:
+        raise HTTPException(409, "invalid_transition")
+    if row["state"] != "pending":
+        return entry_view(row)
+    updated = (
+        db.execute(
+            update(actions)
+            .where(actions.c.id == action_id)
+            .values(state="cancelled")
+            .returning(actions)
+        )
+        .mappings()
+        .one()
+    )
+    audit(db, actor, "voice.cancelled", action_id, tool=row["tool"])
     db.commit()
     return entry_view(updated)
 

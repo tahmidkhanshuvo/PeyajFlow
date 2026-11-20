@@ -1,0 +1,3321 @@
+{
+  "label": "before",
+  "resolver": "legacy-exact-match",
+  "commit": "57b0034",
+  "dataset": "evals/data/intent.jsonl",
+  "run_at": "2026-11-18T09:23:23+00:00",
+  "rows": 239,
+  "intent": {
+    "total": 239,
+    "accuracy": 0.3598326359832636,
+    "labels": [
+      "abstain",
+      "accept",
+      "advice",
+      "counter",
+      "inspection",
+      "movement",
+      "offers",
+      "orders",
+      "prices",
+      "register",
+      "reject",
+      "send_offer",
+      "stock",
+      "support",
+      "transport"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 0.23618090452261306,
+        "recall": 0.9791666666666666,
+        "f1": 0.38056680161943324,
+        "support": 48
+      },
+      "accept": {
+        "precision": 0.9166666666666666,
+        "recall": 0.28205128205128205,
+        "f1": 0.4313725490196078,
+        "support": 39
+      },
+      "advice": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.33333333333333337,
+        "support": 10
+      },
+      "counter": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.33333333333333337,
+        "support": 10
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.33333333333333337,
+        "support": 10
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 0.16666666666666666,
+        "f1": 0.2857142857142857,
+        "support": 12
+      },
+      "offers": {
+        "precision": 1.0,
+        "recall": 0.18181818181818182,
+        "f1": 0.3076923076923077,
+        "support": 11
+      },
+      "orders": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.33333333333333337,
+        "support": 10
+      },
+      "prices": {
+        "precision": 1.0,
+        "recall": 0.16666666666666666,
+        "f1": 0.2857142857142857,
+        "support": 18
+      },
+      "register": {
+        "precision": 1.0,
+        "recall": 0.16666666666666666,
+        "f1": 0.2857142857142857,
+        "support": 12
+      },
+      "reject": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.33333333333333337,
+        "support": 10
+      },
+      "send_offer": {
+        "precision": 1.0,
+        "recall": 0.18181818181818182,
+        "f1": 0.3076923076923077,
+        "support": 11
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 0.1875,
+        "f1": 0.3157894736842105,
+        "support": 16
+      },
+      "support": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.33333333333333337,
+        "support": 10
+      },
+      "transport": {
+        "precision": 1.0,
+        "recall": 0.16666666666666666,
+        "f1": 0.2857142857142857,
+        "support": 12
+      }
+    },
+    "macro": {
+      "precision": 0.9435231714126187,
+      "recall": 0.24526806526806527,
+      "f1": 0.3257313721710007
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 47,
+        "accept": 1
+      },
+      "accept": {
+        "abstain": 28,
+        "accept": 11
+      },
+      "advice": {
+        "abstain": 8,
+        "advice": 2
+      },
+      "counter": {
+        "abstain": 8,
+        "counter": 2
+      },
+      "inspection": {
+        "abstain": 8,
+        "inspection": 2
+      },
+      "movement": {
+        "abstain": 10,
+        "movement": 2
+      },
+      "offers": {
+        "abstain": 9,
+        "offers": 2
+      },
+      "orders": {
+        "abstain": 8,
+        "orders": 2
+      },
+      "prices": {
+        "abstain": 15,
+        "prices": 3
+      },
+      "register": {
+        "abstain": 10,
+        "register": 2
+      },
+      "reject": {
+        "abstain": 8,
+        "reject": 2
+      },
+      "send_offer": {
+        "abstain": 9,
+        "send_offer": 2
+      },
+      "stock": {
+        "abstain": 13,
+        "stock": 3
+      },
+      "support": {
+        "abstain": 8,
+        "support": 2
+      },
+      "transport": {
+        "abstain": 10,
+        "transport": 2
+      }
+    }
+  },
+  "status_accuracy": 0.2510460251046025,
+  "quantity": {
+    "rows": 33,
+    "exact_accuracy": 0.21212121212121213,
+    "unit_accuracy": 0.21212121212121213
+  },
+  "abstention": {
+    "rows": 48,
+    "false_action_rate": 0.020833333333333332,
+    "false_actions": [
+      "invalid-022"
+    ]
+  },
+  "wrong_write_actions": [
+    "invalid-022"
+  ],
+  "accuracy_by": {
+    "split": {
+      "dev": {
+        "rows": 122,
+        "accuracy": 0.36885245901639346
+      },
+      "test": {
+        "rows": 117,
+        "accuracy": 0.3504273504273504
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 46,
+        "accuracy": 0.08695652173913043
+      },
+      "bn": {
+        "rows": 108,
+        "accuracy": 0.4537037037037037
+      },
+      "en": {
+        "rows": 71,
+        "accuracy": 0.4647887323943662
+      },
+      "mixed": {
+        "rows": 14,
+        "accuracy": 0.0
+      }
+    },
+    "category": {
+      "ambiguous": {
+        "rows": 7,
+        "accuracy": 1.0
+      },
+      "banglish": {
+        "rows": 42,
+        "accuracy": 0.0
+      },
+      "canonical": {
+        "rows": 34,
+        "accuracy": 1.0
+      },
+      "english": {
+        "rows": 37,
+        "accuracy": 0.0
+      },
+      "invalid": {
+        "rows": 22,
+        "accuracy": 0.9545454545454546
+      },
+      "mixed": {
+        "rows": 14,
+        "accuracy": 0.0
+      },
+      "negation": {
+        "rows": 19,
+        "accuracy": 1.0
+      },
+      "negation_read": {
+        "rows": 2,
+        "accuracy": 0.0
+      },
+      "paraphrase": {
+        "rows": 47,
+        "accuracy": 0.0
+      },
+      "spelling": {
+        "rows": 15,
+        "accuracy": 0.3333333333333333
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "paraphrase-001",
+      "text": "আজকের বাজার দর কত?",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-002",
+      "text": "পেঁয়াজের দাম কত",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-003",
+      "text": "দাম কত যাচ্ছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-004",
+      "text": "পাবনার দর বলুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-005",
+      "text": "বাজারদর জানতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-006",
+      "text": "আমার মজুত কত আছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-007",
+      "text": "আমার কাছে কত কেজি পেঁয়াজ আছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-008",
+      "text": "মজুতের অবস্থা বলুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-009",
+      "text": "গুদামে কত মাল আছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-010",
+      "text": "এখন বিক্রি করব নাকি রাখব",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-011",
+      "text": "বিক্রি করব না অপেক্ষা করব, পরামর্শ দিন",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-012",
+      "text": "কোন কোন অফার এসেছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-013",
+      "text": "নতুন অফার আছে কি",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-014",
+      "text": "অফারগুলো দেখান",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-015",
+      "text": "আমার অর্ডারের খবর কী",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-016",
+      "text": "অর্ডারগুলো দেখান",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-017",
+      "text": "অর্ডার কোথায় আছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-018",
+      "text": "অফারটা গ্রহণ করছি",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-019",
+      "text": "অফারটি গ্রহণ করলাম",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-020",
+      "text": "এই অফারে রাজি আছি",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-021",
+      "text": "অফারটা নিতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-022",
+      "text": "২০০ কেজির অফারটা নেব",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "200",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-023",
+      "text": "৫ মণের অফারটা গ্রহণ করুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "5",
+        "unit": "maund"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-024",
+      "text": "অফারটি প্রত্যাখ্যান করছি",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-025",
+      "text": "এই অফার নাকচ করুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-026",
+      "text": "পাল্টা দর দিতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-027",
+      "text": "পাল্টা প্রস্তাব দিন",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-028",
+      "text": "পাল্টা অফার ১৫০ কেজি",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": "150",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-029",
+      "text": "ওজন ঠিক করতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-030",
+      "text": "মজুতের ওজন সমন্বয় করুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-031",
+      "text": "৫ কেজি পেঁয়াজ পচে গেছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": "5",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-032",
+      "text": "১০ কেজি ক্ষতি হয়েছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": "10",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-033",
+      "text": "নতুন মজুত নিবন্ধন করতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-034",
+      "text": "নতুন লট যোগ করুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-035",
+      "text": "১০০০ কেজি নতুন মজুত নিবন্ধন",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": "1000",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-036",
+      "text": "অফার দিতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-037",
+      "text": "এই মজুতের জন্য অফার পাঠাতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-038",
+      "text": "৩০০ কেজির অফার পাঠান",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": "300",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-039",
+      "text": "ট্রাক লাগবে",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-040",
+      "text": "পরিবহনের ব্যবস্থা করুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-041",
+      "text": "মাল পাঠাতে গাড়ি দরকার",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-042",
+      "text": "পরিদর্শন দরকার",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-043",
+      "text": "কেউ এসে মজুত দেখে যান",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-044",
+      "text": "গুদাম পরিদর্শন করাতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-045",
+      "text": "সাহায্য চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-046",
+      "text": "এজেন্টের সাথে কথা বলতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "paraphrase-047",
+      "text": "আমাকে সাহায্য করুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-001",
+      "text": "bazar dor koto",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-002",
+      "text": "peyajer dam koto",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-003",
+      "text": "aajker dam",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-004",
+      "text": "dor bolen",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-005",
+      "text": "amar mojut",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-006",
+      "text": "mojut koto ase",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-007",
+      "text": "amar koto kg ache",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-008",
+      "text": "poramorsho din",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-009",
+      "text": "bikri korbo naki rakhbo",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-010",
+      "text": "ekhon bechbo na rakhbo",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-011",
+      "text": "offer gulo dekhao",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-012",
+      "text": "notun offer ache?",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-013",
+      "text": "ki offer ase",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-014",
+      "text": "order er khobor",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-015",
+      "text": "amar order gulo",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-016",
+      "text": "offer accept korbo",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-017",
+      "text": "offer ta nibo",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-018",
+      "text": "offer grohon korlam",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-019",
+      "text": "offer e raji",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-020",
+      "text": "200 kg offer accept koro",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "200",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-021",
+      "text": "5 mon er offer ta nibo",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "5",
+        "unit": "maund"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-022",
+      "text": "offer accept 2.5 mon",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "2.5",
+        "unit": "maund"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-023",
+      "text": "offer reject koro",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-024",
+      "text": "offer ta nakoch",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-025",
+      "text": "palta offer dibo",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-026",
+      "text": "counter offer dite chai",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-027",
+      "text": "ojon thik korbo",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-028",
+      "text": "10 kg poche geche",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": "10",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-029",
+      "text": "stock adjust koro",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-030",
+      "text": "notun mojut register",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-031",
+      "text": "notun lot khulbo",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-032",
+      "text": "500 kg notun mojut",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": "500",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-033",
+      "text": "offer pathao",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-034",
+      "text": "offer dite chai",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-035",
+      "text": "300 kg er offer pathabo",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": "300",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-036",
+      "text": "truck lagbe",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-037",
+      "text": "transport chai",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-038",
+      "text": "gari dorkar",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-039",
+      "text": "inspection chai",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-040",
+      "text": "keu ese mojut dekhe jan",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-041",
+      "text": "sahajjo chai",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "banglish-042",
+      "text": "agent er help lagbe",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-001",
+      "text": "what is the onion price today",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-002",
+      "text": "market price",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-003",
+      "text": "show market prices",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-004",
+      "text": "price please",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-005",
+      "text": "how much stock do I have",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-006",
+      "text": "show my stock",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-007",
+      "text": "my inventory",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-008",
+      "text": "should I sell or hold",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-009",
+      "text": "give me advice",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-010",
+      "text": "hold or sell advice",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-011",
+      "text": "show offers",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-012",
+      "text": "any new offers?",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-013",
+      "text": "list my offers",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-014",
+      "text": "show my orders",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-015",
+      "text": "order status",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-016",
+      "text": "accept the offer",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-017",
+      "text": "I accept this offer",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-018",
+      "text": "accept the 200 kg offer",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "200",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-019",
+      "text": "accept offer for 3 maunds",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "3",
+        "unit": "maund"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-020",
+      "text": "yes, accept it",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-021",
+      "text": "reject the offer",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-022",
+      "text": "decline this offer",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-023",
+      "text": "make a counter offer",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-024",
+      "text": "counteroffer 150 kg",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": "150",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-025",
+      "text": "record a weight adjustment",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-026",
+      "text": "5 kg rotted",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": "5",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-027",
+      "text": "record a loss of 12 kg",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": "12",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-028",
+      "text": "register a new lot",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-029",
+      "text": "add a new lot of 800 kg",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": "800",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-030",
+      "text": "make an offer",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-031",
+      "text": "send an offer for 400 kg",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": "400",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-032",
+      "text": "I need a truck",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-033",
+      "text": "book transport",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-034",
+      "text": "I need an inspection",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-035",
+      "text": "please inspect my storage",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-036",
+      "text": "I need help",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "english-037",
+      "text": "talk to an agent",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-001",
+      "text": "অফার accept করব",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-002",
+      "text": "২০০ kg অফার গ্রহণ",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "200",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-003",
+      "text": "offer টা নিব",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-004",
+      "text": "price কত",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-005",
+      "text": "আমার stock কত",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-006",
+      "text": "order দেখাও",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-007",
+      "text": "counter offer দিব",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-008",
+      "text": "truck লাগবে",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-009",
+      "text": "inspection চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-010",
+      "text": "help দরকার",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-011",
+      "text": "অফার reject করো",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-012",
+      "text": "৫ mon অফার accept",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "5",
+        "unit": "maund"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-013",
+      "text": "নতুন lot register",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "mixed-014",
+      "text": "offer পাঠাও",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-001",
+      "text": "অফার গ্রহন",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-002",
+      "text": "অফার প্রত্যাখান",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-003",
+      "text": "আমার মজুদ",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-004",
+      "text": "মজুদ নিবন্ধন",
+      "expected": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-005",
+      "text": "পরিবহণ চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "transport",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-006",
+      "text": "অফার গ্রহণ ২০০ কেজী",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "200",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-007",
+      "text": "অফার গ্রহণ ২০০ কিলো",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "200",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-008",
+      "text": "অফার গ্রহণ ১,০০০ কেজি",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "1000",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-009",
+      "text": "অফার গ্রহণ ৫ মন",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "5",
+        "unit": "maund"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "spelling-012",
+      "text": "অফার‌ গ্রহণ",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-001",
+      "text": "অফার গ্রহণ করব না",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-002",
+      "text": "অফারটা নেব না",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-003",
+      "text": "এই অফারে রাজি নই",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-004",
+      "text": "অফার গ্রহণ করিনি",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-005",
+      "text": "অফার প্রত্যাখ্যান করবেন না",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-006",
+      "text": "পরিবহন চাই না",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-007",
+      "text": "ট্রাক লাগবে না",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-008",
+      "text": "পরিদর্শন দরকার নেই",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-009",
+      "text": "অফার পাঠাবেন না",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-010",
+      "text": "নতুন মজুত নিবন্ধন করব না",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-011",
+      "text": "ওজন সমন্বয় করবেন না",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-012",
+      "text": "অফার গ্রহণ ২০০ কেজি না, ৩০০ কেজি",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-013",
+      "text": "offer accept korbo na",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-014",
+      "text": "offer ta nibo na",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-015",
+      "text": "transport lagbe na",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-016",
+      "text": "don't accept the offer",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-017",
+      "text": "do not reject this offer",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-018",
+      "text": "I don't need a truck",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation-019",
+      "text": "never send an offer",
+      "expected": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation_read-001",
+      "text": "দাম জানি না, দর বলুন",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "negation_read-002",
+      "text": "I don't know my stock, show my stock",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "ambiguous-001",
+      "text": "অফার গ্রহণ নাকি প্রত্যাখ্যান",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "ambiguous-002",
+      "text": "accept or reject the offer",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "ambiguous-003",
+      "text": "অফার পাঠাও আর ট্রাক লাগবে",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "ambiguous-004",
+      "text": "অফার গ্রহণ ২০০ কেজি ৩০০ কেজি",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "ambiguous-005",
+      "text": "আমার মজুতের দাম কত",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "ambiguous-006",
+      "text": "offer accept korbo kina",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "ambiguous-007",
+      "text": "show offers and orders",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "invalid-022",
+      "text": "অফার গ্রহণ ০ কেজি",
+      "expected": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "0",
+        "unit": "kg",
+        "reason": null
+      }
+    }
+  ]
+}

@@ -116,11 +116,15 @@ const visible = [
   "uncertain_or_low_quality",
 ];
 
-function label(locale: Locale, key: string) {
+export function riskLabel(locale: Locale, key: string) {
   return local(locale, ...(labels[key] ?? [key, key]));
 }
 
-function VisibleFields({ locale }: { locale: Locale }) {
+function label(locale: Locale, key: string) {
+  return riskLabel(locale, key);
+}
+
+export function VisibleFields({ locale }: { locale: Locale }) {
   return (
     <fieldset className="work-options">
       <legend>
@@ -143,7 +147,7 @@ function VisibleFields({ locale }: { locale: Locale }) {
   );
 }
 
-function StorageFields({ locale }: { locale: Locale }) {
+export function StorageFields({ locale }: { locale: Locale }) {
   const options = {
     curing: ["cured", "uncured"],
     ventilation: ["good", "poor"],
@@ -183,7 +187,7 @@ function StorageFields({ locale }: { locale: Locale }) {
   );
 }
 
-function InspectionRecord({
+export function InspectionRecord({
   locale,
   actor,
   base,
@@ -237,7 +241,13 @@ function InspectionRecord({
                     )}
               </figcaption>
               {!photo.quality_flags.length && (
-                <PhotoModel locale={locale} src={path} />
+                <PhotoModel
+                  locale={locale}
+                  src={path}
+                  lot={id}
+                  photo={photo.id}
+                  saved={photo.prediction}
+                />
               )}
             </figure>
           );
@@ -299,6 +309,25 @@ function InspectionRecord({
             action={mutate.bind(null, locale, "review", id, record.id)}
             label={local(locale, "পর্যালোচনা সংরক্ষণ করুন", "Save review")}
           >
+            {record.photos.some((photo) => photo.prediction) && (
+              <p>
+                {local(
+                  locale,
+                  "সংরক্ষিত এআই পরামর্শ, শুধু ইঙ্গিত। নিজে যা দেখছেন তা লিখুন",
+                  "Saved AI suggestions are hints only. Record what you see",
+                )}
+                :{" "}
+                {record.photos
+                  .flatMap((photo, index) =>
+                    photo.prediction
+                      ? [
+                          `${local(locale, "ছবি", "Photo")} ${numberLabel(locale, index + 1)} · ${label(locale, photo.prediction.flag)}`,
+                        ]
+                      : [],
+                  )
+                  .join("; ")}
+              </p>
+            )}
             <VisibleFields locale={locale} />
             <Field label={local(locale, "কারণ", "Reason")}>
               <textarea name="reason" maxLength={500} required />
@@ -330,7 +359,6 @@ export async function InspectionsPage({
       <Link className="work-link" href={`${base}/stock/${id}`}>
         {lot.label}
       </Link>
-      <h1>{local(locale, "পরিদর্শন ও ছবি", "Inspections and photos")}</h1>
       {actor.role === "farmer" && (
         <section className="work-panel">
           <Details
@@ -462,7 +490,6 @@ export async function RiskPage({
       <Link className="work-link" href={`${base}/stock/${id}`}>
         {lot.label}
       </Link>
-      <h1>{local(locale, "সংরক্ষণের ঝুঁকি", "Storage risk")}</h1>
       <section className="work-panel">
         <span className="work-tag">
           {local(locale, "নিয়মভিত্তিক পরামর্শ", "Checklist advisory")}

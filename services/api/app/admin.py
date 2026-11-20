@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
@@ -11,21 +12,26 @@ from sqlalchemy import (
     String,
     Table,
     Uuid,
+    case,
     func,
     insert,
+    or_,
     select,
     update,
 )
 
-from app import trade, twilio
+from app import inspection, trade, twilio
 from app.auth import (
     Actor,
     Input,
     Role,
+    VerificationStatus,
     audit,
     audit_log,
+    member_accounts,
     memberships,
     organizations,
+    record_signup_decision,
     require_role,
     users,
 )
@@ -70,6 +76,7 @@ class Verification(BaseModel):
     district: str
     role: Role
     verified: bool
+    signup_status: VerificationStatus | None = None
 
 
 class VerificationInput(Input):
@@ -120,7 +127,13 @@ class Resolution(BaseModel):
     resolved_at: datetime
 
 
-accounts = memberships.join(users).join(organizations)
+signup_status_column = case(
+    (users.c.nid.is_not(None), users.c.verification_status),
+).label("signup_status")
+pending_accounts = or_(
+    users.c.nid.is_(None) & users.c.verified.is_(False),
+    users.c.nid.is_not(None) & (users.c.verification_status == "pending"),
+)
 
 
 def count(db, table, *filters):
@@ -135,10 +148,10 @@ def overview(actor: Actor, db: DB):
     return Overview(
         unverified_accounts=count(
             db,
-            accounts,
+            member_accounts,
             organizations.c.is_demo == demo,
             memberships.c.role != Role.ADMIN,
-            users.c.verified.is_(False),
+            pending_accounts,
         ),
         unverified_lots=count(
             db, lots, lots.c.is_demo == demo, lots.c.verified_at.is_(None)
@@ -188,7 +201,7 @@ def verifications(
         memberships.c.role != Role.ADMIN,
     ]
     if pending_only:
-        filters.append(users.c.verified.is_(False))
+        filters.append(pending_accounts)
     return list(
         db.execute(
             select(
@@ -197,8 +210,9 @@ def verifications(
                 users.c.name,
                 users.c.district,
                 users.c.verified,
+                signup_status_column,
             )
-            .select_from(accounts)
+            .select_from(member_accounts)
             .where(*filters)
             .order_by(users.c.name, memberships.c.id)
             .offset(offset)
@@ -219,8 +233,9 @@ def verify_account(membership_id: UUID, body: VerificationInput, actor: Actor, d
                 users.c.name,
                 users.c.district,
                 users.c.verified,
+                signup_status_column,
             )
-            .select_from(accounts)
+            .select_from(member_accounts)
             .where(
                 memberships.c.id == membership_id,
                 organizations.c.is_demo == actor.is_demo,
@@ -233,12 +248,22 @@ def verify_account(membership_id: UUID, body: VerificationInput, actor: Actor, d
     )
     if row is None:
         raise HTTPException(404, "not_found")
-    if body.verified != row["verified"]:
-        db.execute(
-            update(users)
-            .where(users.c.id == row["user_id"])
-            .values(verified=body.verified)
-        )
+    signup_status = row["signup_status"]
+    if signup_status is not None:
+        new_status = "verified" if body.verified else "rejected"
+        changed = signup_status != new_status
+        if changed:
+            record_signup_decision(db, actor, row["user_id"], new_status)
+        signup_status = new_status
+    else:
+        changed = body.verified != row["verified"]
+        if changed:
+            db.execute(
+                update(users)
+                .where(users.c.id == row["user_id"])
+                .values(verified=body.verified)
+            )
+    if changed:
         audit(
             db,
             actor,
@@ -246,7 +271,9 @@ def verify_account(membership_id: UUID, body: VerificationInput, actor: Actor, d
             membership_id,
         )
         db.commit()
-    return Verification.model_validate({**row, "verified": body.verified})
+    return Verification.model_validate(
+        {**row, "verified": body.verified, "signup_status": signup_status}
+    )
 
 
 @router.get("/data-quality", response_model=list[DataQuality])
@@ -282,6 +309,110 @@ def quality(actor: Actor, db: DB):
         )
         for row in rows
     ]
+
+
+MIN_AGREEMENT_PAIRS = 20
+
+
+class AgreementCell(BaseModel):
+    predicted: str
+    reviewed: list[str]
+    count: int
+
+
+class PhotoModelReview(BaseModel):
+    model: str
+    rule: str
+    predictions: int
+    photos_with_prediction: int
+    reviewed_photos: int
+    abstained: int
+    decided: int
+    agreed: int
+    predicted_before_review: int
+    minimum_pairs: int = MIN_AGREEMENT_PAIRS
+    agreement_pct: Decimal | None
+    cells: list[AgreementCell]
+
+
+@router.get("/photo-model", response_model=PhotoModelReview)
+def photo_model_review(actor: Actor, db: DB):
+    """Compare saved photo-model suggestions with the latest human review of
+    the same inspection. Only real pairs are counted; nothing is estimated."""
+    require_role(actor, Role.ADMIN)
+    predictions = inspection.predictions
+    photos = inspection.photos
+    rows = db.execute(
+        select(
+            predictions.c.photo_id,
+            predictions.c.flag,
+            predictions.c.created_at,
+            photos.c.inspection_id,
+        )
+        .select_from(predictions.join(photos).join(inspection.inspections).join(lots))
+        .where(
+            lots.c.is_demo == actor.is_demo,
+            predictions.c.model == inspection.PHOTO_MODEL,
+            predictions.c.rule == inspection.PHOTO_RULE,
+        )
+        .order_by(predictions.c.created_at.desc(), predictions.c.id)
+        .limit(5000)
+    ).all()
+    latest = {}
+    for row in rows:
+        latest.setdefault(row.photo_id, row)
+    reviews = {}
+    if latest:
+        for review in db.execute(
+            select(
+                inspection.reviews.c.inspection_id,
+                inspection.reviews.c.flags,
+                inspection.reviews.c.created_at,
+            )
+            .where(
+                inspection.reviews.c.source == "human_review",
+                inspection.reviews.c.inspection_id.in_(
+                    {row.inspection_id for row in latest.values()}
+                ),
+            )
+            .order_by(inspection.reviews.c.created_at.desc(), inspection.reviews.c.id)
+        ):
+            reviews.setdefault(review.inspection_id, review)
+    cells: dict[tuple[str, tuple[str, ...]], int] = {}
+    reviewed = abstained = agreed = before = 0
+    for row in latest.values():
+        review = reviews.get(row.inspection_id)
+        if review is None:
+            continue
+        reviewed += 1
+        before += row.created_at < review.created_at
+        key = (row.flag, tuple(sorted(review.flags)))
+        cells[key] = cells.get(key, 0) + 1
+        if row.flag == inspection.VisibleFlag.UNCERTAIN:
+            abstained += 1
+        elif row.flag in review.flags:
+            agreed += 1
+    decided = reviewed - abstained
+    return PhotoModelReview(
+        model=inspection.PHOTO_MODEL,
+        rule=inspection.PHOTO_RULE,
+        predictions=len(rows),
+        photos_with_prediction=len(latest),
+        reviewed_photos=reviewed,
+        abstained=abstained,
+        decided=decided,
+        agreed=agreed,
+        predicted_before_review=before,
+        agreement_pct=(Decimal(100 * agreed) / decided).quantize(Decimal(".1"))
+        if decided >= MIN_AGREEMENT_PAIRS
+        else None,
+        cells=[
+            AgreementCell(predicted=predicted, reviewed=list(flags), count=count)
+            for (predicted, flags), count in sorted(
+                cells.items(), key=lambda item: (-item[1], item[0])
+            )
+        ],
+    )
 
 
 @router.get("/audit", response_model=AuditPage)

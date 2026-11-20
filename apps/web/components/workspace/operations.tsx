@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { operate } from "../../app/[locale]/workspace/operations-actions";
 import type { Locale } from "../../lib/copy";
 import { api, type Role } from "../../lib/workspace-api";
@@ -20,12 +21,27 @@ type Overview = {
   attention_sms: number;
   carrier_events_24h: number | null;
 };
+type PhotoModelReview = {
+  model: string;
+  rule: string;
+  predictions: number;
+  photos_with_prediction: number;
+  reviewed_photos: number;
+  abstained: number;
+  decided: number;
+  agreed: number;
+  predicted_before_review: number;
+  minimum_pairs: number;
+  agreement_pct: string | null;
+  cells: { predicted: string; reviewed: string[]; count: number }[];
+};
 type Account = {
   membership_id: string;
   name: string;
   district: string;
   role: Role;
   verified: boolean;
+  signup_status: "pending" | "verified" | "rejected" | null;
 };
 type SeriesHealth = {
   series: string;
@@ -87,7 +103,7 @@ async function Summary({ locale, base }: Page) {
   const counts = await api<Overview>("/v1/admin/overview");
   const links = [
     [
-      "operations?view=accounts",
+      "?view=accounts",
       local(locale, "যাচাই বাকি অ্যাকাউন্ট", "Accounts awaiting verification"),
       counts.unverified_accounts,
     ],
@@ -102,7 +118,7 @@ async function Summary({ locale, base }: Page) {
       counts.pending_imports,
     ],
     [
-      "operations?view=disputes",
+      "?view=disputes",
       local(locale, "খোলা বিরোধ", "Open disputes"),
       counts.open_disputes,
     ],
@@ -113,7 +129,10 @@ async function Summary({ locale, base }: Page) {
         {links.map(([path, title, count]) => (
           <article className="work-panel" key={path}>
             <h2>
-              <Link className="work-link" href={`${base}/${path}`}>
+              <Link
+                className="work-link"
+                href={`${base}${path.startsWith("?") ? path : `/${path}`}`}
+              >
                 {title}
               </Link>
             </h2>
@@ -191,13 +210,17 @@ async function Accounts({ locale, base, filters, offset }: Page) {
               {row.district} · {local(locale, ...roles[row.role])} ·{" "}
               {row.verified
                 ? local(locale, "যাচাইকৃত", "Verified")
-                : local(locale, "যাচাই বাকি", "Unverified")}
+                : row.signup_status === "rejected"
+                  ? local(locale, "প্রত্যাখ্যাত", "Rejected")
+                  : local(locale, "যাচাই বাকি", "Unverified")}
             </span>
             <Details
               label={
-                row.verified
-                  ? local(locale, "যাচাই প্রত্যাহার করুন", "Remove verification")
-                  : local(locale, "অ্যাকাউন্ট যাচাই করুন", "Verify account")
+                row.signup_status === "pending"
+                  ? local(locale, "নিবন্ধন পর্যালোচনা করুন", "Review registration")
+                  : row.verified
+                    ? local(locale, "যাচাই প্রত্যাহার করুন", "Remove verification")
+                    : local(locale, "অ্যাকাউন্ট যাচাই করুন", "Verify account")
               }
             >
               <WorkspaceForm
@@ -209,11 +232,27 @@ async function Accounts({ locale, base, filters, offset }: Page) {
                   "Save verification status",
                 )}
               >
-                <input
-                  name="verified"
-                  type="hidden"
-                  value={String(!row.verified)}
-                />
+                {row.signup_status === "pending" ? (
+                  <Field label={local(locale, "সিদ্ধান্ত", "Decision")}>
+                    <select name="verified" defaultValue="" required>
+                      <option value="" disabled>
+                        {local(locale, "বেছে নিন", "Choose a decision")}
+                      </option>
+                      <option value="true">
+                        {local(locale, "যাচাই করুন", "Verify")}
+                      </option>
+                      <option value="false">
+                        {local(locale, "প্রত্যাখ্যান করুন", "Reject")}
+                      </option>
+                    </select>
+                  </Field>
+                ) : (
+                  <input
+                    name="verified"
+                    type="hidden"
+                    value={String(!row.verified)}
+                  />
+                )}
                 <label className="checkbox">
                   <input name="confirm" type="checkbox" required />
                   {local(
@@ -299,6 +338,91 @@ async function Quality({ locale, base }: Page) {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+const visibleFlags: Record<string, [string, string]> = {
+  visible_rot_or_mold: ["পচন বা ছাঁচ", "Rot or mold"],
+  sprouting: ["অঙ্কুর", "Sprouting"],
+  physical_damage: ["আঘাতের দাগ", "Physical damage"],
+  no_obvious_defect: ["ত্রুটি নেই", "No obvious defect"],
+  uncertain_or_low_quality: ["অনিশ্চিত", "Uncertain"],
+};
+
+async function PhotoModel({ locale }: Page) {
+  const review = await api<PhotoModelReview>("/v1/admin/photo-model");
+  const flag = (key: string) =>
+    local(locale, ...(visibleFlags[key] ?? [key, key]));
+  const counts: [string, string, number][] = [
+    ["সংরক্ষিত পরামর্শ", "Saved suggestions", review.predictions],
+    ["পরামর্শসহ ছবি", "Photos with a suggestion", review.photos_with_prediction],
+    ["মানুষের পর্যালোচনাসহ", "With a human review", review.reviewed_photos],
+    ["মডেল নিশ্চিত নয়", "Model abstained", review.abstained],
+    ["তুলনাযোগ্য জোড়া", "Comparable pairs", review.decided],
+    ["মিলেছে", "Agreed with the reviewer", review.agreed],
+  ];
+  return (
+    <section className="work-panel">
+      <h2>
+        {local(
+          locale,
+          "ছবির মডেল বনাম মানুষের পর্যালোচনা",
+          "Photo model and human review",
+        )}
+      </h2>
+      <p>
+        {local(
+          locale,
+          "প্রতিটি ছবির সর্বশেষ সংরক্ষিত পরামর্শকে একই পরিদর্শনের সর্বশেষ মানুষের পর্যালোচনার সঙ্গে মেলানো হয়। পরামর্শ ব্যবহারকারীর ব্রাউজারে হিসাব করা।",
+          "Each photo's latest saved suggestion is compared with the latest human review of the same inspection. Suggestions are calculated in the user's browser.",
+        )}
+      </p>
+      <dl className="work-metrics">
+        {counts.map(([bn, en, value]) => (
+          <div key={en}>
+            <dt>{local(locale, bn, en)}</dt>
+            <dd>{numberLabel(locale, value)}</dd>
+          </div>
+        ))}
+      </dl>
+      <p>
+        {review.agreement_pct === null
+          ? local(
+              locale,
+              `মিলের হার দেখাতে অন্তত ${numberLabel(locale, review.minimum_pairs)}টি তুলনাযোগ্য জোড়া দরকার। এখন আছে ${numberLabel(locale, review.decided)}টি।`,
+              `An agreement rate needs at least ${review.minimum_pairs} comparable pairs. There are ${review.decided} so far.`,
+            )
+          : local(
+              locale,
+              `মিলের হার ${numberLabel(locale, review.agreement_pct)}% (${numberLabel(locale, review.decided)}টি জোড়া)।`,
+              `Agreement ${review.agreement_pct}% across ${review.decided} pairs.`,
+            )}{" "}
+        {local(
+          locale,
+          `${numberLabel(locale, review.predicted_before_review)}টি পরামর্শ পর্যালোচনার আগে তৈরি হয়েছিল, যা পর্যালোচককে প্রভাবিত করে থাকতে পারে।`,
+          `${review.predicted_before_review} suggestions existed before the review and may have influenced the reviewer.`,
+        )}
+      </p>
+      {review.cells.length > 0 && (
+        <ul className="work-history">
+          {review.cells.map((cell) => (
+            <li key={`${cell.predicted}-${cell.reviewed.join("+")}`}>
+              <strong>
+                {local(locale, "মডেল", "Model")} · {flag(cell.predicted)}
+              </strong>
+              <span>
+                {local(locale, "পর্যালোচক", "Reviewer")} ·{" "}
+                {cell.reviewed.map(flag).join(", ")} ·{" "}
+                {numberLabel(locale, cell.count)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <small>
+        {review.model} · {review.rule}
+      </small>
     </section>
   );
 }
@@ -427,42 +551,72 @@ async function AuditPage({ locale, base, filters, offset }: Page) {
         locale={locale}
         offset={offset}
         next={data.next_offset}
-        href={(n) => `${base}/operations?view=audit&${query}&offset=${n}`}
+        href={(n) => `${base}?view=audit&${query}&offset=${n}`}
       />
     </section>
   );
 }
 
+export function OperationsNav({
+  locale,
+  base,
+  activeView,
+}: {
+  locale: Locale;
+  base: string;
+  activeView?: string;
+}) {
+  const pages = [
+    ["", local(locale, "পরিচালনা", "Overview")],
+    ["accounts", local(locale, "যাচাই", "Verifications")],
+    ["quality", local(locale, "তথ্যের মান", "Data quality")],
+    ["vision", local(locale, "ছবির মডেল", "Photo model")],
+    ["disputes", local(locale, "বিরোধ", "Disputes")],
+    ["settlements", local(locale, "অর্থপ্রদান", "Settlements")],
+    ["audit", local(locale, "নিরীক্ষা", "Audit")],
+  ] as const;
+  const current = activeView ?? "";
+  return (
+    <nav
+      className="ops-nav glass-1"
+      aria-label={local(locale, "পরিচালনার অংশ", "Operations sections")}
+    >
+      {pages.map(([id, name]) => (
+        <Link
+          className="work-link"
+          key={id}
+          aria-current={id === current ? "page" : undefined}
+          href={`${base}${id ? `?view=${id}` : ""}`}
+        >
+          {name}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export async function OperationsView(context: Page) {
+  const { filters } = context;
+  const views: Record<string, (ctx: Page) => Promise<ReactNode>> = {
+    accounts: Accounts,
+    quality: Quality,
+    vision: PhotoModel,
+    disputes: Disputes,
+    settlements: SettlementQueue,
+    audit: AuditPage,
+  };
+  const viewFn = filters.view ? views[filters.view] : null;
+  if (!viewFn) return null;
+  return await viewFn(context);
+}
+
 export async function OperationsPage(context: Page) {
   const { locale, base, filters } = context;
-  const pages = [
-    ["", local(locale, "পরিচালনা", "Overview"), Summary],
-    ["accounts", local(locale, "যাচাই", "Verifications"), Accounts],
-    ["quality", local(locale, "তথ্যের মান", "Data quality"), Quality],
-    ["disputes", local(locale, "বিরোধ", "Disputes"), Disputes],
-    ["settlements", local(locale, "অর্থপ্রদান", "Settlements"), SettlementQueue],
-    ["audit", local(locale, "নিরীক্ষা", "Audit"), AuditPage],
-  ] as const;
-  const selected = pages.find(([id]) => id === filters.view) ?? pages[0];
-  const content = await selected[2](context);
+  const selected = filters.view;
+  const content = selected ? await OperationsView(context) : await Summary(context);
   return (
     <>
-      <h1>{local(locale, "পরিচালনা", "Operations")}</h1>
-      <nav
-        className="ops-nav"
-        aria-label={local(locale, "পরিচালনার অংশ", "Operations sections")}
-      >
-        {pages.map(([id, name]) => (
-          <Link
-            className="work-link"
-            key={id}
-            aria-current={id === selected[0] ? "page" : undefined}
-            href={`${base}/operations${id ? `?view=${id}` : ""}`}
-          >
-            {name}
-          </Link>
-        ))}
-      </nav>
+      <OperationsNav locale={locale} base={base} activeView={selected} />
       {content}
     </>
   );

@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { Locale } from "../../lib/copy";
 import { local } from "../../lib/workspace-copy";
+import { WorkspaceIcon } from "./icon";
 
 type Recognition = {
   lang: string;
+  maxAlternatives: number;
   onresult:
     | ((event: {
         results: ArrayLike<ArrayLike<{ transcript: string }>>;
@@ -24,7 +26,8 @@ export function SpeechInput({
 }: {
   locale: Locale;
   disabled: boolean;
-  onTranscript: (transcript: string) => void;
+  // Alternatives in the browser's order of confidence, best first.
+  onTranscript: (alternatives: string[]) => void;
 }) {
   const engine = useRef<Recognition | null>(null);
   const [listening, setListening] = useState(false);
@@ -65,10 +68,14 @@ export function SpeechInput({
     }
     const recognition = new BrowserRecognition();
     recognition.lang = "bn-BD";
+    recognition.maxAlternatives = 3;
     recognition.onresult = (event) => {
-      const transcript = event.results[0]?.[0]?.transcript.trim().slice(0, 100);
-      if (transcript) {
-        onTranscript(transcript);
+      const alternatives = Array.from(event.results[0] ?? [])
+        .map((item) => item.transcript.trim().slice(0, 100))
+        .filter(Boolean)
+        .slice(0, 3);
+      if (alternatives.length) {
+        onTranscript(alternatives);
         setStatus(
           t(
             "পাঠানোর আগে লেখাটি যাচাই করুন।",
@@ -108,10 +115,14 @@ export function SpeechInput({
         type="button"
         disabled={disabled}
         onClick={listen}
+        style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
       >
-        {listening
-          ? t("শোনা বন্ধ করুন", "Stop listening")
-          : t("বাংলায় বলুন", "Speak Bangla")}
+        <WorkspaceIcon name="mic" size={16} />
+        <span>
+          {listening
+            ? t("শোনা বন্ধ করুন", "Stop listening")
+            : t("বাংলায় বলুন", "Speak Bangla")}
+        </span>
       </button>
       <small>
         {t(

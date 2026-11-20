@@ -1,0 +1,239 @@
+{"id": "canonical-001", "split": "dev", "lang": "bn", "category": "canonical", "text": "দর", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "canonical-002", "split": "test", "lang": "bn", "category": "canonical", "text": "বাজার দর", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "canonical-003", "split": "dev", "lang": "en", "category": "canonical", "text": "prices", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "canonical-004", "split": "test", "lang": "bn", "category": "canonical", "text": "মজুত", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "canonical-005", "split": "dev", "lang": "bn", "category": "canonical", "text": "আমার মজুত", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "canonical-006", "split": "test", "lang": "en", "category": "canonical", "text": "stock", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "canonical-007", "split": "dev", "lang": "bn", "category": "canonical", "text": "পরামর্শ", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "canonical-008", "split": "test", "lang": "en", "category": "canonical", "text": "advice", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "canonical-009", "split": "dev", "lang": "bn", "category": "canonical", "text": "অফার", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "canonical-010", "split": "test", "lang": "en", "category": "canonical", "text": "offers", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "canonical-011", "split": "dev", "lang": "bn", "category": "canonical", "text": "অর্ডার", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "canonical-012", "split": "test", "lang": "en", "category": "canonical", "text": "orders", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "canonical-013", "split": "dev", "lang": "bn", "category": "canonical", "text": "অফার গ্রহণ", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "canonical-014", "split": "test", "lang": "en", "category": "canonical", "text": "accept offer", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "canonical-015", "split": "dev", "lang": "bn", "category": "canonical", "text": "অফার প্রত্যাখ্যান", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "canonical-016", "split": "test", "lang": "en", "category": "canonical", "text": "reject offer", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "canonical-017", "split": "dev", "lang": "bn", "category": "canonical", "text": "পাল্টা অফার", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "canonical-018", "split": "test", "lang": "en", "category": "canonical", "text": "counter offer", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "canonical-019", "split": "dev", "lang": "bn", "category": "canonical", "text": "ওজন সমন্বয়", "status": "resolved", "tool": "movement", "quantity": null, "unit": null}
+{"id": "canonical-020", "split": "test", "lang": "en", "category": "canonical", "text": "adjust stock", "status": "resolved", "tool": "movement", "quantity": null, "unit": null}
+{"id": "canonical-021", "split": "dev", "lang": "bn", "category": "canonical", "text": "মজুত নিবন্ধন", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "canonical-022", "split": "test", "lang": "en", "category": "canonical", "text": "register lot", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "canonical-023", "split": "dev", "lang": "bn", "category": "canonical", "text": "অফার পাঠান", "status": "resolved", "tool": "send_offer", "quantity": null, "unit": null}
+{"id": "canonical-024", "split": "test", "lang": "en", "category": "canonical", "text": "send offer", "status": "resolved", "tool": "send_offer", "quantity": null, "unit": null}
+{"id": "canonical-025", "split": "dev", "lang": "bn", "category": "canonical", "text": "পরিবহন চাই", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "canonical-026", "split": "test", "lang": "en", "category": "canonical", "text": "request transport", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "canonical-027", "split": "dev", "lang": "bn", "category": "canonical", "text": "পরিদর্শন চাই", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "canonical-028", "split": "test", "lang": "en", "category": "canonical", "text": "request inspection", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "canonical-029", "split": "dev", "lang": "bn", "category": "canonical", "text": "সহায়তা", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "canonical-030", "split": "test", "lang": "en", "category": "canonical", "text": "agent help", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "canonical-031", "split": "dev", "lang": "bn", "category": "canonical", "text": "অফার গ্রহণ ২০০ কেজি", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "canonical-032", "split": "test", "lang": "bn", "category": "canonical", "text": "অফার গ্রহণ ৫ মণ", "status": "resolved", "tool": "accept", "quantity": "5", "unit": "maund"}
+{"id": "canonical-033", "split": "dev", "lang": "en", "category": "canonical", "text": "accept offer 200 kg", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "canonical-034", "split": "test", "lang": "en", "category": "canonical", "text": "accept offer 2.5 maund", "status": "resolved", "tool": "accept", "quantity": "2.5", "unit": "maund"}
+{"id": "paraphrase-001", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "আজকের বাজার দর কত?", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "paraphrase-002", "split": "test", "lang": "bn", "category": "paraphrase", "text": "পেঁয়াজের দাম কত", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "paraphrase-003", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "দাম কত যাচ্ছে", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "paraphrase-004", "split": "test", "lang": "bn", "category": "paraphrase", "text": "পাবনার দর বলুন", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "paraphrase-005", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "বাজারদর জানতে চাই", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "paraphrase-006", "split": "test", "lang": "bn", "category": "paraphrase", "text": "আমার মজুত কত আছে", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "paraphrase-007", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "আমার কাছে কত কেজি পেঁয়াজ আছে", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "paraphrase-008", "split": "test", "lang": "bn", "category": "paraphrase", "text": "মজুতের অবস্থা বলুন", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "paraphrase-009", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "গুদামে কত মাল আছে", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "paraphrase-010", "split": "test", "lang": "bn", "category": "paraphrase", "text": "এখন বিক্রি করব নাকি রাখব", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "paraphrase-011", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "বিক্রি করব না অপেক্ষা করব, পরামর্শ দিন", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "paraphrase-012", "split": "test", "lang": "bn", "category": "paraphrase", "text": "কোন কোন অফার এসেছে", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "paraphrase-013", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "নতুন অফার আছে কি", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "paraphrase-014", "split": "test", "lang": "bn", "category": "paraphrase", "text": "অফারগুলো দেখান", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "paraphrase-015", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "আমার অর্ডারের খবর কী", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "paraphrase-016", "split": "test", "lang": "bn", "category": "paraphrase", "text": "অর্ডারগুলো দেখান", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "paraphrase-017", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "অর্ডার কোথায় আছে", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "paraphrase-018", "split": "test", "lang": "bn", "category": "paraphrase", "text": "অফারটা গ্রহণ করছি", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "paraphrase-019", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "অফারটি গ্রহণ করলাম", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "paraphrase-020", "split": "test", "lang": "bn", "category": "paraphrase", "text": "এই অফারে রাজি আছি", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "paraphrase-021", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "অফারটা নিতে চাই", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "paraphrase-022", "split": "test", "lang": "bn", "category": "paraphrase", "text": "২০০ কেজির অফারটা নেব", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "paraphrase-023", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "৫ মণের অফারটা গ্রহণ করুন", "status": "resolved", "tool": "accept", "quantity": "5", "unit": "maund"}
+{"id": "paraphrase-024", "split": "test", "lang": "bn", "category": "paraphrase", "text": "অফারটি প্রত্যাখ্যান করছি", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "paraphrase-025", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "এই অফার নাকচ করুন", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "paraphrase-026", "split": "test", "lang": "bn", "category": "paraphrase", "text": "পাল্টা দর দিতে চাই", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "paraphrase-027", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "পাল্টা প্রস্তাব দিন", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "paraphrase-028", "split": "test", "lang": "bn", "category": "paraphrase", "text": "পাল্টা অফার ১৫০ কেজি", "status": "resolved", "tool": "counter", "quantity": "150", "unit": "kg"}
+{"id": "paraphrase-029", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "ওজন ঠিক করতে চাই", "status": "resolved", "tool": "movement", "quantity": null, "unit": null}
+{"id": "paraphrase-030", "split": "test", "lang": "bn", "category": "paraphrase", "text": "মজুতের ওজন সমন্বয় করুন", "status": "resolved", "tool": "movement", "quantity": null, "unit": null}
+{"id": "paraphrase-031", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "৫ কেজি পেঁয়াজ পচে গেছে", "status": "resolved", "tool": "movement", "quantity": "5", "unit": "kg"}
+{"id": "paraphrase-032", "split": "test", "lang": "bn", "category": "paraphrase", "text": "১০ কেজি ক্ষতি হয়েছে", "status": "resolved", "tool": "movement", "quantity": "10", "unit": "kg"}
+{"id": "paraphrase-033", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "নতুন মজুত নিবন্ধন করতে চাই", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "paraphrase-034", "split": "test", "lang": "bn", "category": "paraphrase", "text": "নতুন লট যোগ করুন", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "paraphrase-035", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "১০০০ কেজি নতুন মজুত নিবন্ধন", "status": "resolved", "tool": "register", "quantity": "1000", "unit": "kg"}
+{"id": "paraphrase-036", "split": "test", "lang": "bn", "category": "paraphrase", "text": "অফার দিতে চাই", "status": "resolved", "tool": "send_offer", "quantity": null, "unit": null}
+{"id": "paraphrase-037", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "এই মজুতের জন্য অফার পাঠাতে চাই", "status": "resolved", "tool": "send_offer", "quantity": null, "unit": null}
+{"id": "paraphrase-038", "split": "test", "lang": "bn", "category": "paraphrase", "text": "৩০০ কেজির অফার পাঠান", "status": "resolved", "tool": "send_offer", "quantity": "300", "unit": "kg"}
+{"id": "paraphrase-039", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "ট্রাক লাগবে", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "paraphrase-040", "split": "test", "lang": "bn", "category": "paraphrase", "text": "পরিবহনের ব্যবস্থা করুন", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "paraphrase-041", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "মাল পাঠাতে গাড়ি দরকার", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "paraphrase-042", "split": "test", "lang": "bn", "category": "paraphrase", "text": "পরিদর্শন দরকার", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "paraphrase-043", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "কেউ এসে মজুত দেখে যান", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "paraphrase-044", "split": "test", "lang": "bn", "category": "paraphrase", "text": "গুদাম পরিদর্শন করাতে চাই", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "paraphrase-045", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "সাহায্য চাই", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "paraphrase-046", "split": "test", "lang": "bn", "category": "paraphrase", "text": "এজেন্টের সাথে কথা বলতে চাই", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "paraphrase-047", "split": "dev", "lang": "bn", "category": "paraphrase", "text": "আমাকে সাহায্য করুন", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "banglish-001", "split": "dev", "lang": "banglish", "category": "banglish", "text": "bazar dor koto", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "banglish-002", "split": "test", "lang": "banglish", "category": "banglish", "text": "peyajer dam koto", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "banglish-003", "split": "dev", "lang": "banglish", "category": "banglish", "text": "aajker dam", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "banglish-004", "split": "test", "lang": "banglish", "category": "banglish", "text": "dor bolen", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "banglish-005", "split": "dev", "lang": "banglish", "category": "banglish", "text": "amar mojut", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "banglish-006", "split": "test", "lang": "banglish", "category": "banglish", "text": "mojut koto ase", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "banglish-007", "split": "dev", "lang": "banglish", "category": "banglish", "text": "amar koto kg ache", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "banglish-008", "split": "test", "lang": "banglish", "category": "banglish", "text": "poramorsho din", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "banglish-009", "split": "dev", "lang": "banglish", "category": "banglish", "text": "bikri korbo naki rakhbo", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "banglish-010", "split": "test", "lang": "banglish", "category": "banglish", "text": "ekhon bechbo na rakhbo", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "banglish-011", "split": "dev", "lang": "banglish", "category": "banglish", "text": "offer gulo dekhao", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "banglish-012", "split": "test", "lang": "banglish", "category": "banglish", "text": "notun offer ache?", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "banglish-013", "split": "dev", "lang": "banglish", "category": "banglish", "text": "ki offer ase", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "banglish-014", "split": "test", "lang": "banglish", "category": "banglish", "text": "order er khobor", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "banglish-015", "split": "dev", "lang": "banglish", "category": "banglish", "text": "amar order gulo", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "banglish-016", "split": "test", "lang": "banglish", "category": "banglish", "text": "offer accept korbo", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "banglish-017", "split": "dev", "lang": "banglish", "category": "banglish", "text": "offer ta nibo", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "banglish-018", "split": "test", "lang": "banglish", "category": "banglish", "text": "offer grohon korlam", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "banglish-019", "split": "dev", "lang": "banglish", "category": "banglish", "text": "offer e raji", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "banglish-020", "split": "test", "lang": "banglish", "category": "banglish", "text": "200 kg offer accept koro", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "banglish-021", "split": "dev", "lang": "banglish", "category": "banglish", "text": "5 mon er offer ta nibo", "status": "resolved", "tool": "accept", "quantity": "5", "unit": "maund"}
+{"id": "banglish-022", "split": "test", "lang": "banglish", "category": "banglish", "text": "offer accept 2.5 mon", "status": "resolved", "tool": "accept", "quantity": "2.5", "unit": "maund"}
+{"id": "banglish-023", "split": "dev", "lang": "banglish", "category": "banglish", "text": "offer reject koro", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "banglish-024", "split": "test", "lang": "banglish", "category": "banglish", "text": "offer ta nakoch", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "banglish-025", "split": "dev", "lang": "banglish", "category": "banglish", "text": "palta offer dibo", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "banglish-026", "split": "test", "lang": "banglish", "category": "banglish", "text": "counter offer dite chai", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "banglish-027", "split": "dev", "lang": "banglish", "category": "banglish", "text": "ojon thik korbo", "status": "resolved", "tool": "movement", "quantity": null, "unit": null}
+{"id": "banglish-028", "split": "test", "lang": "banglish", "category": "banglish", "text": "10 kg poche geche", "status": "resolved", "tool": "movement", "quantity": "10", "unit": "kg"}
+{"id": "banglish-029", "split": "dev", "lang": "banglish", "category": "banglish", "text": "stock adjust koro", "status": "resolved", "tool": "movement", "quantity": null, "unit": null}
+{"id": "banglish-030", "split": "test", "lang": "banglish", "category": "banglish", "text": "notun mojut register", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "banglish-031", "split": "dev", "lang": "banglish", "category": "banglish", "text": "notun lot khulbo", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "banglish-032", "split": "test", "lang": "banglish", "category": "banglish", "text": "500 kg notun mojut", "status": "resolved", "tool": "register", "quantity": "500", "unit": "kg"}
+{"id": "banglish-033", "split": "dev", "lang": "banglish", "category": "banglish", "text": "offer pathao", "status": "resolved", "tool": "send_offer", "quantity": null, "unit": null}
+{"id": "banglish-034", "split": "test", "lang": "banglish", "category": "banglish", "text": "offer dite chai", "status": "resolved", "tool": "send_offer", "quantity": null, "unit": null}
+{"id": "banglish-035", "split": "dev", "lang": "banglish", "category": "banglish", "text": "300 kg er offer pathabo", "status": "resolved", "tool": "send_offer", "quantity": "300", "unit": "kg"}
+{"id": "banglish-036", "split": "test", "lang": "banglish", "category": "banglish", "text": "truck lagbe", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "banglish-037", "split": "dev", "lang": "banglish", "category": "banglish", "text": "transport chai", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "banglish-038", "split": "test", "lang": "banglish", "category": "banglish", "text": "gari dorkar", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "banglish-039", "split": "dev", "lang": "banglish", "category": "banglish", "text": "inspection chai", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "banglish-040", "split": "test", "lang": "banglish", "category": "banglish", "text": "keu ese mojut dekhe jan", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "banglish-041", "split": "dev", "lang": "banglish", "category": "banglish", "text": "sahajjo chai", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "banglish-042", "split": "test", "lang": "banglish", "category": "banglish", "text": "agent er help lagbe", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "english-001", "split": "dev", "lang": "en", "category": "english", "text": "what is the onion price today", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "english-002", "split": "test", "lang": "en", "category": "english", "text": "market price", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "english-003", "split": "dev", "lang": "en", "category": "english", "text": "show market prices", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "english-004", "split": "test", "lang": "en", "category": "english", "text": "price please", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "english-005", "split": "dev", "lang": "en", "category": "english", "text": "how much stock do I have", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "english-006", "split": "test", "lang": "en", "category": "english", "text": "show my stock", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "english-007", "split": "dev", "lang": "en", "category": "english", "text": "my inventory", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "english-008", "split": "test", "lang": "en", "category": "english", "text": "should I sell or hold", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "english-009", "split": "dev", "lang": "en", "category": "english", "text": "give me advice", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "english-010", "split": "test", "lang": "en", "category": "english", "text": "hold or sell advice", "status": "resolved", "tool": "advice", "quantity": null, "unit": null}
+{"id": "english-011", "split": "dev", "lang": "en", "category": "english", "text": "show offers", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "english-012", "split": "test", "lang": "en", "category": "english", "text": "any new offers?", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "english-013", "split": "dev", "lang": "en", "category": "english", "text": "list my offers", "status": "resolved", "tool": "offers", "quantity": null, "unit": null}
+{"id": "english-014", "split": "test", "lang": "en", "category": "english", "text": "show my orders", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "english-015", "split": "dev", "lang": "en", "category": "english", "text": "order status", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "english-016", "split": "test", "lang": "en", "category": "english", "text": "accept the offer", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "english-017", "split": "dev", "lang": "en", "category": "english", "text": "I accept this offer", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "english-018", "split": "test", "lang": "en", "category": "english", "text": "accept the 200 kg offer", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "english-019", "split": "dev", "lang": "en", "category": "english", "text": "accept offer for 3 maunds", "status": "resolved", "tool": "accept", "quantity": "3", "unit": "maund"}
+{"id": "english-020", "split": "test", "lang": "en", "category": "english", "text": "yes, accept it", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "english-021", "split": "dev", "lang": "en", "category": "english", "text": "reject the offer", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "english-022", "split": "test", "lang": "en", "category": "english", "text": "decline this offer", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "english-023", "split": "dev", "lang": "en", "category": "english", "text": "make a counter offer", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "english-024", "split": "test", "lang": "en", "category": "english", "text": "counteroffer 150 kg", "status": "resolved", "tool": "counter", "quantity": "150", "unit": "kg"}
+{"id": "english-025", "split": "dev", "lang": "en", "category": "english", "text": "record a weight adjustment", "status": "resolved", "tool": "movement", "quantity": null, "unit": null}
+{"id": "english-026", "split": "test", "lang": "en", "category": "english", "text": "5 kg rotted", "status": "resolved", "tool": "movement", "quantity": "5", "unit": "kg"}
+{"id": "english-027", "split": "dev", "lang": "en", "category": "english", "text": "record a loss of 12 kg", "status": "resolved", "tool": "movement", "quantity": "12", "unit": "kg"}
+{"id": "english-028", "split": "test", "lang": "en", "category": "english", "text": "register a new lot", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "english-029", "split": "dev", "lang": "en", "category": "english", "text": "add a new lot of 800 kg", "status": "resolved", "tool": "register", "quantity": "800", "unit": "kg"}
+{"id": "english-030", "split": "test", "lang": "en", "category": "english", "text": "make an offer", "status": "resolved", "tool": "send_offer", "quantity": null, "unit": null}
+{"id": "english-031", "split": "dev", "lang": "en", "category": "english", "text": "send an offer for 400 kg", "status": "resolved", "tool": "send_offer", "quantity": "400", "unit": "kg"}
+{"id": "english-032", "split": "test", "lang": "en", "category": "english", "text": "I need a truck", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "english-033", "split": "dev", "lang": "en", "category": "english", "text": "book transport", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "english-034", "split": "test", "lang": "en", "category": "english", "text": "I need an inspection", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "english-035", "split": "dev", "lang": "en", "category": "english", "text": "please inspect my storage", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "english-036", "split": "test", "lang": "en", "category": "english", "text": "I need help", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "english-037", "split": "dev", "lang": "en", "category": "english", "text": "talk to an agent", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "mixed-001", "split": "dev", "lang": "mixed", "category": "mixed", "text": "অফার accept করব", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "mixed-002", "split": "test", "lang": "mixed", "category": "mixed", "text": "২০০ kg অফার গ্রহণ", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "mixed-003", "split": "dev", "lang": "mixed", "category": "mixed", "text": "offer টা নিব", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "mixed-004", "split": "test", "lang": "mixed", "category": "mixed", "text": "price কত", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "mixed-005", "split": "dev", "lang": "mixed", "category": "mixed", "text": "আমার stock কত", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "mixed-006", "split": "test", "lang": "mixed", "category": "mixed", "text": "order দেখাও", "status": "resolved", "tool": "orders", "quantity": null, "unit": null}
+{"id": "mixed-007", "split": "dev", "lang": "mixed", "category": "mixed", "text": "counter offer দিব", "status": "resolved", "tool": "counter", "quantity": null, "unit": null}
+{"id": "mixed-008", "split": "test", "lang": "mixed", "category": "mixed", "text": "truck লাগবে", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "mixed-009", "split": "dev", "lang": "mixed", "category": "mixed", "text": "inspection চাই", "status": "resolved", "tool": "inspection", "quantity": null, "unit": null}
+{"id": "mixed-010", "split": "test", "lang": "mixed", "category": "mixed", "text": "help দরকার", "status": "resolved", "tool": "support", "quantity": null, "unit": null}
+{"id": "mixed-011", "split": "dev", "lang": "mixed", "category": "mixed", "text": "অফার reject করো", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "mixed-012", "split": "test", "lang": "mixed", "category": "mixed", "text": "৫ mon অফার accept", "status": "resolved", "tool": "accept", "quantity": "5", "unit": "maund"}
+{"id": "mixed-013", "split": "dev", "lang": "mixed", "category": "mixed", "text": "নতুন lot register", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "mixed-014", "split": "test", "lang": "mixed", "category": "mixed", "text": "offer পাঠাও", "status": "resolved", "tool": "send_offer", "quantity": null, "unit": null}
+{"id": "spelling-001", "split": "dev", "lang": "bn", "category": "spelling", "text": "অফার গ্রহন", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "spelling-002", "split": "test", "lang": "bn", "category": "spelling", "text": "অফার প্রত্যাখান", "status": "resolved", "tool": "reject", "quantity": null, "unit": null}
+{"id": "spelling-003", "split": "dev", "lang": "bn", "category": "spelling", "text": "আমার মজুদ", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "spelling-004", "split": "test", "lang": "bn", "category": "spelling", "text": "মজুদ নিবন্ধন", "status": "resolved", "tool": "register", "quantity": null, "unit": null}
+{"id": "spelling-005", "split": "dev", "lang": "bn", "category": "spelling", "text": "পরিবহণ চাই", "status": "resolved", "tool": "transport", "quantity": null, "unit": null}
+{"id": "spelling-006", "split": "test", "lang": "bn", "category": "spelling", "text": "অফার গ্রহণ ২০০ কেজী", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "spelling-007", "split": "dev", "lang": "bn", "category": "spelling", "text": "অফার গ্রহণ ২০০ কিলো", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "spelling-008", "split": "test", "lang": "bn", "category": "spelling", "text": "অফার গ্রহণ ১,০০০ কেজি", "status": "resolved", "tool": "accept", "quantity": "1000", "unit": "kg"}
+{"id": "spelling-009", "split": "dev", "lang": "bn", "category": "spelling", "text": "অফার গ্রহণ ৫ মন", "status": "resolved", "tool": "accept", "quantity": "5", "unit": "maund"}
+{"id": "spelling-010", "split": "test", "lang": "bn", "category": "spelling", "text": "অফার   গ্রহণ।", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "spelling-011", "split": "dev", "lang": "bn", "category": "spelling", "text": "অফার গ্রহণ ২০০কেজি", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "spelling-012", "split": "test", "lang": "bn", "category": "spelling", "text": "অফার‌ গ্রহণ", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "spelling-013", "split": "dev", "lang": "en", "category": "spelling", "text": "ACCEPT OFFER", "status": "resolved", "tool": "accept", "quantity": null, "unit": null}
+{"id": "spelling-014", "split": "test", "lang": "en", "category": "spelling", "text": "Accept Offer 200KG", "status": "resolved", "tool": "accept", "quantity": "200", "unit": "kg"}
+{"id": "spelling-015", "split": "dev", "lang": "bn", "category": "spelling", "text": "অফার গ্রহণ ২.৫ মণ", "status": "resolved", "tool": "accept", "quantity": "2.5", "unit": "maund"}
+{"id": "negation-001", "split": "dev", "lang": "bn", "category": "negation", "text": "অফার গ্রহণ করব না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-002", "split": "test", "lang": "bn", "category": "negation", "text": "অফারটা নেব না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-003", "split": "dev", "lang": "bn", "category": "negation", "text": "এই অফারে রাজি নই", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-004", "split": "test", "lang": "bn", "category": "negation", "text": "অফার গ্রহণ করিনি", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-005", "split": "dev", "lang": "bn", "category": "negation", "text": "অফার প্রত্যাখ্যান করবেন না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-006", "split": "test", "lang": "bn", "category": "negation", "text": "পরিবহন চাই না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-007", "split": "dev", "lang": "bn", "category": "negation", "text": "ট্রাক লাগবে না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-008", "split": "test", "lang": "bn", "category": "negation", "text": "পরিদর্শন দরকার নেই", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-009", "split": "dev", "lang": "bn", "category": "negation", "text": "অফার পাঠাবেন না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-010", "split": "test", "lang": "bn", "category": "negation", "text": "নতুন মজুত নিবন্ধন করব না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-011", "split": "dev", "lang": "bn", "category": "negation", "text": "ওজন সমন্বয় করবেন না", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-012", "split": "test", "lang": "bn", "category": "negation", "text": "অফার গ্রহণ ২০০ কেজি না, ৩০০ কেজি", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-013", "split": "dev", "lang": "banglish", "category": "negation", "text": "offer accept korbo na", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-014", "split": "test", "lang": "banglish", "category": "negation", "text": "offer ta nibo na", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-015", "split": "dev", "lang": "banglish", "category": "negation", "text": "transport lagbe na", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-016", "split": "test", "lang": "en", "category": "negation", "text": "don't accept the offer", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-017", "split": "dev", "lang": "en", "category": "negation", "text": "do not reject this offer", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-018", "split": "test", "lang": "en", "category": "negation", "text": "I don't need a truck", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation-019", "split": "dev", "lang": "en", "category": "negation", "text": "never send an offer", "status": "negated", "tool": null, "quantity": null, "unit": null}
+{"id": "negation_read-001", "split": "dev", "lang": "bn", "category": "negation_read", "text": "দাম জানি না, দর বলুন", "status": "resolved", "tool": "prices", "quantity": null, "unit": null}
+{"id": "negation_read-002", "split": "test", "lang": "en", "category": "negation_read", "text": "I don't know my stock, show my stock", "status": "resolved", "tool": "stock", "quantity": null, "unit": null}
+{"id": "ambiguous-001", "split": "dev", "lang": "bn", "category": "ambiguous", "text": "অফার গ্রহণ নাকি প্রত্যাখ্যান", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "ambiguous-002", "split": "test", "lang": "en", "category": "ambiguous", "text": "accept or reject the offer", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "ambiguous-003", "split": "dev", "lang": "bn", "category": "ambiguous", "text": "অফার পাঠাও আর ট্রাক লাগবে", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "ambiguous-004", "split": "test", "lang": "bn", "category": "ambiguous", "text": "অফার গ্রহণ ২০০ কেজি ৩০০ কেজি", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "ambiguous-005", "split": "dev", "lang": "bn", "category": "ambiguous", "text": "আমার মজুতের দাম কত", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "ambiguous-006", "split": "test", "lang": "banglish", "category": "ambiguous", "text": "offer accept korbo kina", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "ambiguous-007", "split": "dev", "lang": "en", "category": "ambiguous", "text": "show offers and orders", "status": "ambiguous", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-001", "split": "dev", "lang": "bn", "category": "invalid", "text": "হ্যালো", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-002", "split": "test", "lang": "bn", "category": "invalid", "text": "আপনি কেমন আছেন", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-003", "split": "dev", "lang": "bn", "category": "invalid", "text": "আজ আবহাওয়া কেমন", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-004", "split": "test", "lang": "bn", "category": "invalid", "text": "২০০ কেজি", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-005", "split": "dev", "lang": "en", "category": "invalid", "text": "200", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-006", "split": "test", "lang": "bn", "category": "invalid", "text": "অফার গ্রহণ ২০০", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-007", "split": "dev", "lang": "en", "category": "invalid", "text": "accept offer 200", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-008", "split": "test", "lang": "en", "category": "invalid", "text": "asdfgh", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-009", "split": "dev", "lang": "en", "category": "invalid", "text": "😀👍", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-010", "split": "test", "lang": "bn", "category": "invalid", "text": "ধানের দাম কত", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-011", "split": "dev", "lang": "en", "category": "invalid", "text": "potato price", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-012", "split": "test", "lang": "bn", "category": "invalid", "text": "আলুর মজুত কত", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-013", "split": "dev", "lang": "bn", "category": "invalid", "text": "রসুনের অফার গ্রহণ", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-014", "split": "test", "lang": "en", "category": "invalid", "text": "delete all my data", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-015", "split": "dev", "lang": "bn", "category": "invalid", "text": "পেমেন্ট করুন", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-016", "split": "test", "lang": "bn", "category": "invalid", "text": "টাকা পাঠান", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-017", "split": "dev", "lang": "en", "category": "invalid", "text": "cancel my order", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-018", "split": "test", "lang": "bn", "category": "invalid", "text": "অর্ডার বাতিল করুন", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-019", "split": "dev", "lang": "en", "category": "invalid", "text": "my name is Rahim", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-020", "split": "test", "lang": "en", "category": "invalid", "text": "ok", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-021", "split": "dev", "lang": "bn", "category": "invalid", "text": "হ্যাঁ", "status": "unknown", "tool": null, "quantity": null, "unit": null}
+{"id": "invalid-022", "split": "test", "lang": "bn", "category": "invalid", "text": "অফার গ্রহণ ০ কেজি", "status": "unknown", "tool": null, "quantity": null, "unit": null}

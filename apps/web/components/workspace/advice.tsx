@@ -53,7 +53,6 @@ export async function AdvicePage({
       <Link className="work-link" href={`${base}/stock/${id}`}>
         {lot.label}
       </Link>
-      <h1>{local(locale, "অপেক্ষা নাকি বিক্রি", "Hold or sell")}</h1>
       <section className="work-panel">
         <h2>{local(locale, "নিট আয় তুলনা", "Compare net proceeds")}</h2>
         <p>

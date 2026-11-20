@@ -108,6 +108,11 @@ jobs:
       - run: uv run --locked python -m app.migrate
       - run: uv run --locked alembic check
       - run: uv run --locked pytest -q
+      - name: Evaluate the Bangla command resolver
+        run: |
+          uv run --locked python -m evals.intent_eval --check
+          uv run --locked python -m evals.intent_eval --check --min-accuracy 0.9 \
+            --dataset evals/data/intent-challenge.jsonl
 
   container:
     runs-on: ubuntu-latest

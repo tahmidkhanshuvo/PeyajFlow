@@ -1,0 +1,302 @@
+{
+  "label": "challenge-after",
+  "resolver": "rules",
+  "commit": "94554e9",
+  "dataset": "evals/data/intent-challenge.jsonl",
+  "run_at": "2026-11-18T09:38:27+00:00",
+  "rows": 58,
+  "intent": {
+    "total": 58,
+    "accuracy": 0.9310344827586207,
+    "labels": [
+      "abstain",
+      "accept",
+      "advice",
+      "counter",
+      "inspection",
+      "movement",
+      "offers",
+      "orders",
+      "prices",
+      "register",
+      "reject",
+      "send_offer",
+      "stock",
+      "support",
+      "transport"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 0.8181818181818182,
+        "recall": 1.0,
+        "f1": 0.9,
+        "support": 18
+      },
+      "accept": {
+        "precision": 1.0,
+        "recall": 0.8571428571428571,
+        "f1": 0.923076923076923,
+        "support": 7
+      },
+      "advice": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "counter": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "offers": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "orders": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "prices": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5
+      },
+      "register": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "reject": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "send_offer": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "support": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "support": 2
+      },
+      "transport": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      }
+    },
+    "macro": {
+      "precision": 0.9212121212121213,
+      "recall": 0.8904761904761905,
+      "f1": 0.8993162393162393
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 18
+      },
+      "accept": {
+        "abstain": 1,
+        "accept": 6
+      },
+      "advice": {
+        "advice": 3
+      },
+      "counter": {
+        "counter": 2
+      },
+      "inspection": {
+        "inspection": 2
+      },
+      "movement": {
+        "movement": 3
+      },
+      "offers": {
+        "offers": 3
+      },
+      "orders": {
+        "orders": 2
+      },
+      "prices": {
+        "prices": 5
+      },
+      "register": {
+        "register": 2
+      },
+      "reject": {
+        "abstain": 2
+      },
+      "send_offer": {
+        "send_offer": 2
+      },
+      "stock": {
+        "stock": 3
+      },
+      "support": {
+        "abstain": 1,
+        "support": 1
+      },
+      "transport": {
+        "transport": 2
+      }
+    }
+  },
+  "status_accuracy": 0.9137931034482759,
+  "quantity": {
+    "rows": 8,
+    "exact_accuracy": 1.0,
+    "unit_accuracy": 1.0
+  },
+  "abstention": {
+    "rows": 18,
+    "false_action_rate": 0.0,
+    "false_actions": []
+  },
+  "wrong_write_actions": [],
+  "accuracy_by": {
+    "split": {
+      "challenge": {
+        "rows": 58,
+        "accuracy": 0.9310344827586207
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 5,
+        "accuracy": 1.0
+      },
+      "bn": {
+        "rows": 29,
+        "accuracy": 0.896551724137931
+      },
+      "en": {
+        "rows": 24,
+        "accuracy": 0.9583333333333334
+      }
+    },
+    "category": {
+      "challenge": {
+        "rows": 58,
+        "accuracy": 0.9310344827586207
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "challenge-018",
+      "text": "হ্যাঁ ভাই, দুইশো কেজির অফারে আমি রাজি",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "number_words"
+      }
+    },
+    {
+      "id": "challenge-024",
+      "text": "এই দামে দিব না, অফারটা বাদ দিন",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "negated"
+      }
+    },
+    {
+      "id": "challenge-025",
+      "text": "no thanks, reject it",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "negated"
+      }
+    },
+    {
+      "id": "challenge-039",
+      "text": "আমি বুঝতে পারছি না, একজন মানুষের সাথে কথা বলতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "negated"
+      }
+    },
+    {
+      "id": "challenge-046",
+      "text": "অফারটা নেব নাকি বাদ দেব বুঝছি না",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "negated"
+      }
+    }
+  ]
+}

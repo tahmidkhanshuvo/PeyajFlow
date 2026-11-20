@@ -103,6 +103,20 @@ test(
         signIn(browser, "buyer", { width: 1280, height: 900 }),
         signIn(browser, "admin", { width: 1280, height: 900 }),
       ]);
+      await buyer
+        .locator(".workspace-nav, nav")
+        .getByRole("link", { name: "Bangla assistant" })
+        .click();
+      await buyer.getByRole("button", { name: "Start simulated call" }).click();
+      await buyer.getByRole("heading", { name: "Enter a command" }).waitFor();
+      await buyer.getByRole("button", { name: "End call" }).click();
+      await admin
+        .locator(".workspace-nav, nav")
+        .getByRole("link", { name: "Bangla assistant" })
+        .click();
+      await admin.getByRole("button", { name: "Start simulated call" }).click();
+      await admin.getByRole("heading", { name: "Enter a command" }).waitFor();
+      await admin.getByRole("button", { name: "End call" }).click();
       const [farmerLogin, buyerLogin] = await Promise.all([
         request("/v1/auth/demo", { identity: "farmer" }),
         request("/v1/auth/demo", { identity: "buyer" }),
@@ -202,8 +216,18 @@ test(
         .getByRole("button", { name: "Start simulated call" })
         .click();
       await farmer.getByRole("heading", { name: "Enter a command" }).waitFor();
+      await farmer
+        .getByLabel("Typed Bangla utterance")
+        .fill("offer accept korbo na");
+      await farmer.getByRole("button", { name: "Check command" }).click();
+      await farmer
+        .getByText("The command contained a negation, so nothing was staged.", {
+          exact: false,
+        })
+        .waitFor();
       await farmer.getByRole("button", { name: "Speak Bangla" }).click();
       await farmer.getByText("Review the transcript before sending.").waitFor();
+      await farmer.getByText("Understood: Accept offer · 200 kg.").waitFor();
       assert.equal(
         await farmer.getByLabel("Typed Bangla utterance").inputValue(),
         "অফার গ্রহণ ২০০ কেজি",
@@ -215,6 +239,25 @@ test(
       const offered = farmer
         .locator("select[name=offer] option")
         .filter({ hasText: lotName });
+      await farmer
+        .locator("select[name=offer]")
+        .selectOption(await offered.getAttribute("value"));
+      await farmer.getByRole("button", { name: "Send utterance" }).click();
+      await farmer
+        .getByRole("heading", { name: "Confirm the read-back" })
+        .waitFor();
+      await farmer.getByRole("button", { name: "Cancel this action" }).click();
+      await farmer.getByRole("heading", { name: "Enter a command" }).waitFor();
+      assert.equal(
+        (await request(`/v1/lots/${lot.id}`, undefined, farmerLogin.token))
+          .reserved_kg,
+        "0.000",
+      );
+      await farmer
+        .getByLabel("Typed Bangla utterance")
+        .fill("200 kg offer accept koro");
+      await farmer.getByRole("button", { name: "Check command" }).click();
+      await farmer.getByText("Understood: Accept offer · 200 kg.").waitFor();
       await farmer
         .locator("select[name=offer]")
         .selectOption(await offered.getAttribute("value"));

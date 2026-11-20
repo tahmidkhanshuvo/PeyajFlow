@@ -4,10 +4,15 @@ import {
   startTransition,
   useActionState,
   useState,
+  useEffect,
   type ReactNode,
 } from "react";
 import type { Locale } from "../../lib/copy";
 import { errorText, local } from "../../lib/workspace-copy";
+import {
+  triggerAuthTransition,
+  dismissAuthTransition,
+} from "../auth-transition-overlay";
 
 export type FormState = { error?: string };
 export type FormAction = (
@@ -21,17 +26,26 @@ export function WorkspaceForm({
   label,
   children,
   compactPhotos = false,
+  authType,
 }: {
   locale: Locale;
   action: FormAction;
   label: string;
   children?: ReactNode;
   compactPhotos?: boolean;
+  authType?: "signin" | "signout";
 }) {
   const [state, submit, pending] = useActionState(action, {});
   const [preparing, setPreparing] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const error = uploadError || state.error;
+
+  useEffect(() => {
+    if (authType && (state.error || uploadError)) {
+      dismissAuthTransition();
+    }
+  }, [authType, state.error, uploadError]);
+
   return (
     <form
       action={submit}
@@ -60,6 +74,9 @@ export function WorkspaceForm({
           } finally {
             setPreparing(false);
           }
+        }
+        if (authType) {
+          triggerAuthTransition(authType);
         }
         startTransition(() => submit(data));
       }}

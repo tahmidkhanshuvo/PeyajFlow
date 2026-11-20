@@ -43,7 +43,6 @@ export async function LogisticsPage({
       <Link className="work-link" href={`${base}/orders/${id}`}>
         {local(locale, "অর্ডারে ফিরুন", "Back to order")}
       </Link>
-      <h1>{local(locale, "পরিবহন", "Transport")}</h1>
       <section className="work-panel">
         <p>
           {kg(locale, data.quantity_kg)} · {taka(locale, data.goods_total_bdt)}{" "}

@@ -12,7 +12,7 @@
 
 ## 📖 Contents
 
-[About](#about-the-project) · [Features](#key-features) · [Setup](#run-locally) · [Work tracker](WORK_STATUS.md) · [Deployment](docs/DEPLOYMENT.md)
+[About](#about-the-project) · [Features](#key-features) · [Setup](#run-locally) · [Work tracker](WORK_STATUS.md) · [Deployment](docs/DEPLOYMENT.md) · [Decision-support features](docs/AI_FEATURES.md) · [Agent guide](AGENTS.md)
 
 ## About the project
 
@@ -93,13 +93,13 @@ Forecast evaluation replays weekly origins using reports published by each origi
 
 Hold/sell comparisons use local farmgate data for the lot's district and grade, verified-buyer offer terms when supplied, and explicit user assumptions. Freight ranking displays landed cost only when the buyer enters price and freight assumptions. A recorded transporter quote is the basis for the order's freight comparison and local booking record.
 
-The call simulator accepts typed Bangla commands and supports optional device Bangla playback. For example, `অফার গ্রহণ ২০০ কেজি` checks the stated quantity against the selected offer. Maunds use the selected lot's recorded conversion. A call lasts 10 minutes and a pending keypad challenge lasts up to 2 minutes. The challenge is bound to the exact action and cancellation or expiry leaves inventory unchanged. Inspection and support requests appear in the authorized operator or delegated agent's queue. The optional Twilio adapter provides a signed public keypad menu. Carrier verification and speech-to-text remain pending.
+Verified farmers and buyers can open **Bangla assistant** from the workspace. All enabled demo and showcase roles can also use it. The call simulator accepts spoken or typed commands in Bangla, Banglish, English or a mix, and supports optional device Bangla playback. For example, `অফার গ্রহণ ২০০ কেজি`, `200 kg offer accept koro` and `accept the 200 kg offer` all stage the same acceptance and check the stated quantity against the selected offer. Maunds use the selected lot's recorded conversion. A deterministic grammar resolves commands. Negated, ambiguous, out-of-scope requests and quantities without a unit are refused with a specific message instead of guessed. **Check command** shows what was understood before sending, and a pending change can be cancelled. See [decision-support features](docs/AI_FEATURES.md) for the grammar and measured results. A call lasts 10 minutes and a pending keypad challenge lasts up to 2 minutes. The challenge is bound to the exact action and cancellation or expiry leaves inventory unchanged. Inspection and support requests appear in the authorized operator or delegated agent's queue. The optional Twilio adapter provides a signed public keypad menu. Carrier verification and speech-to-text remain pending.
 
-Demo accounts require `APP_ENV=development` or `test` together with `DEMO_MODE=true`. Production sign-in uses an operator-provisioned account and a passphrase. Live OTP enrollment requires a provider integration. Cookie security defaults to HTTPS. Set `APP_COOKIE_SECURE=false` for a local HTTP preview only. [Account provisioning](docs/DEPLOYMENT.md#prepare-the-release)
+Demo accounts require `APP_ENV=development` or `test` together with `DEMO_MODE=true`. Farmers and buyers can register from the workspace and sign in with a passphrase after staff verification. Operators can review pending registrations under **Operations → Account verification**. Verified agents sign in with their passphrase and select **Signup verification**. The page uses `GET /v1/auth/verifications` to list pending registrations and `POST /v1/auth/verify` to record a decision. Staff review identity evidence independently. Operators can still provision accounts directly. Live OTP enrollment requires a provider integration. Cookie security defaults to HTTPS. Set `APP_COOKIE_SECURE=false` for a local HTTP preview only. [Account provisioning](docs/DEPLOYMENT.md#prepare-the-release)
 
 Local photo mode requires `PHOTO_STORAGE=local` in development or test. Set `PHOTO_DIR` to override the private directory. Hosted photo storage uses `PHOTO_STORAGE=s3` and `S3_BUCKET`, with optional `S3_ENDPOINT` and `S3_REGION`. Use runtime AWS credentials or `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`. Configure a private bucket. Authorized clients retrieve sanitized JPEGs through the API. Uploads accept JPEG, PNG, and WebP with a 3 MiB and 12 megapixel limit per photo.
 
-Storage risk is a checklist triage result. The current rules consider evidence freshness, reported moisture, odor and visible defects, curing, ventilation, measured humidity, and measured temperature. Photo rules flag evidence quality. People record and review visible defects. The pilot keeps the submitted observation and correction history. [UC Davis dry-onion handling reference](https://postharvest.ucdavis.edu/produce-facts-sheets/onions-dry)
+Storage risk is a checklist triage result. The current rules consider evidence freshness, reported moisture, odor and visible defects, curing, ventilation, measured humidity, and measured temperature. Photo rules flag evidence quality. People record and review visible defects. For photos that pass the quality checks, an experimental browser model can suggest a visible condition. The suggestion is saved, shown to reviewers as a hint, and compared with human review under **Operations → Photo model**. The pilot keeps the submitted observation and correction history. [UC Davis dry-onion handling reference](https://postharvest.ucdavis.edu/produce-facts-sheets/onions-dry)
 
 ### Checks
 
@@ -113,8 +113,9 @@ cd services/api
 uv run --locked ruff check .
 uv run --locked ruff format --check .
 uv run --locked pytest -q
+uv run --locked python -m evals.intent_eval --check
 ```
 
 For API integration tests, set both `DATABASE_URL` and `TEST_DATABASE_URL` to a disposable PostgreSQL database. Run `uv run --locked alembic upgrade head`, `uv run --locked alembic check`, and `uv run --locked pytest -q` against it. Tests create fictional records and exercise concurrent transactions.
 
-With the seeded API and web workspace running against a disposable database, install Chromium with `pnpm --filter @peyajflow/web exec playwright-core install chromium` and run `pnpm test:e2e`. Use `E2E_WEB_ORIGIN` and `E2E_API_ORIGIN` to override the default loopback ports 3000 and 8000. Use `PLAYWRIGHT_CHANNEL=msedge` to run against installed Edge. Set `E2E_SCREENSHOT_DIR` for pilot captures and `RELEASE_SCREENSHOT_DIR` for alerts and operations captures. Run `pnpm smoke` for readiness and routing checks. Set `SMOKE_DEMO_ID=farmer` to exercise a demo session locally.
+With the seeded API and web workspace running against a disposable database, install Chromium with `pnpm --filter @peyajflow/web exec playwright-core install chromium` and run `pnpm test:e2e`. Use `E2E_WEB_ORIGIN` and `E2E_API_ORIGIN` to override the default loopback ports 3000 and 8000. Use `PLAYWRIGHT_CHANNEL=msedge` to run against installed Edge. To include the signup review test, provision an agent in the disposable database and set `E2E_AGENT_USERNAME` and `E2E_AGENT_PASSWORD` to the test account's credentials. Set `E2E_SCREENSHOT_DIR` for pilot captures and `RELEASE_SCREENSHOT_DIR` for alerts and operations captures. Run `pnpm smoke` for readiness and routing checks. Set `SMOKE_DEMO_ID=farmer` to exercise a demo session locally.

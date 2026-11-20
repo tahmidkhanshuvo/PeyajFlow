@@ -277,6 +277,7 @@ test(
       await review.getByLabel("Reason").fill("Fictional pilot review");
       await review.getByRole("button", { name: "Save review" }).click();
       await agent.getByText("Human review", { exact: true }).first().waitFor();
+
       await farmer.goto(`${origin}${lotPath}/risk`);
       await farmer.getByRole("heading", { name: "High concern" }).waitFor();
       await farmer.getByText("Visible rot or mold was reported.").waitFor();
@@ -285,6 +286,89 @@ test(
       assert.equal(await farmer.locator("html").getAttribute("lang"), "bn");
       await farmer.getByRole("heading", { name: "উচ্চ সতর্কতা" }).waitFor();
       await checkViewport(farmer, "pilot-risk-mobile.png");
+      // A second inspection with clear photos reaches the photo model. A
+      // fixed-result worker stands in for the downloaded CLIP model, so this
+      // checks that suggestions are kept and shown to reviewers, not accuracy.
+      await farmer.route("**/condition-model.js", (route) =>
+        route.fulfill({
+          contentType: "text/javascript",
+          body: `self.onmessage = ({ data }) => self.postMessage({
+            id: data.id,
+            result: "sprouting",
+            scores: { rot: 0.05, sprouting: 0.8, damage: 0.05, clear: 0.05, uncertain: 0.05 },
+            model: "Xenova/clip-vit-base-patch32@6b7c523703ae26e39be4b03774966f8571c7f523",
+            rule: "clip-margin-v1",
+          });`,
+        }),
+      );
+      await farmer.goto(`${origin}${lotPath}/inspections`);
+      const bright = await farmer.evaluate(() => {
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 480;
+        const context = canvas.getContext("2d");
+        const pixels = context.createImageData(canvas.width, canvas.height);
+        let state = 7919;
+        for (let index = 0; index < pixels.data.length; index += 1) {
+          state ^= state << 13;
+          state ^= state >>> 17;
+          state ^= state << 5;
+          pixels.data[index] =
+            index % 4 === 3 ? 255 : 64 + ((state >>> 0) % 128);
+        }
+        context.putImageData(pixels, 0, 0);
+        return canvas.toDataURL("image/png").split(",")[1];
+      });
+      const second = await open(farmer, "New inspection");
+      await second.getByLabel("Curing", { exact: true }).selectOption("cured");
+      await second
+        .getByLabel("Ventilation", { exact: true })
+        .selectOption("good");
+      await second
+        .getByLabel("Surface moisture", { exact: true })
+        .selectOption("dry");
+      await second.getByLabel("Odor", { exact: true }).selectOption("normal");
+      await second.getByLabel("Uncertain evidence", { exact: true }).check();
+      await second.getByLabel("2–4 photos, up to 3 MiB each").setInputFiles(
+        ["shed.png", "bulbs.png"].map((name) => ({
+          name,
+          mimeType: "image/png",
+          buffer: Buffer.from(bright, "base64"),
+        })),
+      );
+      await second
+        .getByLabel(
+          "I consent to storing these photos for authorized inspection and review.",
+        )
+        .check();
+      await second.getByRole("button", { name: "Submit inspection" }).click();
+      await farmer
+        .getByText("Photo quality check · Human review needed")
+        .waitFor();
+      await farmer
+        .getByRole("button", { name: "Analyze visible condition" })
+        .first()
+        .click();
+      await farmer
+        .getByText(/Possible sprouting\. Top score 80% · Saved/)
+        .waitFor();
+      await farmer.reload();
+      await farmer
+        .getByText(/Possible sprouting\. Top score 80% · Saved/)
+        .waitFor();
+      await agent.goto(`${origin}${lotPath}/inspections`);
+      // The newest inspection is listed first.
+      const hinted = agent
+        .locator("details")
+        .filter({ has: agent.locator("summary", { hasText: "Review photos" }) })
+        .first();
+      await hinted.locator("summary").click();
+      await hinted
+        .getByText("Saved AI suggestions are hints only", { exact: false })
+        .waitFor();
+      assert.equal(
+        await hinted.getByLabel("Sprouting", { exact: true }).isChecked(),
+        false,
+      );
       await farmer.goto(base);
       await farmer.getByRole("button", { name: "Sign out" }).click();
       await farmer

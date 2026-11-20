@@ -114,6 +114,13 @@ export type Delegation = {
   name: string;
   district: string;
 };
+export type PhotoPrediction = {
+  flag: string;
+  top_score: number;
+  model: string;
+  rule: string;
+  created_at: string;
+};
 export type Inspection = {
   id: string;
   observed_on: string;
@@ -135,6 +142,7 @@ export type Inspection = {
     height: number;
     quality_flags: string[];
     quality_version: string;
+    prediction: PhotoPrediction | null;
   }[];
   review_history: {
     source: string;
@@ -152,5 +160,12 @@ export type Risk = {
   observed_on: string | null;
   method: string;
   reference_url: string;
+};
+export type PendingSignup = {
+  user_id: string;
+  membership_id: string;
+  name: string;
+  district: string;
+  role: "farmer" | "buyer";
 };
 export type Filters = Record<string, string | string[] | undefined>;

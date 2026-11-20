@@ -25,6 +25,7 @@ from sqlalchemy import (
 from sqlalchemy.engine import RowMapping
 from sqlalchemy.orm import Session
 
+from app import rate_limits
 from app.auth import Actor, Input, Role, audit, require_role
 from app.condition import MAX_PHOTO_BYTES, QUALITY_VERSION, VisibleFlag, prepare_photo
 from app.database import DB, metadata
@@ -81,6 +82,36 @@ reviews = Table(
 )
 
 
+predictions = Table(
+    "photo_predictions",
+    metadata,
+    Column("id", Uuid, primary_key=True, default=uuid4),
+    Column("photo_id", ForeignKey("inspection_photos.id"), nullable=False, index=True),
+    Column("actor_id", ForeignKey("memberships.id"), nullable=False),
+    Column("flag", String(32), nullable=False),
+    Column("scores", JSON, nullable=False),
+    Column("model", String(100), nullable=False),
+    Column("rule", String(24), nullable=False),
+    Column(
+        "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
+    ),
+)
+# The browser worker in apps/web/public/condition-model.js runs this exact model
+# and rule. A prediction from any other model or rule is rejected.
+PHOTO_MODEL = "Xenova/clip-vit-base-patch32@6b7c523703ae26e39be4b03774966f8571c7f523"
+PHOTO_RULE = "clip-margin-v1"
+MIN_TOP_SCORE = 0.58
+MIN_LEAD = 0.16
+MODEL_LABELS = {
+    "rot": VisibleFlag.ROT_OR_MOLD,
+    "sprouting": VisibleFlag.SPROUTING,
+    "damage": VisibleFlag.DAMAGE,
+    "clear": VisibleFlag.NO_OBVIOUS_DEFECT,
+    "uncertain": VisibleFlag.UNCERTAIN,
+}
+Score = Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)]
+
+
 def validate_flags(flags: list[VisibleFlag]) -> list[VisibleFlag]:
     if not flags or len(set(flags)) != len(flags):
         raise ValueError("Select one or more distinct visible flags")
@@ -123,12 +154,54 @@ class ReviewInput(Input):
         return validate_flags(value)
 
 
+class PredictionInput(Input):
+    model: Annotated[str, Field(max_length=100)]
+    rule: Annotated[str, Field(max_length=24)]
+    scores: dict[Literal["rot", "sprouting", "damage", "clear", "uncertain"], Score]
+
+    @field_validator("scores")
+    @classmethod
+    def complete(cls, value):
+        if len(value) != len(MODEL_LABELS) or not 0.98 <= sum(value.values()) <= 1.02:
+            raise ValueError("Supply all five scores from one classification")
+        return value
+
+
+class PredictionView(BaseModel):
+    flag: VisibleFlag
+    top_score: float
+    model: str
+    rule: str
+    created_at: datetime
+
+
 class PhotoView(BaseModel):
     id: UUID
     width: int
     height: int
     quality_flags: list[str]
     quality_version: str
+    prediction: PredictionView | None = None
+
+
+def decide(scores: dict[str, float]) -> VisibleFlag:
+    """Apply the worker's abstention rule to the submitted scores."""
+    (top, best), (_, runner_up) = sorted(
+        scores.items(), key=lambda item: item[1], reverse=True
+    )[:2]
+    if best >= MIN_TOP_SCORE and best - runner_up >= MIN_LEAD:
+        return MODEL_LABELS[top]
+    return VisibleFlag.UNCERTAIN
+
+
+def prediction_view(row: RowMapping) -> PredictionView:
+    return PredictionView(
+        flag=row["flag"],
+        top_score=max(row["scores"].values()),
+        model=row["model"],
+        rule=row["rule"],
+        created_at=row["created_at"],
+    )
 
 
 class ReviewView(BaseModel):
@@ -161,13 +234,25 @@ def review_rows(db: Session, inspection_id: UUID) -> list[RowMapping]:
 
 
 def inspection_view(db: Session, row: RowMapping) -> InspectionView:
-    images = [
-        PhotoView.model_validate(item)
-        for item in db.execute(
+    photo_rows = list(
+        db.execute(
             select(photos)
             .where(photos.c.inspection_id == row["id"])
             .order_by(photos.c.id)
         ).mappings()
+    )
+    latest: dict[UUID, PredictionView] = {}
+    if photo_rows:
+        for item in db.execute(
+            select(predictions)
+            .where(predictions.c.photo_id.in_([photo["id"] for photo in photo_rows]))
+            .order_by(predictions.c.created_at.desc(), predictions.c.id)
+            .limit(100)
+        ).mappings():
+            latest.setdefault(item["photo_id"], prediction_view(item))
+    images = [
+        PhotoView.model_validate({**item, "prediction": latest.get(item["id"])})
+        for item in photo_rows
     ]
     history = [ReviewView.model_validate(item) for item in review_rows(db, row["id"])]
     values = {
@@ -223,7 +308,7 @@ def create_inspection(
         raise HTTPException(422, "invalid_input") from error
     if not lot["stored_on"] <= body.observed_on <= today():
         raise HTTPException(422, "inspection_date_invalid")
-    if not 2 <= len(images) <= 4:
+    if not 1 <= len(images) <= 4:
         raise HTTPException(422, "photos_required")
     if not consent:
         raise HTTPException(422, "confirmation_required")
@@ -306,6 +391,54 @@ def read_photo(lot_id: UUID, photo_id: UUID, actor: Actor, db: DB):
             "X-Content-Type-Options": "nosniff",
         },
     )
+
+
+@router.post(
+    "/inspection-photos/{photo_id}/predictions",
+    response_model=PredictionView,
+    status_code=201,
+)
+def record_prediction(
+    lot_id: UUID, photo_id: UUID, body: PredictionInput, actor: Actor, db: DB
+):
+    """Keep a browser photo-model result so reviewers and operators can compare
+    it with human review. The label is derived here from the scores."""
+    get_lot(db, actor, lot_id)
+    quality = db.scalar(
+        select(photos.c.quality_flags)
+        .select_from(photos.join(inspections))
+        .where(photos.c.id == photo_id, inspections.c.lot_id == lot_id)
+    )
+    if quality is None:
+        raise HTTPException(404, "not_found")
+    if quality:
+        # Low-quality photos are left to people; the model is not run on them.
+        raise HTTPException(409, "photo_quality_insufficient")
+    if body.model != PHOTO_MODEL or body.rule != PHOTO_RULE:
+        raise HTTPException(422, "photo_model_unrecognized")
+    rate_limits.enforce(
+        db, "photo-prediction", str(actor.membership_id), limit=30, seconds=600
+    )
+    flag = decide(body.scores)
+    row = (
+        db.execute(
+            insert(predictions)
+            .values(
+                photo_id=photo_id,
+                actor_id=actor.membership_id,
+                flag=flag,
+                scores=body.scores,
+                model=body.model,
+                rule=body.rule,
+            )
+            .returning(predictions)
+        )
+        .mappings()
+        .one()
+    )
+    audit(db, actor, "inspection.photo_predicted", photo_id, flag=flag)
+    db.commit()
+    return prediction_view(row)
 
 
 @router.post("/inspections/{inspection_id}/review", response_model=InspectionView)

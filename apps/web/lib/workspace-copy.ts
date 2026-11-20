@@ -62,8 +62,8 @@ const errors: Record<string, [string, string]> = {
     "The previous fulfillment state could not be established.",
   ],
   voice_quantity_mismatch: [
-    "বক্তব্যের পরিমাণ অফারের পরিমাণের সঙ্গে মেলেনি।",
-    "The spoken quantity does not match the selected offer.",
+    "বক্তব্যের পরিমাণ অফার বা ফর্মের পরিমাণের সঙ্গে মেলেনি।",
+    "The spoken quantity does not match the offer or the quantity in the form.",
   ],
   market_csv_header: [
     "CSV-এর কলামের নাম নমুনার সঙ্গে মিলিয়ে দেখুন।",
@@ -102,6 +102,42 @@ const errors: Record<string, [string, string]> = {
     "That command was not recognized. Choose a command and try again.",
   ],
   voice_choose_lot: ["একটি মজুত বেছে নিন।", "Choose a lot."],
+  photo_model_unrecognized: [
+    "এই মডেলের ফল গ্রহণযোগ্য নয়। পাতাটি নতুন করে খুলুন।",
+    "This model version is not accepted. Reload the page.",
+  ],
+  photo_quality_insufficient: [
+    "ছবির মান কম, তাই মডেলের ফল রাখা হয় না। ছবিটি নিজে পর্যালোচনা করুন।",
+    "The photo failed the quality checks, so model results are not kept. Review it manually.",
+  ],
+  voice_choose_series: [
+    "একাধিক দরের ধারা আছে। একটি দরের ধারা বেছে নিন।",
+    "More than one market series is available. Choose a series.",
+  ],
+  voice_negated: [
+    "বক্তব্যে “না” আছে, তাই কিছু করা হয়নি। যা করতে চান তা সরাসরি বলুন।",
+    "The command contained a negation, so nothing was staged. Say the action you want directly.",
+  ],
+  voice_ambiguous: [
+    "একাধিক কাজ বা পরিমাণ শোনা গেছে। একটি কাজ ও একটি পরিমাণ বলুন।",
+    "More than one action or quantity was heard. Say one action and one quantity.",
+  ],
+  voice_say_quantity: [
+    "পরিমাণ অঙ্কে বলুন, সঙ্গে কেজি বা মণ। যেমন: অফার গ্রহণ ২০০ কেজি।",
+    "Say the quantity in digits with kg or maund, for example: accept offer 200 kg.",
+  ],
+  voice_onion_only: [
+    "এই সহকারী শুধু পেঁয়াজের কাজ করে।",
+    "This assistant handles onion trade only.",
+  ],
+  voice_unsupported: [
+    "এই কাজটি কলে করা যায় না। ওয়ার্কস্পেস থেকে করুন।",
+    "That action is not available by call. Use the workspace instead.",
+  ],
+  voice_tool_mismatch: [
+    "বেছে নেওয়া কাজ আর বক্তব্যের কাজ আলাদা। একটি মিলিয়ে নিন।",
+    "The selected command and the spoken command differ. Make them match.",
+  ],
   voice_wrong_lot: [
     "অফারটি এই মজুতের নয়।",
     "The offer belongs to a different lot.",
@@ -115,8 +151,8 @@ const errors: Record<string, [string, string]> = {
     "This call reached its turn limit. Start a new call.",
   ],
   voice_pending: [
-    "আগের কাজটি নিশ্চিত করুন অথবা কল শেষ করুন।",
-    "Confirm the pending action or end the call.",
+    "আগের কাজটি নিশ্চিত বা বাতিল করুন।",
+    "Confirm or cancel the pending action first.",
   ],
   voice_confirmation_expired: [
     "নিশ্চিতকরণের সময় শেষ বা বাতিল হয়েছে।",
@@ -125,6 +161,14 @@ const errors: Record<string, [string, string]> = {
   voice_wrong_digits: [
     "কোড মেলেনি। তিনবার ভুল হলে কাজটি বাতিল হবে।",
     "The keypad code did not match. Three failures cancel the action.",
+  ],
+  voice_wrong_digits_last: [
+    "কোড মেলেনি। আর একবার ভুল হলে কাজটি বাতিল হবে।",
+    "The keypad code did not match. One more failure cancels the action.",
+  ],
+  voice_confirmation_cancelled: [
+    "তিনবার ভুল কোডের কারণে কাজটি বাতিল হয়েছে। মজুত বদলায়নি।",
+    "Three wrong codes cancelled the action. Stock was not changed.",
   ],
   conversion_required: [
     "মণ হলে প্রতি মণে কেজি লিখুন।",
@@ -171,6 +215,10 @@ const errors: Record<string, [string, string]> = {
     "এই কাজ করার অনুমতি নেই।",
     "Your role does not allow this action.",
   ],
+  signup_review_access: [
+    "নিবন্ধন পর্যালোচনা করতে যাচাইকৃত এজেন্ট অ্যাকাউন্ট দিয়ে সাইন ইন করুন।",
+    "Sign in with a verified agent account to review registrations.",
+  ],
   demo_disabled: [
     "এই পরিবেশে ডেমো সাইন-ইন বন্ধ।",
     "Demo sign-in is disabled in this environment.",
@@ -203,6 +251,26 @@ const errors: Record<string, [string, string]> = {
     "The image exceeds the allowed size.",
   ],
   photos_required: ["দুই থেকে চারটি ছবি যোগ করুন।", "Attach two to four photos."],
+  username_taken: [
+    "এই অ্যাকাউন্ট আইডি ইতিমধ্যে ব্যবহৃত হচ্ছে।",
+    "This account ID is already in use.",
+  ],
+  nid_taken: [
+    "এই এনআইডি নম্বর ইতিমধ্যে নিবন্ধিত।",
+    "This NID number is already registered.",
+  ],
+  phone_taken: [
+    "এই ফোন নম্বর ইতিমধ্যে নিবন্ধিত।",
+    "This phone number is already registered.",
+  ],
+  account_not_verified: [
+    "সাইন ইন করতে অ্যাকাউন্ট যাচাই করা প্রয়োজন।",
+    "Your account needs verification before you can sign in.",
+  ],
+  already_processed: [
+    "এই নিবন্ধনের বিষয়ে আগেই সিদ্ধান্ত নেওয়া হয়েছে।",
+    "A decision has already been made on this registration.",
+  ],
 };
 
 export function errorText(locale: Locale, code: string) {

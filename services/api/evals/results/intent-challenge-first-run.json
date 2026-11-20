@@ -1,0 +1,641 @@
+{
+  "label": "challenge-first-run",
+  "resolver": "rules",
+  "commit": "57b0034",
+  "dataset": "evals/data/intent-challenge.jsonl",
+  "run_at": "2026-11-18T09:27:07+00:00",
+  "rows": 58,
+  "intent": {
+    "total": 58,
+    "accuracy": 0.603448275862069,
+    "labels": [
+      "abstain",
+      "accept",
+      "advice",
+      "counter",
+      "inspection",
+      "movement",
+      "offers",
+      "orders",
+      "prices",
+      "register",
+      "reject",
+      "send_offer",
+      "stock",
+      "support",
+      "transport"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 0.47058823529411764,
+        "recall": 0.8888888888888888,
+        "f1": 0.6153846153846153,
+        "support": 18
+      },
+      "accept": {
+        "precision": 0.8571428571428571,
+        "recall": 0.8571428571428571,
+        "f1": 0.8571428571428571,
+        "support": 7
+      },
+      "advice": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1": 0.5,
+        "support": 3
+      },
+      "counter": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "support": 2
+      },
+      "inspection": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1": 0.5,
+        "support": 3
+      },
+      "offers": {
+        "precision": 0.5,
+        "recall": 0.3333333333333333,
+        "f1": 0.4,
+        "support": 3
+      },
+      "orders": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "prices": {
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1": 0.5714285714285715,
+        "support": 5
+      },
+      "register": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "reject": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "send_offer": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "support": 2
+      },
+      "stock": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.6666666666666666,
+        "support": 3
+      },
+      "support": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "transport": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      }
+    },
+    "macro": {
+      "precision": 0.5996265172735761,
+      "recall": 0.4541798941798942,
+      "f1": 0.48515262515262514
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 16,
+        "accept": 1,
+        "orders": 1
+      },
+      "accept": {
+        "accept": 6,
+        "offers": 1
+      },
+      "advice": {
+        "abstain": 2,
+        "advice": 1
+      },
+      "counter": {
+        "abstain": 1,
+        "counter": 1
+      },
+      "inspection": {
+        "abstain": 1,
+        "stock": 1
+      },
+      "movement": {
+        "abstain": 2,
+        "movement": 1
+      },
+      "offers": {
+        "abstain": 1,
+        "offers": 1,
+        "send_offer": 1
+      },
+      "orders": {
+        "abstain": 2
+      },
+      "prices": {
+        "abstain": 3,
+        "prices": 2
+      },
+      "register": {
+        "register": 2
+      },
+      "reject": {
+        "abstain": 2
+      },
+      "send_offer": {
+        "abstain": 1,
+        "send_offer": 1
+      },
+      "stock": {
+        "abstain": 1,
+        "stock": 2
+      },
+      "support": {
+        "abstain": 2
+      },
+      "transport": {
+        "transport": 2
+      }
+    }
+  },
+  "status_accuracy": 0.6379310344827587,
+  "quantity": {
+    "rows": 8,
+    "exact_accuracy": 0.5,
+    "unit_accuracy": 0.5
+  },
+  "abstention": {
+    "rows": 18,
+    "false_action_rate": 0.1111111111111111,
+    "false_actions": [
+      "challenge-053",
+      "challenge-055"
+    ]
+  },
+  "wrong_write_actions": [
+    "challenge-013",
+    "challenge-055"
+  ],
+  "accuracy_by": {
+    "split": {
+      "challenge": {
+        "rows": 58,
+        "accuracy": 0.603448275862069
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 5,
+        "accuracy": 0.6
+      },
+      "bn": {
+        "rows": 29,
+        "accuracy": 0.6206896551724138
+      },
+      "en": {
+        "rows": 24,
+        "accuracy": 0.5833333333333334
+      }
+    },
+    "category": {
+      "challenge": {
+        "rows": 58,
+        "accuracy": 0.603448275862069
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "challenge-001",
+      "text": "ভাই আজকে পাবনায় পেঁয়াজ কত টাকা কেজি যাচ্ছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-003",
+      "text": "vai ajke peyaj koto taka kg",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-004",
+      "text": "how much is onion selling for",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-008",
+      "text": "what do I have left in storage",
+      "expected": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-009",
+      "text": "এখন বেচে দেওয়া ভালো নাকি আরও কিছুদিন রেখে দেব",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-011",
+      "text": "ekhon bikri korle labh hobe naki pore",
+      "expected": {
+        "status": "resolved",
+        "tool": "advice",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-012",
+      "text": "কেউ কি আমার পেঁয়াজ কিনতে চেয়েছে",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-013",
+      "text": "did any buyer send me an offer",
+      "expected": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    },
+    {
+      "id": "challenge-015",
+      "text": "আমার মাল কবে পৌঁছাবে",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-016",
+      "text": "where is my delivery",
+      "expected": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-022",
+      "text": "৪ মণের অফারটা নিয়ে নিন",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": "4",
+        "unit": "maund"
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "offers",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    },
+    {
+      "id": "challenge-024",
+      "text": "এই দামে দিব না, অফারটা বাদ দিন",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "negated"
+      }
+    },
+    {
+      "id": "challenge-025",
+      "text": "no thanks, reject it",
+      "expected": {
+        "status": "resolved",
+        "tool": "reject",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "negated"
+      }
+    },
+    {
+      "id": "challenge-027",
+      "text": "counter at 40 taka per kg",
+      "expected": {
+        "status": "resolved",
+        "tool": "counter",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-028",
+      "text": "গতকাল ওজন করে দেখি ২০ কেজি কম",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": "20",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-030",
+      "text": "about 3 kg went bad this week",
+      "expected": {
+        "status": "resolved",
+        "tool": "movement",
+        "quantity": "3",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-034",
+      "text": "I want to buy 500 kg from that lot",
+      "expected": {
+        "status": "resolved",
+        "tool": "send_offer",
+        "quantity": "500",
+        "unit": "kg"
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-037",
+      "text": "আমার গুদামের পেঁয়াজ একবার কেউ এসে চেক করুক",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "stock",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    },
+    {
+      "id": "challenge-038",
+      "text": "can someone check my onions for rot",
+      "expected": {
+        "status": "resolved",
+        "tool": "inspection",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-039",
+      "text": "আমি বুঝতে পারছি না, একজন মানুষের সাথে কথা বলতে চাই",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-040",
+      "text": "connect me to a person",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "challenge-046",
+      "text": "অফারটা নেব নাকি বাদ দেব বুঝছি না",
+      "expected": {
+        "status": "ambiguous",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "negated",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "negated"
+      }
+    },
+    {
+      "id": "challenge-053",
+      "text": "আমার অর্ডারটা ক্যানসেল করুন",
+      "expected": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    },
+    {
+      "id": "challenge-055",
+      "text": "অফার গ্রহণ দুইশো",
+      "expected": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    }
+  ]
+}

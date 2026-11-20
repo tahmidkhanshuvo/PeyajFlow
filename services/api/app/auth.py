@@ -44,7 +44,10 @@ class Input(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
 
-ShortText = Annotated[str, StringConstraints(min_length=1, max_length=100)]
+ShortText = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)
+]
+VerificationStatus = Literal["pending", "verified", "rejected"]
 router = APIRouter(prefix="/v1", tags=["Identity"])
 bearer = HTTPBearer(auto_error=False)
 TOKEN_TTL = timedelta(hours=8)
@@ -58,6 +61,19 @@ users = Table(
     Column("language", String(2), nullable=False),
     Column("demo_key", String(32), unique=True),
     Column("verified", Boolean, nullable=False, default=False),
+    Column("nid", String(20), unique=True),
+    Column("phone", String(20), unique=True),
+    Column("verification_status", String(20), nullable=False, server_default="pending"),
+    Column(
+        "verified_by",
+        Uuid,
+        ForeignKey("memberships.id", name="users_verified_by_fkey", use_alter=True),
+    ),
+    Column("verified_at", DateTime(timezone=True)),
+    CheckConstraint(
+        "verification_status in ('pending', 'verified', 'rejected')",
+        name="user_verification_status",
+    ),
 )
 organizations = Table(
     "organizations",
@@ -76,6 +92,9 @@ memberships = Table(
     CheckConstraint(
         "role in ('farmer', 'buyer', 'agent', 'admin')", name="membership_role"
     ),
+)
+member_accounts = memberships.join(users, memberships.c.user_id == users.c.id).join(
+    organizations
 )
 sessions = Table(
     "sessions",
@@ -118,6 +137,20 @@ class Profile(BaseModel):
     role: Role
     verified: bool
     is_demo: bool
+
+
+class VerificationRequest(Input):
+    user_id: UUID
+    action: Literal["verify", "reject"]
+    reason: Annotated[str, StringConstraints(max_length=500)] = ""
+
+
+class PendingSignup(BaseModel):
+    user_id: UUID
+    membership_id: UUID
+    name: str
+    district: str
+    role: Role
 
 
 class ProfileEdit(Input):
@@ -188,6 +221,7 @@ def seed_demo(db: Session) -> None:
                 language="bn",
                 demo_key=key,
                 verified=verified,
+                verification_status="verified",
             )
             .on_conflict_do_nothing()
         )
@@ -243,8 +277,13 @@ def actor_for(
                 memberships.c.role,
                 users.c.verified,
                 organizations.c.is_demo,
+                users.c.verification_status,
             )
-            .select_from(sessions.join(memberships).join(users).join(organizations))
+            .select_from(
+                sessions.join(
+                    member_accounts, sessions.c.membership_id == memberships.c.id
+                )
+            )
             .where(
                 sessions.c.token_hash == fingerprint(credentials.credentials),
                 sessions.c.expires_at > func.now(),
@@ -253,9 +292,11 @@ def actor_for(
         .mappings()
         .one_or_none()
     )
-    if row is None or (
-        row["is_demo"] and not (demo_enabled() or showcase_access_key())
-    ):
+    if row is None:
+        raise HTTPException(401, "session_expired")
+    if row["is_demo"] and not (demo_enabled() or showcase_access_key()):
+        raise HTTPException(401, "session_expired")
+    if not row["is_demo"] and row["verification_status"] != "verified":
         raise HTTPException(401, "session_expired")
     if os.getenv("APP_ENV") == "production":
         enforce(db, "member", str(row["membership_id"]), limit=120, seconds=60)
@@ -273,7 +314,7 @@ def require_role(actor: Profile, *roles: Role) -> None:
 def verified_agents(is_demo: bool):
     return (
         select(memberships.c.id)
-        .select_from(memberships.join(users).join(organizations))
+        .select_from(member_accounts)
         .where(
             memberships.c.role == Role.AGENT,
             users.c.verified,
@@ -283,11 +324,11 @@ def verified_agents(is_demo: bool):
 
 
 def audit(
-    db: Session, actor: Profile, action: str, resource_id: UUID, **context: str
+    db: Session, actor: Profile | UUID, action: str, resource_id: UUID, **context: str
 ) -> None:
     db.execute(
         insert(audit_log).values(
-            membership_id=actor.membership_id,
+            membership_id=actor if isinstance(actor, UUID) else actor.membership_id,
             action=action,
             resource_id=resource_id,
             context=context,
@@ -332,6 +373,91 @@ def demo_login(
     ):
         raise HTTPException(503, "demo_seed_required")
     return issue_token(db, member_id, response)
+
+
+def require_signup_reviewer(actor: Profile) -> None:
+    require_role(actor, Role.AGENT, Role.ADMIN)
+    if actor.is_demo or not actor.verified:
+        raise HTTPException(403, "role_forbidden")
+
+
+def signup_accounts(*columns):
+    return (
+        select(*columns)
+        .select_from(member_accounts)
+        .where(
+            organizations.c.is_demo.is_(False),
+            memberships.c.role.in_((Role.FARMER, Role.BUYER)),
+            users.c.nid.is_not(None),
+        )
+    )
+
+
+@router.get("/auth/verifications", response_model=list[PendingSignup])
+def pending_signups(
+    actor: Actor, db: DB, offset: Annotated[int, Query(ge=0, le=10000)] = 0
+):
+    require_signup_reviewer(actor)
+    return (
+        db.execute(
+            signup_accounts(
+                users.c.id.label("user_id"),
+                memberships.c.id.label("membership_id"),
+                users.c.name,
+                users.c.district,
+                memberships.c.role,
+            )
+            .where(users.c.verification_status == "pending")
+            .order_by(users.c.name, memberships.c.id)
+            .offset(offset)
+            .limit(50)
+        )
+        .mappings()
+        .all()
+    )
+
+
+def record_signup_decision(
+    db: Session, actor: Profile, user_id: UUID, status: VerificationStatus
+) -> None:
+    db.execute(
+        update(users)
+        .where(users.c.id == user_id)
+        .values(
+            verification_status=status,
+            verified=status == "verified",
+            verified_by=actor.membership_id,
+            verified_at=func.now(),
+        )
+    )
+    if status == "rejected":
+        db.execute(
+            delete(sessions).where(
+                sessions.c.membership_id.in_(
+                    select(memberships.c.id).where(memberships.c.user_id == user_id)
+                )
+            )
+        )
+
+
+@router.post("/auth/verify", status_code=204)
+def verify_user(body: VerificationRequest, actor: Actor, db: DB):
+    require_signup_reviewer(actor)
+    current = db.scalar(
+        signup_accounts(users.c.verification_status)
+        .where(users.c.id == body.user_id)
+        .with_for_update(of=users)
+    )
+    if current is None:
+        raise HTTPException(404, "not_found")
+    status = "verified" if body.action == "verify" else "rejected"
+    if current == status:
+        return
+    if current != "pending":
+        raise HTTPException(409, "already_processed")
+    record_signup_decision(db, actor, body.user_id, status)
+    audit(db, actor, f"user.{status}", body.user_id, reason=body.reason)
+    db.commit()
 
 
 def issue_token(db: Session, member_id: UUID, response: Response) -> SessionToken:
@@ -380,7 +506,7 @@ def list_delegations(
             )
             .select_from(
                 delegations.join(memberships, partner == memberships.c.id)
-                .join(users)
+                .join(users, memberships.c.user_id == users.c.id)
                 .join(organizations)
             )
             .where(own == actor.membership_id, organizations.c.is_demo == actor.is_demo)

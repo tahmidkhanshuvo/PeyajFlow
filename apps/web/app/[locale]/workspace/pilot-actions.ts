@@ -3,8 +3,14 @@
 import { redirect } from "next/navigation";
 import type { FormState } from "../../../components/workspace/form";
 import { isLocale, type Locale } from "../../../lib/copy";
-import type { Advice, VoiceCall, VoiceEntry } from "../../../lib/pilot-types";
+import type {
+  Advice,
+  VoiceCall,
+  VoiceEntry,
+  VoiceResolution,
+} from "../../../lib/pilot-types";
 import { api, ApiError, json } from "../../../lib/workspace-api";
+import type { PhotoPrediction } from "../../../lib/workspace-types";
 import { asciiDigits } from "../../../lib/workspace-values";
 
 type PilotOp =
@@ -75,7 +81,7 @@ export async function pilotMutate(
             ...fields(form, "pickup_on", "handling", "request_key"),
           }),
         );
-        destination = `${base}/orders/${resource}/logistics`;
+        destination = `${base}/orders/${resource}`;
         break;
       case "quote":
         await api(
@@ -120,6 +126,17 @@ export async function pilotMutate(
     return { error: errorCode(error) };
   }
   redirect(destination);
+}
+
+export async function startSimulatedCall(locale: Locale): Promise<void> {
+  await pilotMutate(locale, "start-call", "", "", {}, new FormData());
+}
+
+export async function resolveVoiceTask(
+  locale: Locale,
+  taskId: string,
+): Promise<void> {
+  await pilotMutate(locale, "resolve-task", taskId, "", {}, new FormData());
 }
 
 export async function runAdvice(
@@ -252,6 +269,13 @@ export async function runVoice(
         code = undefined;
         pendingId = undefined;
       }
+    } else if (mode === "cancel") {
+      await api(
+        `${path}/actions/${encodeURIComponent(value(form, "action_id"))}/cancel`,
+        { method: "POST" },
+      );
+      code = undefined;
+      pendingId = undefined;
     } else if (mode === "end") {
       await api(path, { method: "DELETE" });
       code = undefined;
@@ -262,6 +286,7 @@ export async function runVoice(
         json({
           phrase: value(form, "phrase"),
           params: voiceParams(form),
+          tool: value(form, "tool") || null,
         }),
       );
       if (turn.demo_code) {
@@ -282,5 +307,42 @@ export async function runVoice(
       pendingId = undefined;
     }
     return { call, code, pendingId, error: errorCode(error) };
+  }
+}
+
+export async function resolveVoice(
+  phrases: string[],
+): Promise<{ results?: VoiceResolution[]; error?: string }> {
+  const candidates = phrases
+    .map((phrase) => phrase.trim().slice(0, 100))
+    .filter(Boolean)
+    .slice(0, 3);
+  if (!candidates.length) return { error: "voice_repeat" };
+  try {
+    return {
+      results: await api<VoiceResolution[]>(
+        "/v1/voice/resolve",
+        json({ phrases: candidates }),
+      ),
+    };
+  } catch (error) {
+    return { error: errorCode(error) };
+  }
+}
+
+export async function savePhotoPrediction(
+  lot: string,
+  photo: string,
+  body: { model: string; rule: string; scores: Record<string, number> },
+): Promise<{ prediction?: PhotoPrediction; error?: string }> {
+  try {
+    return {
+      prediction: await api<PhotoPrediction>(
+        `/v1/lots/${encodeURIComponent(lot)}/inspection-photos/${encodeURIComponent(photo)}/predictions`,
+        json(body),
+      ),
+    };
+  } catch (error) {
+    return { error: errorCode(error) };
   }
 }

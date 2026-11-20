@@ -7,10 +7,17 @@ from datetime import UTC, datetime
 from hashlib import scrypt
 from threading import BoundedSemaphore
 from typing import Annotated
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException, Request, Response
-from pydantic import Field, SecretStr, StringConstraints
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SecretStr,
+    StringConstraints,
+    field_validator,
+)
 from sqlalchemy import Column, ForeignKey, String, Table, delete, insert, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -19,7 +26,10 @@ from app.auth import (
     Input,
     Role,
     SessionToken,
+    ShortText,
+    audit,
     issue_token,
+    member_accounts,
     memberships,
     organizations,
     sessions,
@@ -34,6 +44,12 @@ USERNAME = r"^[a-zA-Z][a-zA-Z0-9_.-]{2,63}$"
 PHONE = r"^\+[1-9][0-9]{7,14}$"
 DUMMY = f"{'0' * 32}:{'0' * 64}"
 KDF_SLOTS = BoundedSemaphore(2)
+BANGLA_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
+SIGNUP_CONFLICTS = {
+    "account_credentials_pkey": "username_taken",
+    "users_nid_key": "nid_taken",
+    "users_phone_key": "phone_taken",
+}
 credentials = Table(
     "account_credentials",
     metadata,
@@ -44,8 +60,31 @@ credentials = Table(
 
 
 class Login(Input):
-    username: Annotated[str, StringConstraints(pattern=USERNAME)]
+    model_config = ConfigDict(str_strip_whitespace=False)
+
+    username: Annotated[str, StringConstraints(strip_whitespace=True, pattern=USERNAME)]
     password: Annotated[SecretStr, Field(min_length=1, max_length=256)]
+
+
+class SignupRequest(Login):
+    name: ShortText
+    district: ShortText
+    password: Annotated[SecretStr, Field(min_length=14, max_length=256)]
+    phone: Annotated[str, StringConstraints(strip_whitespace=True, pattern=PHONE)]
+    nid: Annotated[
+        str, StringConstraints(strip_whitespace=True, pattern=r"^[0-9]{10,20}$")
+    ]
+    role: Role
+
+    @field_validator("phone", "nid", mode="before")
+    @classmethod
+    def normalize_digits(cls, value: object) -> object:
+        return value.translate(BANGLA_DIGITS) if isinstance(value, str) else value
+
+
+class SignupResponse(BaseModel):
+    membership_id: UUID
+    message: str
 
 
 def derive(password: str, salt: bytes) -> bytes:
@@ -69,12 +108,16 @@ def sign_in(body: Login, request: Request, response: Response, db: DB):
     enforce(db, "sign-in-account", username, limit=8, seconds=900)
     row = (
         db.execute(
-            select(credentials)
-            .select_from(credentials.join(memberships).join(organizations))
+            select(credentials, users.c.verification_status)
+            .select_from(
+                credentials.join(
+                    member_accounts, credentials.c.membership_id == memberships.c.id
+                )
+            )
             .where(
                 credentials.c.username == username, organizations.c.is_demo.is_(False)
             )
-            .with_for_update(read=True, of=credentials)
+            .with_for_update(read=True, of=(credentials, users))
         )
         .mappings()
         .one_or_none()
@@ -91,7 +134,66 @@ def sign_in(body: Login, request: Request, response: Response, db: DB):
         KDF_SLOTS.release()
     if row is None or not correct:
         raise HTTPException(401, "credentials_invalid")
+    if row["verification_status"] != "verified":
+        raise HTTPException(403, "account_not_verified")
     return issue_token(db, row["membership_id"], response)
+
+
+@router.post("/signup", response_model=SignupResponse, status_code=201)
+def signup(body: SignupRequest, request: Request, db: DB):
+    if body.role not in (Role.FARMER, Role.BUYER):
+        raise HTTPException(403, "role_forbidden")
+
+    client = request.client.host if request.client else "unknown"
+    enforce(db, "signup-client", client, limit=20, seconds=300)
+
+    if not KDF_SLOTS.acquire(blocking=False):
+        raise HTTPException(429, "rate_limited", headers={"Retry-After": "2"})
+    try:
+        digest = password_digest(body.password.get_secret_value())
+    finally:
+        KDF_SLOTS.release()
+
+    member_id, user_id, org_id = uuid4(), uuid4(), uuid4()
+    try:
+        db.execute(
+            insert(users).values(
+                id=user_id,
+                name=body.name,
+                district=body.district,
+                language="bn",
+                phone=body.phone,
+                nid=body.nid,
+            )
+        )
+        db.execute(insert(organizations).values(id=org_id, name=body.name))
+        db.execute(
+            insert(memberships).values(
+                id=member_id, user_id=user_id, organization_id=org_id, role=body.role
+            )
+        )
+        db.execute(
+            insert(credentials).values(
+                username=body.username.casefold(),
+                membership_id=member_id,
+                password_digest=digest,
+            )
+        )
+        audit(db, member_id, "user.signed_up", user_id)
+        db.commit()
+    except IntegrityError as error:
+        db.rollback()
+        code = SIGNUP_CONFLICTS.get(
+            getattr(getattr(error.orig, "diag", None), "constraint_name", None)
+        )
+        if code is None:
+            raise
+        raise HTTPException(409, code) from None
+
+    return SignupResponse(
+        membership_id=member_id,
+        message="Account created. Awaiting agent verification.",
+    )
 
 
 def provision(
@@ -125,7 +227,8 @@ def provision(
             name=name.strip(),
             district=district.strip(),
             language="bn",
-            verified=role == Role.ADMIN,
+            verified=role in (Role.ADMIN, Role.AGENT),
+            verification_status="verified",
         )
     )
     db.execute(
