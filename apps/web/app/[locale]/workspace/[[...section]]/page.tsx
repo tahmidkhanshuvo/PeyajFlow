@@ -143,16 +143,12 @@ async function panel(
   if (page === "operations") {
     redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
   }
-  if (page === "voice") {
+  if (page === "voice" || page === "simulator") {
     redirect(`/${locale}/call-simulator${id ? `/${id}` : ""}`);
   }
   if (!page) return <Overview {...context} filters={filters} />;
   if (
     page !== "alerts" &&
-<<<<<<< Updated upstream
-    !((page === "voice" || page === "simulator") && canUseVoice(actor)) &&
-=======
->>>>>>> Stashed changes
     !destinations(locale, actor).some(([path]) => path === page)
   ) {
     if (page === "verifications") {
@@ -195,12 +191,6 @@ async function panel(
     if (page === "profile") return ProfilePage(context);
   }
   if (page === "imports" && !child) return ImportsPage({ ...context, id });
-<<<<<<< Updated upstream
-  if (page === "voice" && !child) return VoicePage({ ...context, id });
-  if (page === "simulator" && !id && canUseVoice(context.actor))
-    return SimulatorPage(context);
-=======
->>>>>>> Stashed changes
   if (id && page === "stock") {
     if (!child) return LotPage({ ...context, id });
     if (child === "inspections") return InspectionsPage({ ...context, id });
@@ -226,7 +216,7 @@ export default async function WorkspacePage({
     const filters = await searchParams;
     redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
   }
-  if (section[0] === "voice") {
+  if (section[0] === "voice" || section[0] === "simulator") {
     const id = section[1];
     redirect(`/${locale}/call-simulator${id ? `/${id}` : ""}`);
   }

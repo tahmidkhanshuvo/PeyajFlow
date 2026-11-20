@@ -193,18 +193,7 @@ export function ChatbotWidget({
       );
     }
 
-<<<<<<< Updated upstream
-    if (
-      q.includes("কল") ||
-      q.includes("ভয়েস") ||
-      q.includes("কথা") ||
-      q.includes("voice") ||
-      q.includes("call") ||
-      q.includes("phone")
-    ) {
-=======
     if (q.includes("পরিবহন") || q.includes("ট্রাক") || q.includes("ডেলিভারি") || q.includes("logistics") || q.includes("delivery") || q.includes("truck")) {
->>>>>>> Stashed changes
       return t(
         "পেঁয়াজ সরবরাহে পরিবহন বুক করতে 'অর্ডার' সেকশন থেকে লজিস্টিক কোটেশন দেখুন এবং ট্রাক নির্বাচন করুন।",
         "To arrange transport for your onion dispatch, check the 'Orders' section to review logistics quotes and assign trucks.",
@@ -334,14 +323,7 @@ export function ChatbotWidget({
                   {t("পেঁয়াজফ্লো এআই সহকারী", "PeyajFlow AI Assistant")}
                 </h3>
                 <span className="chatbot-subtitle">
-<<<<<<< Updated upstream
-                  {t(
-                    "সক্রিয় · বাংলায় সাহায্য প্রস্তুত",
-                    "Always online · Voice ready",
-                  )}
-=======
                   {t("সক্রিয় · বাংলায় সাহায্য প্রস্তুত", "Always online · Speech-to-text ready")}
->>>>>>> Stashed changes
                 </span>
               </div>
             </div>
@@ -368,16 +350,6 @@ export function ChatbotWidget({
                 className="chatbot-chip-btn"
                 onClick={() => handleSendMessage(chip.prompt)}
               >
-<<<<<<< Updated upstream
-                {chip.action === "call" && (
-                  <WorkspaceIcon
-                    name="mic"
-                    size={12}
-                    className="chatbot-chip-icon"
-                  />
-                )}
-=======
->>>>>>> Stashed changes
                 <span>{chip.label}</span>
               </button>
             ))}
@@ -455,18 +427,11 @@ export function ChatbotWidget({
               className="chatbot-text-input"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-<<<<<<< Updated upstream
-              placeholder={t(
-                "বার্তা লিখুন বা প্রশ্ন করুন...",
-                "Type a message or question...",
-              )}
-=======
               placeholder={
                 isListening
                   ? t("শুনছি... এখন কথা বলুন...", "Listening... Speak now...")
                   : t("বার্তা লিখুন বা প্রশ্ন করুন...", "Type a message or question...")
               }
->>>>>>> Stashed changes
               aria-label={t("বার্তা লিখুন", "Type message")}
             />
 

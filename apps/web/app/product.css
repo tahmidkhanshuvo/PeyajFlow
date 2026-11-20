@@ -15531,8 +15531,6 @@ html[data-theme="dark"] .demand-card:hover {
   color: #a38e97;
   border-color: rgba(222, 106, 143, 0.16);
 }
-<<<<<<< Updated upstream
-=======
 
 /* ─────────────────────────────────────────────────────────────
    STANDALONE CALL SIMULATOR PAGE (DECOUPLED FROM DASHBOARD)
@@ -15657,6 +15655,3 @@ html[data-theme="dark"] .demand-card:hover {
   max-width: 1080px;
   margin: 0 auto;
 }
-
-
->>>>>>> Stashed changes
