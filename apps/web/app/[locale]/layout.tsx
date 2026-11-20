@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import "@fontsource-variable/inter";
@@ -47,7 +48,9 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <head>
-        <script
+        <Script
+          id="theme-initialization"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('pf-theme');if(!t){var m=document.cookie.match(/(?:^|;\\s*)pf-theme=(dark|light)/);if(m)t=m[1];}var isDark=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches);var root=document.documentElement;if(isDark){root.classList.add('dark');root.classList.remove('light');root.setAttribute('data-theme','dark');}else{root.classList.add('light');root.classList.remove('dark');root.setAttribute('data-theme','light');}}catch(e){}})();`,
           }}
