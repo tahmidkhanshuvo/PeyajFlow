@@ -176,7 +176,7 @@ How to read these figures:
 
 ### Build a Live /docs Module
 
-☐ Tick only if the team will ship it. The API already publishes OpenAPI docs at `/docs`.
+☑ Implemented in the web app. `/docs` combines the pitch deck, technical reference, OpenAPI inventory and live activity. Verified administrators use `/docs/manage` to edit drafts, publish editions and control access. The browser and API access checks were verified together in the release build.
 
 ### Anything else about your AI usage?
 

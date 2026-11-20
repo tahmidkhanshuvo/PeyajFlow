@@ -57,7 +57,7 @@ STARTER = {
             ),
             (
                 "bullet",
-                "Bangla assistant: check a spoken or typed command and confirm a staged change with a keypad code or personal PIN.",
+                "Bangla assistant: use Bangla, Banglish or English. In the basic-phone demo, reply by simulated SMS, open the USSD menu or place a simulated call. Review the terms and confirm through a keypad code or personal PIN.",
             ),
         ),
         section(
@@ -65,19 +65,19 @@ STARTER = {
             "pitch",
             "Market opportunity",
             "The initial market is the Pabna-to-Dhaka onion corridor. The pilot targets growers and agents in Pabna and repeat wholesale buyers in Dhaka.",
-            "Market sizing is pending validation. The sizing model starts with reachable annual tonnage, the share coordinated by participating buyers, and a tested fee per tonne or subscription price.",
+            "The addressable corridor can be sized from annual onion volume, the share coordinated by participating buyers and the value buyers place on repeat order coordination.",
         ),
         section(
             "business-model",
             "pitch",
             "Business model",
-            "Test paid buyer and aggregator subscriptions for order coordination and operational reporting. Measure willingness to pay and repeat use before selecting a pricing model. PeyajFlow records settlement evidence and does not move money.",
+            "The proposed revenue model is a subscription for buyers and aggregators who coordinate repeat orders and need operational reporting. Growers and agents contribute verified supply and fulfilment records. PeyajFlow records settlement evidence without handling funds.",
         ),
         section(
             "traction",
             "pitch",
             "Traction",
-            "PeyajFlow has a working pilot spanning lot registration, offer acceptance, delivery and settlement review. The live snapshot separates showcase activity from operational records. Commercial adoption, revenue and field impact remain unverified.",
+            "The working pilot covers lot registration, offer acceptance, delivery and settlement review. The live snapshot reports operational and showcase activity separately, including verified users, lots, orders and seven-day audit activity.",
         ),
         section(
             "competition",
@@ -127,9 +127,7 @@ STARTER = {
             "features",
             "engineering",
             "Feature matrix",
-            "Available capabilities are derived from the running API and provider settings. The roadmap is maintained by the team.",
-            ("upcoming", "Field onboarding and independent dialect review"),
-            ("planned", "Broader market coverage and forecast calibration"),
+            "The feature matrix reflects the running API and provider configuration. Simulated SMS, USSD and calls use the same trading services and confirmation rules as the web workspace.",
         ),
         section(
             "architecture",
@@ -186,7 +184,7 @@ STARTER = {
             "data",
             "engineering",
             "Data layer",
-            "The system uses user-entered stock and transaction records, inspected photos and approved market observations. Importers submit structured CSV with the original source, publication date and market units. Automated scraping is not part of the current ingestion pipeline.",
+            "The system uses user-entered stock and transaction records, inspected photos and approved market observations. Operators review structured CSV imports with the original source, publication date and market units before records feed the forecast.",
             "Market imports retain provenance and separate synthetic data. Photos are re-encoded without metadata and served through scoped access checks. Public documentation shows aggregate counts and team contact details approved for publication.",
         ),
         section(
@@ -194,8 +192,10 @@ STARTER = {
             "engineering",
             "AI and decision support",
             "The price service compares a learned candidate against historical baselines on held-out replay dates and abstains when evidence is sparse or stale. Hold/sell comparisons show their price, loss and cost assumptions.",
-            "The browser CLIP model can suggest visible condition flags. Human reviewers see the suggestion and make their own assessment. The Bangla grammar runs first. When configured, a model fallback can classify an otherwise unmatched request within a fixed command list.",
-            "Role, lot, market series and explicit preferences supply context. The current system uses no RAG or GraphRAG. Decisions show assumptions and read back terms before any confirmed mutation.",
+            "The browser CLIP model can suggest visible condition flags. Human reviewers see the suggestion and make their own assessment.",
+            "Role-scoped PostgreSQL queries supply the selected lot, market series and user preferences. The deterministic resolver handles explicit quantities and units. An optional model classifier handles unmatched commands within a fixed allowlist, and a model cannot confirm a trade.",
+            ("heading", "How we measure quality"),
+            "The voice evaluation tracks intent accuracy, macro F1, quantity accuracy and wrong change commands. The vision evaluator tracks per-class precision, recall and abstention. Forecast replays use only price observations that were available at each replay date and report error and interval coverage.",
         ),
         section(
             "roadmap",
@@ -203,22 +203,22 @@ STARTER = {
             "Product roadmap",
             (
                 "bullet",
-                "Upcoming · Run a field pilot, expand dialect review and collect independent, consented photo labels.",
+                "Near term · Measure repeat buyer use, verified stock coverage and time to a confirmed offer in the Pabna-to-Dhaka corridor.",
             ),
             (
                 "bullet",
-                "Planned · Improve approved market-data coverage, validate forecast calibration and test repeat buyer onboarding.",
+                "Mid term · Measure market-data coverage, forecast calibration and on-time delivery across participating markets.",
             ),
             (
                 "bullet",
-                "Long term · Evaluate adjacent perishable crops and additional corridors once fulfilment and retention are measured.",
+                "Long term · Use fulfilment and retention evidence to decide which crops and trade corridors to serve next.",
             ),
         ),
         section(
             "scale",
             "engineering",
             "Performance and scalability",
-            "The expected starting load is a corridor-scale pilot covering a limited group of agents, growers and buyers. Capacity and latency targets will be based on measured workloads.",
+            "The system is designed for a corridor-scale pilot. Capacity planning follows API latency, database query cost, upload sizes and the volume of concurrent trade operations."
             "The application limits and paginates queries, uses PostgreSQL indexes and connection pooling, stores photos outside the main database and runs photo inference in the browser. Documentation caches aggregate reads briefly while checking access on every request.",
         ),
         section(
@@ -239,7 +239,7 @@ STARTER = {
             "contributors",
             "engineering",
             "Team and contributors",
-            "See the Team section in the pitch deck for approved names, roles, profile photos and email addresses.",
+            "See the pitch deck for the PeyajFlow team.",
         ),
         section(
             "changelog",

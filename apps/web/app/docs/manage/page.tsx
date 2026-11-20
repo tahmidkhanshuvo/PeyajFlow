@@ -12,6 +12,7 @@ export default async function ManageDocsPage() {
     data = await api<AdminData>("/v1/docs/admin");
   } catch (failure) {
     if (!(failure instanceof ApiError)) throw failure;
+    const missingApi = failure.status === 404;
     return (
       <div className="docs-closed">
         <header>
@@ -26,8 +27,9 @@ export default async function ManageDocsPage() {
                 : "Documentation management is unavailable"}
           </h1>
           <p>
-            Documentation is managed by verified administrators in the
-            operational workspace.
+            {missingApi
+              ? "The connected API does not have the publishing endpoint. Deploy the matching API release and reload this page."
+              : "Documentation is managed by verified administrators in the operational workspace."}
           </p>
           <div className="docs-actions">
             <Link prefetch={false} className="docs-button" href="/en/workspace">

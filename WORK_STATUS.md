@@ -1,6 +1,11 @@
 # PeyajFlow work status
 
-Last updated November 20, 2026 (Asia/Dhaka).
+Last updated November 21, 2026 (Asia/Dhaka).
+
+## Showcase copy and hosted API check (November 21, 2026)
+
+- Updated the starter pitch and technical reference around the implemented phone simulator, decision-support controls and evaluation methods. The roadmap expresses measurable product outcomes.
+- The hosted frontend is serving the documentation shell. Render readiness returned 200 while both documentation API routes returned 404, so the connected backend is serving an older release. The publishing screen now identifies this API mismatch.
 
 ## Live documentation and publishing (November 20, 2026)
 

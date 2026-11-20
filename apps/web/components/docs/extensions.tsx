@@ -41,9 +41,7 @@ const extensions = new Map<string, Extension>([
                 <TeamCard key={`${member.email}-${index}`} member={member} />
               ))}
             </div>
-          ) : (
-            <p>Team profiles will appear here once approved for publication.</p>
-          )}
+          ) : null}
         </>
       ),
     },
@@ -88,7 +86,7 @@ const extensions = new Map<string, Extension>([
             </tbody>
           </table>
           <a className="docs-text-link" href="#roadmap">
-            Upcoming and planned work →
+            Growth milestones →
           </a>
         </>
       ),
@@ -120,7 +118,7 @@ const extensions = new Map<string, Extension>([
             ))}
           </ol>
         ) : (
-          <p>Starter edition. Published revisions will appear here.</p>
+          <p>Starter edition</p>
         ),
     },
   ],
