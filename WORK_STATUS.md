@@ -1,12 +1,15 @@
 # PeyajFlow work status
 
-Last updated November 21, 2026 (Asia/Dhaka).
+Last updated November 23, 2026 (Asia/Dhaka).
 
-## Align browser CI with the final workspace (November 21, 2026)
+## Align browser CI with the final workspace (November 23, 2026)
 
 - Updated Playwright coverage for the final dashboard, signup tabs, modal forms, custom voice dropdowns, receipt details and profile sign-out. The original stock reservation, photo privacy, reviewer hints, payment review and delegation assertions remain covered. Removed panels are checked through their authorized API contracts.
 - Browser workflow files run sequentially because they share demo accounts and a database. The optional reviewer-account workflow still requires its configured credentials.
 - Corrected mobile toolbar and receipt overflow, improved text contrast and control target sizes, and made the market table keyboard-focusable. The operations redirect now preserves audit filters.
+- Integrated main through `24bf88b`, preserving the standalone call simulator and chatbot dictation. Fixed three speech-recognition lint errors, formatted the newer UI files, corrected the simulator receipt link back to workspace orders, and fixed its session lookup from the nonexistent `/v1/auth/me` to `/v1/me`.
+- Production build, formatting, nine unit tests and release smoke passed. All four enabled browser workflows passed, including a final simulator rerun after the session, receipt link and badge contrast fixes. The optional reviewer-account workflow was skipped because credentials were not configured. ESLint reports zero errors and 13 existing warnings.
+- Render readiness returned 200, the public documentation route returned `403 docs_unavailable`, and anonymous admin access returned `401 sign_in_required`. This is the publishing gate, not a missing documentation environment variable. Added a hosted environment and publishing checklist to the deployment runbook. Browser dashboard inspection was stopped because Computer Use could not verify the browser URL.
 
 ## Restore Meem's final workspace UI (November 21, 2026)
 

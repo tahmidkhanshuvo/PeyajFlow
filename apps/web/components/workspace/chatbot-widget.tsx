@@ -1,11 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import type { Locale } from "../../lib/copy";
 import type { Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
 import { WorkspaceIcon } from "./icon";
+import type { Recognition } from "./speech-input";
+
+type DictationRecognition = Recognition & {
+  interimResults: boolean;
+  continuous: boolean;
+  onstart: (() => void) | null;
+  stop: () => void;
+};
 
 interface ChatMessage {
   id: string;
@@ -16,19 +23,19 @@ interface ChatMessage {
 
 export function ChatbotWidget({
   locale,
-  base = "",
-  actor,
 }: {
   locale: Locale;
   base?: string;
   actor?: Profile;
 }) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechHint, setSpeechHint] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<DictationRecognition | null>(null);
 
   const t = (bn: string, en: string) => local(locale, bn, en);
 
@@ -36,8 +43,8 @@ export function ChatbotWidget({
     id: "init-1",
     sender: "bot",
     text: t(
-      "সালাম/নমস্কার! আমি পেঁয়াজফ্লো স্মার্ট সহকারী। পেঁয়াজের মোকাম দর, মজুত যাচাই বা কেনাবেচা সম্পর্কে যেকোনো প্রশ্ন নিচে লিখে জানান। অথবা সরাসরি কথা বলতে মাইক্রোফোন আইকনে চাপ দিন।",
-      "Hello! I am your PeyajFlow Assistant. Ask me anything about onion market rates, stock weights, or trading offers. You can also tap the microphone icon below to simulate a direct voice call.",
+      "সালাম/নমস্কার! আমি পেঁয়াজফ্লো এআই সহকারী। পেঁয়াজের মোকাম দর, মজুত বা কেনাবেচা সম্পর্কে যেকোনো প্রশ্ন নিচে লিখে জানান, অথবা মাইক্রোফোন আইকনে চাপ দিয়ে মুখে বলুন।",
+      "Hello! I am your PeyajFlow AI Assistant. Ask me anything about onion market rates, stock weights, or trading offers. You can type below or tap the microphone icon to speak.",
     ),
     time: "এখন",
   };
@@ -67,8 +74,11 @@ export function ChatbotWidget({
       ),
     },
     {
-      label: t("সরাসরি কল করুন", "Simulate voice call"),
-      action: "call",
+      label: t("পরিবহন সহায়তা", "Logistics & Transport"),
+      prompt: t(
+        "পেঁয়াজ পরিবহনের ব্যবস্থা কীভাবে করব?",
+        "How to arrange onion transport and delivery?",
+      ),
     },
   ];
 
@@ -80,9 +90,90 @@ export function ChatbotWidget({
     }
   }, [isOpen, messages, isTyping]);
 
-  const navigateToVoiceCall = () => {
-    setIsOpen(false);
-    router.push(`${base}/voice`);
+  // Clean up speech recognition engine on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, []);
+
+  // Speech-to-Text Recognition Toggle (In-place dictation into the input box)
+  const toggleSpeechToText = () => {
+    if (isListening) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+      setIsListening(false);
+      setSpeechHint("");
+      return;
+    }
+
+    const browser = window as Window & {
+      SpeechRecognition?: new () => DictationRecognition;
+      webkitSpeechRecognition?: new () => DictationRecognition;
+    };
+    const BrowserRecognition =
+      browser?.SpeechRecognition || browser?.webkitSpeechRecognition;
+
+    if (!BrowserRecognition) {
+      setSpeechHint(
+        t(
+          "ব্রাউজারে ভয়েস সমর্থিত নয়, অনুগ্রহ করে টাইপ করুন।",
+          "Speech recognition unavailable in this browser. Please type.",
+        ),
+      );
+      setTimeout(() => setSpeechHint(""), 4000);
+      return;
+    }
+
+    try {
+      const recognition = new BrowserRecognition();
+      recognition.lang = locale === "bn" ? "bn-BD" : "en-US";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setSpeechHint(t("শুনছি... এখন বাংলায় বলুন", "Listening... Speak now"));
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0]?.transcript || "";
+        }
+        if (transcript.trim()) {
+          setInputText(transcript.trim());
+        }
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+        setSpeechHint("");
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        setSpeechHint("");
+        inputRef.current?.focus();
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      setSpeechHint("");
+    }
   };
 
   const generateBotReply = (userQuery: string): string => {
@@ -115,16 +206,30 @@ export function ChatbotWidget({
     }
 
     if (
-      q.includes("কল") ||
-      q.includes("ভয়েস") ||
-      q.includes("কথা") ||
-      q.includes("voice") ||
-      q.includes("call") ||
-      q.includes("phone")
+      q.includes("পরিবহন") ||
+      q.includes("ট্রাক") ||
+      q.includes("ডেলিভারি") ||
+      q.includes("logistics") ||
+      q.includes("delivery") ||
+      q.includes("truck")
     ) {
       return t(
-        "সরাসরি ভয়েস কল সিমুলেশন শুরু করতে নিচের মাইক্রোফোন আইকনে চাপ দিন। সেখানে কিপ্যাডে নম্বর ডায়াল করে কথা বলতে পারবেন।",
-        "To start a voice call simulation, tap the microphone icon next to the message bar below. You can dial phone numbers on the keypad.",
+        "পেঁয়াজ সরবরাহে পরিবহন বুক করতে 'অর্ডার' সেকশন থেকে লজিস্টিক কোটেশন দেখুন এবং ট্রাক নির্বাচন করুন।",
+        "To arrange transport for your onion dispatch, check the 'Orders' section to review logistics quotes and assign trucks.",
+      );
+    }
+
+    if (
+      q.includes("ভয়েস") ||
+      q.includes("মাইক") ||
+      q.includes("কথা") ||
+      q.includes("voice") ||
+      q.includes("mic") ||
+      q.includes("speak")
+    ) {
+      return t(
+        "বার্তা বারের মাইক্রোফোন আইকনে চাপ দিয়ে মুখে বলুন—আপনার কণ্ঠস্বর স্বয়ংক্রিয়ভাবে টেক্সটে রূপান্তরিত হবে।",
+        "Tap the microphone icon next to the message bar below to convert your speech into text directly.",
       );
     }
 
@@ -136,20 +241,30 @@ export function ChatbotWidget({
       q.includes("হটলাইন")
     ) {
       return t(
-        "আমাদের সাপোর্ট হটলাইন: +880 1711-234567 (সকাল ৮:০০ - রাত ১০:০০)। জরুরি পরিদর্শনে স্থানীয় ফিল্ড এজেন্টের সাথে যোগাযোগ করুন।",
+        "আমাদের সাপোর্ট হটলাইন: +880 1711-234567 (সকাল ৮:০০ - রাত ১০:০০)। জরুরি পরিদর্শনে ফিল্ড এজেন্টের সাথে যোগাযোগ করুন।",
         "PeyajFlow Support Hotline: +880 1711-234567 (Daily 8:00 AM - 10:00 PM). For urgent crop inspection, contact your regional field agent.",
       );
     }
 
     return t(
-      "ধন্যবাদ! আপনার বার্তাটি নথিভুক্ত করা হয়েছে। আরও দ্রুত সেবা পেতে নিচের মাইক্রোফোন আইকন চেপে সরাসরি আমাদের কণ্ঠস্বর সহকারীর সাথে কথা বলতে পারেন।",
-      "Thank you! Your inquiry has been noted. For hands-free assistance, tap the microphone icon below to launch the voice call simulation.",
+      "ধন্যবাদ! আপনার বার্তাটি নথিভুক্ত করা হয়েছে। যেকোনো প্রশ্ন লিখে জানান বা মাইক্রোফোন চেপে সরাসরি মুখে বলুন।",
+      "Thank you! Your inquiry has been noted. Feel free to type your question or tap the microphone icon to speak.",
     );
   };
 
   const handleSendMessage = (textToSend?: string) => {
     const text = (textToSend ?? inputText).trim();
     if (!text) return;
+
+    if (isListening && recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // ignore
+      }
+      setIsListening(false);
+      setSpeechHint("");
+    }
 
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
@@ -236,7 +351,7 @@ export function ChatbotWidget({
                 <span className="chatbot-subtitle">
                   {t(
                     "সক্রিয় · বাংলায় সাহায্য প্রস্তুত",
-                    "Always online · Voice ready",
+                    "Always online · Speech-to-text ready",
                   )}
                 </span>
               </div>
@@ -262,21 +377,8 @@ export function ChatbotWidget({
                 key={idx}
                 type="button"
                 className="chatbot-chip-btn"
-                onClick={() => {
-                  if (chip.action === "call") {
-                    navigateToVoiceCall();
-                  } else if (chip.prompt) {
-                    handleSendMessage(chip.prompt);
-                  }
-                }}
+                onClick={() => handleSendMessage(chip.prompt)}
               >
-                {chip.action === "call" && (
-                  <WorkspaceIcon
-                    name="mic"
-                    size={12}
-                    className="chatbot-chip-icon"
-                  />
-                )}
                 <span>{chip.label}</span>
               </button>
             ))}
@@ -317,21 +419,39 @@ export function ChatbotWidget({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* ─── 3. MESSAGE WRITING BAR & MICROPHONE ICON ─── */}
+          {/* Speech Hint if listening or unsupported */}
+          {speechHint && (
+            <div className="chatbot-speech-hint-bar" role="status">
+              <span className="chatbot-speech-dot" />
+              <span>{speechHint}</span>
+            </div>
+          )}
+
+          {/* ─── 3. MESSAGE WRITING BAR & MICROPHONE (SPEECH-TO-TEXT) ─── */}
           <form className="chatbot-input-bar" onSubmit={onSubmit}>
-            {/* Microphone Icon for Voice Message / Call Simulation */}
+            {/* Microphone Icon for Speech-to-Text */}
             <button
               type="button"
-              className="chatbot-mic-btn"
-              onClick={navigateToVoiceCall}
-              title={t(
-                "কণ্ঠস্বর সহকারী কল সিমুলেশনে যান (কিপ্যাড ডায়াল)",
-                "Launch Voice Call Simulation (Keypad Dial)",
-              )}
-              aria-label={t("ভয়েস কল শুরু করুন", "Voice Call Simulation")}
+              className={`chatbot-mic-btn ${isListening ? "is-listening" : ""}`}
+              onClick={toggleSpeechToText}
+              title={
+                isListening
+                  ? t("রেকর্ডিং বন্ধ করুন", "Stop listening")
+                  : t(
+                      "কথা বলে লিখুন (স্পিচ-টু-টেক্সট)",
+                      "Speak to type (Speech-to-Text)",
+                    )
+              }
+              aria-label={
+                isListening
+                  ? t("রেকর্ডিং বন্ধ করুন", "Stop listening")
+                  : t("কথা বলে লিখুন", "Speak to type")
+              }
             >
               <WorkspaceIcon name="mic" size={20} />
-              <span className="chatbot-mic-ring" />
+              <span
+                className={`chatbot-mic-ring ${isListening ? "pulse-active" : ""}`}
+              />
             </button>
 
             {/* Message Writing Input */}
@@ -341,10 +461,14 @@ export function ChatbotWidget({
               className="chatbot-text-input"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={t(
-                "বার্তা লিখুন বা প্রশ্ন করুন...",
-                "Type a message or question...",
-              )}
+              placeholder={
+                isListening
+                  ? t("শুনছি... এখন কথা বলুন...", "Listening... Speak now...")
+                  : t(
+                      "বার্তা লিখুন বা প্রশ্ন করুন...",
+                      "Type a message or question...",
+                    )
+              }
               aria-label={t("বার্তা লিখুন", "Type message")}
             />
 

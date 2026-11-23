@@ -547,7 +547,14 @@ export function VoiceDesk({
                   </button>
                 </form>
               ) : (
-                <Link className="voice-call-restart-btn" href={`${base}/voice`}>
+                <Link
+                  className="voice-call-restart-btn"
+                  href={
+                    base.includes("call-simulator")
+                      ? base
+                      : `/${locale}/call-simulator`
+                  }
+                >
                   <span className="voice-restart-icon" aria-hidden="true">
                     <WorkspaceIcon name="voice" size={18} />
                   </span>
@@ -1086,7 +1093,7 @@ export function VoiceDesk({
               {entry.result?.order_id && (
                 <Link
                   className="work-link"
-                  href={`${base}/orders/${entry.result.order_id}`}
+                  href={`/${locale}/workspace/orders/${entry.result.order_id}`}
                 >
                   {t("অর্ডার দেখুন", "View order")}
                 </Link>

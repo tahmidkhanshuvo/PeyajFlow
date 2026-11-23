@@ -113,12 +113,12 @@ export async function pilotMutate(
         const call = await api<VoiceCall>("/v1/voice/calls", {
           method: "POST",
         });
-        destination = `${base}/voice/${call.id}`;
+        destination = `/${locale}/call-simulator/${call.id}`;
         break;
       }
       case "resolve-task":
         await api(`/v1/voice/tasks/${resource}/resolve`, { method: "POST" });
-        destination = `${base}/voice`;
+        destination = `/${locale}/call-simulator`;
         break;
       case "voice-pin":
         await api(

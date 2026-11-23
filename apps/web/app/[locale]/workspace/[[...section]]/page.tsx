@@ -17,7 +17,6 @@ import {
   PricePage,
 } from "../../../../components/workspace/prices";
 import { VerificationsPage } from "../../../../components/workspace/verifications";
-import { VoicePage } from "../../../../components/workspace/voice";
 import { ProfilePage } from "../../../../components/workspace/profile";
 import { ThemeToggle } from "../../../../components/theme-toggle";
 import {
@@ -25,7 +24,6 @@ import {
   type SearchItem,
 } from "../../../../components/workspace/quick-search";
 import { RouteWarmer } from "../../../../components/workspace/route-warmer";
-import { SimulatorPage } from "../../../../components/workspace/simulator";
 import { Details, Field } from "../../../../components/workspace/fields";
 import { WorkspaceForm } from "../../../../components/workspace/form";
 import {
@@ -51,7 +49,6 @@ import { isLocale, type Locale } from "../../../../lib/copy";
 import {
   api,
   ApiError,
-  canUseVoice,
   type DemoIdentity,
   type Profile,
 } from "../../../../lib/workspace-api";
@@ -142,10 +139,10 @@ async function panel(
       ? rawOffset
       : 0;
   const context = { locale, actor, base, offset };
+
   if (!page) return <Overview {...context} filters={filters} />;
   if (
     page !== "alerts" &&
-    !((page === "voice" || page === "simulator") && canUseVoice(actor)) &&
     !destinations(locale, actor).some(([path]) => path === page)
   ) {
     if (page === "verifications") {
@@ -188,9 +185,6 @@ async function panel(
     if (page === "profile") return ProfilePage(context);
   }
   if (page === "imports" && !child) return ImportsPage({ ...context, id });
-  if (page === "voice" && !child) return VoicePage({ ...context, id });
-  if (page === "simulator" && !id && canUseVoice(context.actor))
-    return SimulatorPage(context);
   if (id && page === "stock") {
     if (!child) return LotPage({ ...context, id });
     if (child === "inspections") return InspectionsPage({ ...context, id });
@@ -225,6 +219,10 @@ export default async function WorkspacePage({
       }
     }
     redirect(`${base}${query.size ? `?${query}` : ""}`);
+  }
+  if (section[0] === "voice" || section[0] === "simulator") {
+    const id = section[1];
+    redirect(`/${locale}/call-simulator${id ? `/${id}` : ""}`);
   }
   const reviewingSignups =
     section.length === 1 && section[0] === "verifications";

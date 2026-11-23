@@ -112,14 +112,15 @@ test(
         signIn(browser, "buyer", { width: 1280, height: 900 }),
         signIn(browser, "admin", { width: 1280, height: 900 }),
       ]);
-      // Meem's final UI enters the dialer through the floating chatbot.
+      // The chatbot microphone dictates text; the dialer has its own route.
       for (const page of [buyer, admin]) {
         await page
           .getByRole("button", { name: "Assistant Chatbot", exact: true })
           .click();
         await page
-          .getByRole("button", { name: "Voice Call Simulation", exact: true })
-          .click();
+          .getByRole("button", { name: "Speak to type", exact: true })
+          .waitFor();
+        await page.goto(`${web}/en/call-simulator`);
         await page
           .getByRole("button", { name: "Place Call", exact: true })
           .click();
