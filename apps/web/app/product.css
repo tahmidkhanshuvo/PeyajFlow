@@ -15475,3 +15475,80 @@ html[data-theme="dark"] .demand-card:hover {
   color: #a38e97;
   border-color: rgba(222, 106, 143, 0.16);
 }
+
+/* Keep the existing toolbar within narrow viewports. */
+@media (max-width: 600px) {
+  .work-topbar {
+    height: auto;
+    min-height: var(--topbar-h);
+    flex-wrap: wrap;
+    padding-block: 10px;
+  }
+  .work-topbar-right {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+}
+.work-user-signout button,
+.theme-toggle-btn,
+.work-notif-btn {
+  min-width: 24px;
+  min-height: 24px;
+}
+html.light .work-nav-section-title,
+html.light .quick-search-placeholder,
+html.light .work-mobile-tab,
+html.light .forecast-subcard-unit,
+html.light .price-spike-kpi-unit,
+html.light .price-spike-kpi-sub,
+html.light .price-spike-legend-text,
+html.light .price-benchmarks-table th,
+html.light .price-unit {
+  color: #514357;
+}
+.work-notif-badge {
+  background: #b92342;
+}
+html.light .ops-delivery-label,
+html.light .dash-legend-item .stat-num,
+html.light .dash-chart-labels span,
+html.light .dash-card-sub,
+html.light .dash-activity-detail {
+  color: #514357;
+}
+html.light .trade-status-pill.verified {
+  color: #236138;
+}
+html.light .settlement-tile-label,
+html.light .settlement-empty-text,
+html.light .offer-history-time {
+  color: #514357;
+}
+html.light .dash-legend-item .stat-num {
+  color: #514357 !important;
+}
+html.light .voice-transcript-feedback.is-ok {
+  color: #236138;
+}
+.voice-call-end-btn {
+  background: #b92342;
+}
+html.light .work-metrics dt {
+  color: #514357;
+}
+html.light .work-tag-verified {
+  color: #236138;
+}
+@media (max-width: 600px) {
+  .settlement-header-row {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 600px) {
+  .lot-page-header-row {
+    flex-wrap: wrap;
+  }
+}
+html.light .settlement-panel time {
+  color: #514357;
+}

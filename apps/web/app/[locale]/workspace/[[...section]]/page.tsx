@@ -142,9 +142,6 @@ async function panel(
       ? rawOffset
       : 0;
   const context = { locale, actor, base, offset };
-  if (page === "operations") {
-    redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
-  }
   if (!page) return <Overview {...context} filters={filters} />;
   if (
     page !== "alerts" &&
@@ -217,7 +214,17 @@ export default async function WorkspacePage({
   const base = `/${locale}/workspace`;
   if (section[0] === "operations") {
     const filters = await searchParams;
-    redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      for (const item of Array.isArray(value)
+        ? value
+        : value === undefined
+          ? []
+          : [value]) {
+        query.append(key, item);
+      }
+    }
+    redirect(`${base}${query.size ? `?${query}` : ""}`);
   }
   const reviewingSignups =
     section.length === 1 && section[0] === "verifications";

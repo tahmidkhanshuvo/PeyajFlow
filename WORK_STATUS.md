@@ -2,6 +2,12 @@
 
 Last updated November 21, 2026 (Asia/Dhaka).
 
+## Align browser CI with the final workspace (November 21, 2026)
+
+- Updated Playwright coverage for the final dashboard, signup tabs, modal forms, custom voice dropdowns, receipt details and profile sign-out. The original stock reservation, photo privacy, reviewer hints, payment review and delegation assertions remain covered. Removed panels are checked through their authorized API contracts.
+- Browser workflow files run sequentially because they share demo accounts and a database. The optional reviewer-account workflow still requires its configured credentials.
+- Corrected mobile toolbar and receipt overflow, improved text contrast and control target sizes, and made the market table keyboard-focusable. The operations redirect now preserves audit filters.
+
 ## Restore Meem's final workspace UI (November 21, 2026)
 
 - Compared the current main with the latest fetched Meem_v1.0 commit e3ee52b. The integration had reintroduced assistant and simulator sidebar entries and appended the older voice panels to the redesigned dialer.

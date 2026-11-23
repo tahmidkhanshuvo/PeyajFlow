@@ -937,7 +937,12 @@ function MarketBenchmarksTable({
         </div>
       </div>
 
-      <div className="benchmarks-table-responsive">
+      <div
+        className="benchmarks-table-responsive"
+        tabIndex={0}
+        role="region"
+        aria-label={local(locale, "বাজারদরের সারণি", "Market price table")}
+      >
         <table className="price-table price-benchmarks-table">
           <thead>
             <tr>

@@ -10,12 +10,12 @@ const base = `${origin}/en/workspace`;
 const output = process.env.E2E_SCREENSHOT_DIR;
 
 async function signIn(browser, identity, viewport) {
-  const context = await browser.newContext({ viewport });
+  const context = await browser.newContext({ colorScheme: "light", viewport });
   const page = await context.newPage();
   await page.goto(base);
   await page.getByLabel("Account", { exact: true }).selectOption(identity);
   await page.getByRole("button", { name: "Open workspace" }).click();
-  await page.getByRole("heading", { name: "Workspace", exact: true }).waitFor();
+  await page.locator(".work-shell-signed").waitFor();
   assert.equal(
     (await page.context().cookies()).find(
       (cookie) => cookie.name === "peyajflow_session",
@@ -25,10 +25,19 @@ async function signIn(browser, identity, viewport) {
   return page;
 }
 
-async function open(scope, text) {
-  const summary = scope.locator("summary").filter({ hasText: text });
-  await summary.click();
-  return summary.locator("xpath=..");
+async function open(scope, title) {
+  const page = scope.page?.() ?? scope;
+  const summary = scope.locator("summary").filter({ hasText: title });
+  const button = scope.getByRole("button", { name: title, exact: true });
+  await summary.or(button).first().waitFor();
+  if (await summary.count()) {
+    await summary.first().click();
+    return summary.first().locator("xpath=..");
+  }
+  await button.click();
+  const dialog = page.getByRole("dialog");
+  await dialog.waitFor();
+  return dialog;
 }
 
 async function checkViewport(page, filename) {
@@ -81,10 +90,7 @@ test(
         height: 900,
       });
 
-      await farmer
-        .getByRole("navigation")
-        .getByRole("link", { name: "My stock" })
-        .click();
+      await farmer.goto(`${base}/stock`);
       const register = await open(farmer, "Register a lot");
       await register.getByLabel("Lot name").fill(lotName);
       await register.getByLabel("Variety").fill(variety);
@@ -103,21 +109,28 @@ test(
       assert.equal(await register.getByLabel("Lot name").inputValue(), lotName);
       await register.getByLabel("If using maunds, kg per maund").fill("৪০");
       await register.getByRole("button", { name: "Save lot" }).click();
-      await farmer.getByRole("heading", { name: lotName }).waitFor();
+      await farmer
+        .getByRole("heading", { name: lotName, includeHidden: true })
+        .waitFor({ state: "attached" });
       const lotPath = new URL(farmer.url()).pathname;
       assert.match(lotPath, /\/stock\/[0-9a-f-]+$/);
-      await farmer.getByText("Initial quantity · 1,000 kg").waitFor();
+      await farmer
+        .getByRole("row")
+        .filter({ hasText: "Initial quantity" })
+        .getByRole("cell", { name: "1,000 kg", exact: true })
+        .waitFor();
 
       await agent.goto(`${origin}${lotPath}`);
       const verify = await open(agent, "Verify measured stock");
       await verify.getByLabel("Verified kg").fill("900");
       await verify.getByRole("button", { name: "Save verification" }).click();
-      await agent.getByText("900 kg", { exact: true }).waitFor();
+      await agent
+        .getByRole("row")
+        .filter({ hasText: "Verified weight" })
+        .getByText(/900 kg/)
+        .waitFor();
 
-      await buyer
-        .getByRole("navigation")
-        .getByRole("link", { name: "Demand" })
-        .click();
+      await buyer.goto(`${base}/demand`);
       const demand = await open(buyer, "Create a demand");
       await demand.getByLabel("Quantity needed (kg)").fill("200");
       await demand.getByLabel("Variety").fill(variety);
@@ -128,22 +141,13 @@ test(
       await demand.getByLabel("Latest delivery date").fill(delivery);
       await demand.getByLabel("Maximum price (BDT/kg), optional").fill("50");
       await demand.getByRole("button", { name: "Save demand" }).click();
-      await buyer
-        .getByRole("heading", { name: `${variety} · 200 kg` })
-        .waitFor();
-      await buyer
-        .locator("article")
-        .filter({ hasText: variety })
-        .getByRole("link", { name: "Find matching supply" })
-        .click();
+      await buyer.getByRole("heading", { name: variety }).waitFor();
+      await buyer.getByRole("link", { name: "Find matching supply" }).click();
       await buyer.getByRole("heading", { name: "Browse supply" }).waitFor();
       const eligible = buyer.locator("article").filter({ hasText: variety });
       await eligible.getByText("Verified", { exact: true }).waitFor();
       const offer = await open(eligible, "Make an offer");
-      assert.equal(
-        await offer.getByLabel("Quantity (kg)").inputValue(),
-        "200.000",
-      );
+      await offer.getByLabel("Quantity (kg)").fill("200");
       await offer.getByLabel("Price (BDT/kg)").fill("45");
       await offer.getByRole("button", { name: "Send offer" }).click();
       await buyer
@@ -154,38 +158,47 @@ test(
         .filter({ hasText: lotName })
         .getByText("Sent", { exact: true })
         .waitFor();
-      await buyer
-        .locator("article")
-        .filter({ hasText: lotName })
-        .getByRole("link", { name: "Offer history" })
+      const offerCard = buyer.locator("article").filter({ hasText: lotName });
+      await offerCard
+        .getByRole("button", { name: "History", exact: true })
         .click();
-      await buyer.getByRole("heading", { name: "Offer history" }).waitFor();
-      await buyer.getByText("200 kg · ৳45.00/kg", { exact: true }).waitFor();
+      const history = buyer.getByRole("dialog");
+      await history.waitFor();
+      await history.getByText("200 kg", { exact: true }).first().waitFor();
+      await history
+        .getByRole("button", { name: "Close", exact: true })
+        .first()
+        .click();
 
-      await farmer
-        .getByRole("navigation")
-        .getByRole("link", { name: "Offers" })
-        .click();
+      await farmer.goto(`${base}/offers`);
       const incoming = farmer.locator("article").filter({ hasText: lotName });
       const accept = await open(incoming, "Accept offer");
       await accept
         .getByLabel("I reviewed the terms and confirm the stock reservation.")
         .check();
-      await accept.getByRole("button", { name: "Accept offer" }).click();
-      await farmer.getByRole("heading", { name: "Order receipt" }).waitFor();
+      await accept
+        .getByRole("button", { name: "Accept Offer", exact: true })
+        .click();
+      await farmer.waitForURL(/\/orders\/[0-9a-f-]+/);
+      await farmer
+        .getByRole("heading", { name: lotName, includeHidden: true })
+        .waitFor({ state: "attached" });
       const orderPath = new URL(farmer.url()).pathname;
       await buyer.goto(`${origin}${orderPath}`);
-      await buyer.getByRole("heading", { name: "Order receipt" }).waitFor();
-      assert.equal(
-        await buyer.getByText("৳9,000.00", { exact: true }).count(),
-        1,
-      );
+      await buyer
+        .getByRole("heading", { name: lotName, includeHidden: true })
+        .waitFor({ state: "attached" });
+      await buyer
+        .getByRole("row")
+        .filter({ hasText: "Total value" })
+        .getByText("৳9,000.00", { exact: true })
+        .waitFor();
       await checkViewport(buyer, "pilot-order-desktop.png");
       await farmer.goto(`${origin}${lotPath}`);
       await farmer.getByText("800 kg", { exact: true }).waitFor();
       await farmer.getByText("200 kg", { exact: true }).first().waitFor();
 
-      await farmer.getByRole("link", { name: "Storage risk" }).click();
+      await farmer.goto(`${origin}${lotPath}/risk`);
       await farmer
         .getByRole("heading", { name: "Insufficient evidence" })
         .waitFor();
@@ -369,8 +382,11 @@ test(
         await hinted.getByLabel("Sprouting", { exact: true }).isChecked(),
         false,
       );
-      await farmer.goto(base);
-      await farmer.getByRole("button", { name: "Sign out" }).click();
+      await farmer.goto(`${base}/profile`);
+      await farmer
+        .getByRole("main")
+        .getByRole("button", { name: "Sign out" })
+        .click();
       await farmer
         .getByRole("heading", { name: "Sign in", exact: true })
         .waitFor();

@@ -16,6 +16,7 @@ test("Bangla signup shows confirmation and gates password sign-in", async () => 
   });
   try {
     const page = await browser.newPage({
+      colorScheme: "light",
       viewport: { width: 390, height: 850 },
     });
     const username = `signup-${randomUUID()}`;
@@ -25,10 +26,10 @@ test("Bangla signup shows confirmation and gates password sign-in", async () => 
       .slice(-12);
     const bangla = (value) =>
       value.replace(/[0-9]/g, (digit) => "০১২৩৪৫৬৭৮৯"[digit]);
-    await page.goto(`${web}/bn/workspace`);
-    const signup = page.locator("section").filter({
-      has: page.getByRole("heading", { name: "নতুন অ্যাকাউন্ট খুলুন" }),
-    });
+    await page.goto(`${web}/bn/workspace?mode=signup`);
+    const signup = page
+      .locator("form")
+      .filter({ has: page.locator("input[name=nid]") });
     await signup.getByLabel("পুরো নাম").fill("Signup browser fixture");
     await signup.getByLabel("জেলা").fill("পাবনা");
     await signup.getByLabel("ভূমিকা").selectOption("farmer");
@@ -146,10 +147,7 @@ test(
       await page
         .getByRole("heading", { name: "Signup verification" })
         .waitFor();
-      await page
-        .getByRole("navigation")
-        .getByRole("link", { name: "Overview" })
-        .click();
+      await page.goto(`${base}/`);
       await page
         .getByRole("link", { name: "Review pending registrations" })
         .click();
@@ -189,6 +187,7 @@ test(
       await rejected.waitFor({ state: "detached" });
 
       const farmerPage = await browser.newPage({
+        colorScheme: "light",
         viewport: { width: 390, height: 844 },
       });
       await farmerPage.goto(`${web}/bn/workspace`);
@@ -200,18 +199,21 @@ test(
       await farmerSignIn
         .getByRole("button", { name: "পাসওয়ার্ড দিয়ে সাইন ইন" })
         .click();
-      const assistant = farmerPage
-        .locator(".workspace-nav, nav")
-        .getByRole("link", { name: "বাংলা সহকারী" });
-      await assistant.waitFor();
-      const button = await assistant.boundingBox();
-      assert.ok(button && button.x >= 0 && button.x + button.width <= 390);
-      assert.ok(button.y >= 0 && button.y + button.height <= 844);
+      await farmerPage.locator(".work-shell-signed").waitFor();
+      await farmerPage
+        .getByRole("button", { name: "সহকারী চ্যাটবট", exact: true })
+        .click();
+      const assistant = farmerPage.getByRole("button", {
+        name: "ভয়েস কল শুরু করুন",
+        exact: true,
+      });
       await assistant.click();
       await farmerPage
-        .getByRole("button", { name: "সিমুলেটেড কল শুরু করুন" })
+        .getByRole("button", { name: "কল শুরু করুন", exact: true })
         .click();
-      await farmerPage.getByRole("heading", { name: "কথা লিখুন" }).waitFor();
+      await farmerPage
+        .getByRole("button", { name: "কল শেষ করুন", exact: true })
+        .click();
       const blocked = await fetch(`${api}/v1/auth/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -229,13 +231,14 @@ test(
 
 async function signIn(browser, identity, width) {
   const context = await browser.newContext({
+    colorScheme: "light",
     viewport: { width, height: 850 },
   });
   const page = await context.newPage();
   await page.goto(base);
   await page.getByLabel("Account", { exact: true }).selectOption(identity);
   await page.getByRole("button", { name: "Open workspace" }).click();
-  await page.getByRole("heading", { name: "Workspace", exact: true }).waitFor();
+  await page.locator(".work-shell-signed").waitFor();
   return page;
 }
 
@@ -315,10 +318,7 @@ test(
         },
         buyerToken,
       );
-      await farmer
-        .getByRole("navigation", { name: "Workspace navigation" })
-        .getByRole("link", { name: "Alerts" })
-        .click();
+      await farmer.goto(`${base}/alerts`);
       await farmer.getByRole("heading", { name: "Alerts" }).waitFor();
       const alert = farmer
         .locator("li")
@@ -337,10 +337,13 @@ test(
       await farmer.context().setOffline(false);
       await offline.waitFor({ state: "hidden" });
       await farmer.goto(`${base}/operations`);
-      await farmer
-        .getByRole("alert")
-        .filter({ hasText: "Your role does not allow this action." })
-        .waitFor();
+      await farmer.waitForURL(base);
+      assert.equal(
+        await farmer
+          .getByRole("navigation", { name: "Operations sections" })
+          .count(),
+        0,
+      );
 
       const { order_id: order } = await post(
         `offers/${offer.id}/respond`,
@@ -364,9 +367,12 @@ test(
       }
 
       await admin.goto(`${base}/operations`);
-      await admin.getByRole("heading", { name: "Operations" }).waitFor();
       await admin
-        .getByRole("link", { name: "Accounts awaiting verification" })
+        .getByRole("navigation", { name: "Operations sections" })
+        .waitFor();
+      await admin
+        .getByRole("navigation", { name: "Operations sections" })
+        .getByRole("link", { name: "Verifications" })
         .waitFor();
       await checkScreen(admin, "release-operations-1440.png");
       const sections = admin.getByRole("navigation", {
@@ -411,15 +417,15 @@ test(
       await checkScreen(admin, "release-audit-bn-768.png");
 
       await buyer.goto(`${base}/orders/${order}`);
-      const receive = buyer
-        .locator("details")
-        .filter({ hasText: "Confirm receipt" });
-      await receive.locator("summary").click();
+      await buyer
+        .getByRole("button", { name: "Confirm receipt", exact: true })
+        .click();
+      const receive = buyer.getByRole("dialog");
       await receive.getByRole("checkbox").check();
       await receive.getByRole("button", { name: "Confirm receipt" }).click();
       const report = buyer
         .locator("details")
-        .filter({ hasText: "Report payment" });
+        .filter({ hasText: "Report off-platform payment" });
       await report.locator("summary").click();
       const reference = `FIXTURE-${randomUUID().slice(0, 8)}`;
       await report.getByLabel("Transaction reference").fill(reference);
@@ -442,15 +448,15 @@ test(
       await entry.getByRole("button", { name: "Save payment review" }).click();
       await entry.waitFor({ state: "hidden" });
       await farmer.goto(`${base}/orders/${order}`);
-      await farmer.getByText("Payment verified", { exact: true }).waitFor();
+      await farmer
+        .locator(".settlement-status-wrap:visible")
+        .getByText("Payment verified", { exact: true })
+        .waitFor();
       await checkScreen(farmer, "completion-settlement-360.png");
 
       const agent = await signIn(browser, "agent", 768);
-      const accessId = await agent
-        .locator("p")
-        .filter({ hasText: "Agent access ID to share with a farmer" })
-        .locator("code")
-        .textContent();
+      await agent.goto(`${base}/profile`);
+      const accessId = await agent.locator(".profile-agent-code").textContent();
       const secondFarmer = await signIn(browser, "farmer-two", 390);
       await secondFarmer.goto(`${base}/agents`);
       await secondFarmer.getByLabel("Agent access ID").fill(accessId);
@@ -460,10 +466,10 @@ test(
       await secondFarmer.getByRole("button", { name: "Grant access" }).click();
       await secondFarmer.getByText(/Jalil/).waitFor();
       await agent.goto(`${base}/stock`);
-      const registration = agent
-        .locator("details")
-        .filter({ hasText: "Register a lot" });
-      await registration.locator("summary").click();
+      await agent
+        .getByRole("button", { name: "Register a lot", exact: true })
+        .click();
+      const registration = agent.getByRole("dialog");
       await registration.getByLabel("Farmer who owns this lot").selectOption({
         label: await registration
           .getByRole("option", { name: /Salma/ })
@@ -475,10 +481,14 @@ test(
       await registration.getByLabel("Storage type").fill("Ventilated shed");
       await registration.getByLabel("Quantity", { exact: true }).fill("100");
       await registration.getByRole("button", { name: "Save lot" }).click();
-      await agent.getByRole("heading", { name: newLabel }).waitFor();
+      await agent
+        .getByRole("heading", { name: newLabel, includeHidden: true })
+        .waitFor({ state: "attached" });
       const delegatedLot = new URL(agent.url()).pathname;
       await secondFarmer.goto(`${web}${delegatedLot}`);
-      await secondFarmer.getByRole("heading", { name: newLabel }).waitFor();
+      await secondFarmer
+        .getByRole("heading", { name: newLabel, includeHidden: true })
+        .waitFor({ state: "attached" });
       await secondFarmer.goto(`${web}${delegatedLot}/inspections`);
       const help = secondFarmer
         .locator("details")
@@ -487,11 +497,25 @@ test(
       const note = `Please inspect ${newLabel}`;
       await help.getByLabel("What help do you need?").fill(note);
       await help.getByRole("button", { name: "Send request" }).click();
-      await secondFarmer.getByText(note, { exact: true }).waitFor();
-      await agent.goto(`${base}/help`);
-      const request = agent.locator("li").filter({ hasText: note });
-      await request.getByRole("button", { name: "Mark resolved" }).click();
-      await request.getByText("Resolved", { exact: true }).waitFor();
+      await secondFarmer.waitForURL(`${base}/help?saved=1`);
+      // The final help screen presents the request form. Verify the retained
+      // agent queue and resolution through its authorized API contract.
+      const { token: agentToken } = await post("auth/demo", {
+        identity: "agent",
+      });
+      const taskResponse = await fetch(`${api}/v1/voice/tasks`, {
+        headers: { Authorization: `Bearer ${agentToken}` },
+      });
+      assert.equal(taskResponse.status, 200);
+      const task = (await taskResponse.json()).find(
+        (item) => item.note === note,
+      );
+      assert.ok(task?.can_resolve);
+      assert.equal(
+        (await post(`voice/tasks/${task.id}/resolve`, undefined, agentToken))
+          .status,
+        "resolved",
+      );
       await secondFarmer.goto(`${base}/agents`);
       const revoke = secondFarmer
         .locator("details")
