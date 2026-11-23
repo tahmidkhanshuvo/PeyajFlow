@@ -29,6 +29,14 @@ SMOKE_EXPECT_PRODUCTION=1 pnpm smoke
 
 For the portfolio deployment, provide `SMOKE_SHOWCASE_ACCESS_KEY` from your secret store and omit `SMOKE_USERNAME` and `SMOKE_PASSWORD`. The check expects Vercel to prompt for the code and rejects anonymous sign-in. It retrieves the seeded JPEG as the owner, checks that anonymous requests and the other farmer cannot read it, and revokes both sessions. Set `SMOKE_READY_WAIT_SECONDS=120` to allow a Render cold start.
 
+## Check hosted environment and documentation access
+
+The core Render configuration is `APP_ENV=production`, `DEMO_MODE=false`, a working `DATABASE_URL`, and `PHOTO_STORAGE=s3` with all five S3 settings in `render.yaml`. `SHOWCASE_ACCESS_KEY` enables the isolated account chooser when it contains at least 20 characters. Keep `TELEPHONY_PROVIDER=disabled` and `SMS_PROVIDER=disabled` for the simulator-only deployment. The Next.js server uses `API_INTERNAL_BASE_URL` and `SHOWCASE_REQUIRE_CODE` in Vercel, not Render.
+
+The floating chatbot uses server actions for authorized workspace reads and cited public help. Extractive help and browser dictation do not require a paid model key; provider-backed generation and embeddings are optional. See [INTEGRATIONS.md](INTEGRATIONS.md) for knowledge, pgvector, Ollama and MCP setup. Deploy the matching API with migrations `0023_integrations` and `0024_digest` before using the new web screens. Backend voice-model assistance is optional. For Gemini, configure `VOICE_MODEL_FALLBACK=true`, `VOICE_MODEL_PROVIDER=gemini`, and `GEMINI_API_KEY`. `GEMINI_MODEL` can select a model supported by that account. The Meta alternative requires `VOICE_MODEL_PROVIDER=meta`, `MODEL_API_KEY`, and `META_MODEL`. Browser-independent simulator transcription additionally requires `VOICE_TRANSCRIPTION=true` and `GEMINI_API_KEY`, with `GEMINI_TRANSCRIBE_MODEL` selecting the audio model. These backend settings do not change the floating chatbot's dictation behavior.
+
+Documentation visibility is stored in PostgreSQL, not an environment variable. A ready API returning `403 docs_unavailable` from `/v1/docs/public` is enforcing the publishing gate. Sign in with a verified, non-demo admin account at `/docs/manage` and select visibility On or adjust the schedule. The initial window is June 10–14, 2027 in Asia/Dhaka. An anonymous `401 sign_in_required` from `/v1/docs/admin` is expected. Provision an administrator with the credentials CLI above if needed. There is no `DOCS_ENABLED` or admin-password environment setting.
+
 ## Verify the carrier and SMS services
 
 Set `PUBLIC_API_ORIGIN` to the exact public HTTPS origin Twilio uses in its callback URLs. Store `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` in Render. Send signed form-encoded POSTs to the paths below. PeyajFlow verifies the signature and account and records a fingerprint to handle retries. [Twilio request validation](https://www.twilio.com/docs/usage/security)

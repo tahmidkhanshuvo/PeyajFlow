@@ -2,6 +2,12 @@
 
 Last updated November 23, 2026 (Asia/Dhaka).
 
+## Integrate upstream fixes for publication (November 23, 2026)
+
+- Integrated GitHub `main` through `0309129` with the platform feature merge. Retained upstream Operations contrast, responsive layout, query-preserving routing, receipt links and shared dictation types. Kept cited chat, approved-price data and feature-aware browser coverage when resolving overlaps.
+- Formatting, lint (12 warnings, zero errors), TypeScript, eleven web unit tests, optimized production build, the affected operations/delegation browser workflow and release smoke passed. API code is unchanged from the prior 211-test run.
+- Owner authorized pushing the combined `main`. No hosting settings, provider credentials, schedules or deployment configuration were changed. Hosted API migration/release and external validation remain separate work.
+
 ## Local feature merge (November 23, 2026)
 
 - Integrated feature commit `b3e70d7` from `codex/ai-platform-features` into local `main` at the owner's request, without conflicts. The implementation matches the verified feature tree; only integration-status documentation changed during the merge.
@@ -25,6 +31,16 @@ Last updated November 23, 2026 (Asia/Dhaka).
 - Native Ollama is currently stopped after the workstation restart. Automatic review rejected its background startup with only “blocked by policy.” Keyword retrieval remains available; local previews/vector queries require starting the installed Ollama runtime. Live command-model fallback and the unpromoted DSPy prompt remain disabled.
 
 Remaining external work: owner release, independent Bangla/Banglish and human answer review, real field evidence, operator schedule/credential configuration, and provider/STOP acceptance before live channels. Optional reranking and separate BI remain deferred pending measured need. No push or deployment was performed.
+
+## Align browser CI with the final workspace (November 23, 2026)
+
+- Updated Playwright coverage for the final dashboard, signup tabs, modal forms, custom voice dropdowns, receipt details and profile sign-out. The original stock reservation, photo privacy, reviewer hints, payment review and delegation assertions remain covered. Removed panels are checked through their authorized API contracts.
+- Browser workflow files run sequentially because they share demo accounts and a database. The optional reviewer-account workflow still requires its configured credentials.
+- Corrected mobile toolbar and receipt overflow, improved text contrast and control target sizes, and made the market table keyboard-focusable. The operations redirect now preserves audit filters.
+- Integrated main through `24bf88b`, preserving the standalone call simulator and chatbot dictation. Fixed three speech-recognition lint errors, formatted the newer UI files, corrected the simulator receipt link back to workspace orders, and fixed its session lookup from the nonexistent `/v1/auth/me` to `/v1/me`.
+- GitHub Actions passed all three jobs for `0638fe5`. The identical-source branch-history merge exposed an intermittent Operations tab contrast failure during simultaneous foreground/background transitions. Tab colors now switch together, preserving readable contrast during navigation. The production build and targeted release browser workflows passed after this change.
+- Production build, formatting, nine unit tests and release smoke passed. All four enabled browser workflows passed, including a final simulator rerun after the session, receipt link and badge contrast fixes. The optional reviewer-account workflow was skipped because credentials were not configured. ESLint reports zero errors and 13 existing warnings.
+- Render readiness returned 200, the public documentation route returned `403 docs_unavailable`, and anonymous admin access returned `401 sign_in_required`. This is the publishing gate, not a missing documentation environment variable. Added a hosted environment and publishing checklist to the deployment runbook. Browser dashboard inspection was stopped because Computer Use could not verify the browser URL.
 
 ## Restore Meem's final workspace UI (November 21, 2026)
 

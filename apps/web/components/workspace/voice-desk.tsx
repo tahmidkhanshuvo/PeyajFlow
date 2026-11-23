@@ -1093,7 +1093,7 @@ export function VoiceDesk({
               {entry.result?.order_id && (
                 <Link
                   className="work-link"
-                  href={`${base}/orders/${entry.result.order_id}`}
+                  href={`/${locale}/workspace/orders/${entry.result.order_id}`}
                 >
                   {t("অর্ডার দেখুন", "View order")}
                 </Link>

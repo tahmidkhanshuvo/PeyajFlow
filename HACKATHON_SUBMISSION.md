@@ -2,7 +2,7 @@
 
 These are answers for the submission form's "AI Detail Usage", "Data Lifecycle" and "Build Provenance" pages. They were taken from the repository at commit `efe84a2` on November 20, 2026.
 
-Local implementation update, November 23, 2026: the six previously empty areas below have code and local evidence from `codex/ai-platform-features`, integrated into local `main` as feature commit `b3e70d7`. Saved evaluation reports record their original base commit `24bf88b` and dirty worktree where applicable. The merge has not been pushed or deployed. Keep their submission boxes unticked until release; the older evaluation table remains dated historical evidence. See `docs/INTEGRATIONS.md` and `WORK_STATUS.md` for current checks and limitations.
+Local implementation update, November 23, 2026: the six previously empty areas below have code and local evidence from `codex/ai-platform-features`, integrated into local `main` as feature commit `b3e70d7`. Saved evaluation reports record their original base commit `24bf88b` and dirty worktree where applicable. Hosted API release and validation remain separate work. Keep their submission boxes unticked until release; the older evaluation table remains dated historical evidence. See `docs/INTEGRATIONS.md` and `WORK_STATUS.md` for current checks and limitations.
 
 - **Who can submit:** only the team leader can edit and submit.
 - **Unticked boxes:** boxes marked ☐ are for things PeyajFlow does not use. Leave them unticked.

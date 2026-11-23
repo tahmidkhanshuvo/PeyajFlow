@@ -9,7 +9,7 @@ This plan covers the six form sections that are still empty:
 - Agentic Frameworks
 - Visualization
 
-**Status (November 23, 2026):** the six core areas are implemented locally on `codex/ai-platform-features`. Release verification is recorded in `WORK_STATUS.md`; setup, measured results and limits are in [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md). Merged into local `main` on November 23; not pushed or deployed. Local command candidates and the DSPy prompt were not promoted. Independent/field validation, live carrier acceptance and optional reranking/BI remain separate work.
+**Status (November 23, 2026):** the six core areas are implemented locally on `codex/ai-platform-features`. Release verification is recorded in `WORK_STATUS.md`; setup, measured results and limits are in [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md). Integrated into `main` on November 23, including upstream fixes through `0309129`; hosted API release and external validation remain separate work. Local command candidates and the DSPy prompt were not promoted. Independent/field validation, live carrier acceptance and optional reranking/BI remain separate work.
 
 Implementation adjustments: MCP has nine tools, two static resources and one resource template. Automation write scopes are separate from read-only scopes. The initial knowledge corpus is first-party help, without unlicensed external agronomy guides. Local inference still requires the API connection. The operator graph is a bounded investigation with durable note review. The existing challenge set is not independent; the DSPy holdout uses disjoint but previously evaluated wording. Planned inventories and checkbox tables below describe targets, not hosted-release claims.
 

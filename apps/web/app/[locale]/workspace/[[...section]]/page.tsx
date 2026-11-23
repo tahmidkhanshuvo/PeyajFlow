@@ -25,7 +25,6 @@ import {
   type SearchItem,
 } from "../../../../components/workspace/quick-search";
 import { RouteWarmer } from "../../../../components/workspace/route-warmer";
-import { SimulatorPage } from "../../../../components/workspace/simulator";
 import { Details, Field } from "../../../../components/workspace/fields";
 import { WorkspaceForm } from "../../../../components/workspace/form";
 import {
@@ -142,12 +141,7 @@ async function panel(
       ? rawOffset
       : 0;
   const context = { locale, actor, base, offset };
-  if (page === "operations") {
-    redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
-  }
-  if (page === "voice" || page === "simulator") {
-    redirect(`/${locale}/call-simulator${id ? `/${id}` : ""}`);
-  }
+
   if (!page) return <Overview {...context} filters={filters} />;
   if (
     page !== "alerts" &&
@@ -223,9 +217,13 @@ export default async function WorkspacePage({
     const filters = await searchParams;
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(filters)) {
-      if (typeof value === "string") query.set(key, value);
-      else if (Array.isArray(value))
-        value.forEach((item) => query.append(key, item));
+      for (const item of Array.isArray(value)
+        ? value
+        : value === undefined
+          ? []
+          : [value]) {
+        query.append(key, item);
+      }
     }
     redirect(`${base}${query.size ? `?${query}` : ""}`);
   }

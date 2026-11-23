@@ -5,23 +5,14 @@ import type { Locale } from "../../lib/copy";
 import type { Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
 import { WorkspaceIcon } from "./icon";
+import type { Recognition } from "./speech-input";
 import { featureAction } from "../../app/[locale]/workspace/feature-actions";
 
-type ChatRecognition = {
-  lang: string;
+type ChatRecognition = Recognition & {
   continuous: boolean;
   interimResults: boolean;
   onstart: (() => void) | null;
-  onresult:
-    | ((event: {
-        results: ArrayLike<ArrayLike<{ transcript: string }>>;
-      }) => void)
-    | null;
-  onerror: (() => void) | null;
-  onend: (() => void) | null;
-  start: () => void;
   stop: () => void;
-  abort: () => void;
 };
 
 interface ChatMessage {
