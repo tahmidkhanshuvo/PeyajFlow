@@ -2,7 +2,7 @@ import Link from "next/link";
 import { mutate } from "../../app/[locale]/workspace/actions";
 import type { Locale } from "../../lib/copy";
 import type { Advice, PriceSeries } from "../../lib/pilot-types";
-import { api, json, type Profile } from "../../lib/workspace-api";
+import { api, type Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
 import type {
   Delegation,
@@ -328,61 +328,49 @@ export async function LotPage({
   let advice: Advice | null = null;
   if (matchingSeries) {
     try {
-      advice = await api<Advice>(
-        `/v1/lots/${id}/recommendation`,
-        json({
-          series: matchingSeries.series,
-          horizon_days: 14,
-          assumptions_reviewed: true,
-          use_loss_model: true,
-        }),
-      );
+      advice = await api<Advice>(`/v1/lots/${id}/recommendation`);
     } catch {
       advice = null;
     }
   }
 
   const isSell =
-    advice?.recommendation === "SELL" ||
-    advice?.recommendation === "SELL_PART" ||
-    risk?.band === "high";
+    advice?.recommendation === "SELL" || advice?.recommendation === "SELL_PART";
+  const sufficient =
+    advice !== null && advice.recommendation !== "INSUFFICIENT_DATA";
 
-  const decisionLabel = isSell
-    ? t("এখনই বিক্রি করুন (SELL)", "SELL NOW")
-    : t("মজুত রাখুন (HOLD)", "HOLD (Keep Stored)");
+  const decisionLabel = !sufficient
+    ? t("প্রমাণ অপর্যাপ্ত", "Insufficient evidence")
+    : isSell
+      ? t("এই পরিস্থিতিতে বিক্রি অনুকূল", "Scenario favours selling")
+      : t("এই পরিস্থিতিতে অপেক্ষা অনুকূল", "Scenario favours holding");
   const decisionTheme = isSell ? "sell" : "hold";
 
-  const currentPrice = advice?.sale_now_price
-    ? Number(advice.sale_now_price).toFixed(2)
-    : lot.grade === "A"
-      ? "48.50"
-      : lot.grade === "B"
-        ? "43.00"
-        : "38.50";
+  const currentPrice =
+    advice?.sale_now_price != null
+      ? Number(advice.sale_now_price).toFixed(2)
+      : null;
 
   let projectedDiffText = "";
-  if (advice?.hold_middle_bdt && advice?.sell_now_net_bdt) {
+  if (
+    sufficient &&
+    advice?.hold_middle_bdt != null &&
+    advice.sell_now_net_bdt != null
+  ) {
     const diff =
       Number(advice.hold_middle_bdt) - Number(advice.sell_now_net_bdt);
     projectedDiffText =
       diff > 0
         ? `+৳${numberLabel(locale, Math.round(diff))}`
-        : `৳${numberLabel(locale, Math.round(Math.abs(diff)))}`;
+        : `−৳${numberLabel(locale, Math.round(Math.abs(diff)))}`;
   } else {
-    projectedDiffText = isSell
-      ? t("তাৎক্ষণিক নগদ", "Immediate cash")
-      : `+৳${numberLabel(locale, "5.00")}`;
+    projectedDiffText = "—";
   }
 
-  const rationaleText = isSell
-    ? t(
-        "সংরক্ষণের ঝুঁকি বৃদ্ধি পেয়েছে এবং বর্তমান বাজারদর লাভজনক। ওজন ক্ষতি এড়াতে এখনই বিক্রি করার সুপারিশ করা হচ্ছে।",
-        "Storage risk is elevated while current farmgate prices remain favorable. Selling now minimizes storage loss.",
-      )
-    : t(
-        "সংরক্ষণের অবস্থা নিরাপদ এবং আগামী ১৪ দিনে বাজারদর ঊর্ধ্বমুখী হওয়ার পূর্বাভাস রয়েছে। মজুত ধরে রাখলে বেশি মুনাফা অর্জিত হবে।",
-        "Storage conditions are healthy and price forecasts indicate upward trends over the next 14 days. Holding stock is recommended.",
-      );
+  const rationaleText = t(
+    "সিদ্ধান্তের আগে দর, ক্ষয়, পরিবহন ও সংরক্ষণের খরচ লিখে তুলনা করুন। এটি পরিস্থিতিভিত্তিক হিসাব; নিশ্চিত লাভের প্রতিশ্রুতি নয়।",
+    "Compare explicit price, loss, freight and storage assumptions before deciding. Scenarios do not guarantee a profit.",
+  );
 
   return (
     <div className="lot-page-wrap">
@@ -495,6 +483,14 @@ export async function LotPage({
           </span>
         </div>
 
+        {(actor.is_demo || advice?.synthetic || matchingSeries?.synthetic) && (
+          <p className="work-muted">
+            {t(
+              "ডেমো / কৃত্রিম তথ্য — মাঠে যাচাইকৃত ফল নয়।",
+              "Demo / synthetic data — not field-validated results.",
+            )}
+          </p>
+        )}
         <div className="lot-advice-dashboard-grid">
           {/* KPI 1: Current Benchmark Farmgate Price */}
           <div className="lot-advice-stat-card">
@@ -503,7 +499,9 @@ export async function LotPage({
             </span>
             <div className="lot-advice-stat-value-row">
               <strong className="lot-advice-stat-num">
-                ৳{numberLabel(locale, currentPrice)}
+                {currentPrice === null
+                  ? "—"
+                  : `৳${numberLabel(locale, currentPrice)}`}
               </strong>
               <span className="lot-advice-stat-unit">{t("/কেজি", "/kg")}</span>
             </div>
@@ -519,9 +517,7 @@ export async function LotPage({
                 {projectedDiffText}
               </strong>
               <span className="lot-advice-stat-unit">
-                {advice?.hold_middle_bdt
-                  ? t("মোট নিট সুবিধা", "net advantage")
-                  : t("/কেজি সম্ভাব্য বৃদ্ধি", "/kg projected upside")}
+                {t("মোট নিট পার্থক্য", "total net difference")}
               </span>
             </div>
           </div>
@@ -534,6 +530,9 @@ export async function LotPage({
               {t("কৌশলগত সিদ্ধান্ত ও কারণ", "Strategic Recommendation")}
             </span>
             <p className="lot-advice-rationale-text">{rationaleText}</p>
+            <Link className="work-link" href={`${base}/stock/${id}/advice`}>
+              {t("পরিস্থিতি তুলনা করুন", "Compare scenarios")}
+            </Link>
           </div>
         </div>
       </section>
@@ -733,6 +732,14 @@ export async function LotPage({
         </section>
       )}
 
+      <div className="work-row">
+        <Link className="work-link" href={`${base}/stock/${id}/risk`}>
+          {t("সংরক্ষণের ঝুঁকি", "Storage risk")}
+        </Link>
+        <Link className="work-link" href={`${base}/stock/${id}/inspections`}>
+          {t("পরিদর্শন দেখুন", "View inspections")}
+        </Link>
+      </div>
       {/* Stock History Organized Ledger */}
       <section className="work-panel lot-history-panel">
         <h2 className="lot-history-title">

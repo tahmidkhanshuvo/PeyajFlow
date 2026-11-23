@@ -41,6 +41,8 @@ Next.js and React serve the bilingual workspace. FastAPI, SQLAlchemy and Alembic
 
 ## Live documentation
 
+Knowledge retrieval, scoped MCP access, local model previews, charts, n8n workflows and operator investigations are described in [Integration tools](docs/INTEGRATIONS.md). Open **Help**, **Profile → Integration access**, or **Workspace tools** in the signed-in web workspace.
+
 The application serves its pitch deck, technical reference and live activity at `/docs`. The initial public window runs from June 10, 2027 at 00:00 through June 14 at 23:59 in Asia/Dhaka. A verified operational administrator can open **Documentation publishing** from the workspace or visit `/docs/manage` to turn access on or off, schedule a fixed window or start a timed window.
 
 Save content as a draft and publish it with a changelog note. Visibility and publishing are separate controls, so an edition can be prepared while the public page is closed. The team editor accepts approved contact information and HTTPS photos. The public reader includes Markdown, a browser print layout for PDF, and the running API’s OpenAPI contract.
@@ -54,6 +56,7 @@ Install Node.js 22 or later, pnpm 10.34.9, and Docker with Compose. Python 3.13 
 ```sh
 docker compose up --build -d
 docker compose exec api python -m app.seed_showcase
+docker compose exec api python -m app.knowledge_seed
 pnpm install --frozen-lockfile
 pnpm dev
 ```

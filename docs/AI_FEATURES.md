@@ -170,6 +170,16 @@ Spoken hold/sell advice now uses the verified-weight loss trend when at least th
 
 ## Known limitations
 
+### Local feature branch update (November 22, 2026)
+
+`codex/ai-platform-features` adds first-party cited help with full-text/pgvector retrieval, scoped read-only MCP, Ollama embeddings and guarded command previews, four n8n workflows, accessible Recharts views and a durable LangGraph operator-note review. These changes are local, not merged or hosted. Setup and saved measurements are in [INTEGRATIONS.md](INTEGRATIONS.md).
+
+The final retrieval development run (`rag-final-hybrid.json`, November 21 UTC / November 22 Dhaka, base commit `24bf88b` with a dirty worktree) measured hybrid recall@5 1.000 and MRR 0.983 over 60 answerable questions, with all five out-of-scope questions abstaining. Questions and implementation share an author; these are not independent relevance or answer-quality results. The index contains fifteen bge-m3 vectors and three generated context prefixes.
+
+Four crop/quantity-fragment cases were added to the resolver dataset without changing existing labels. The deterministic main set now has 283 rows; it and the 58-row previously tuned challenge set both measured 1.000 with zero wrong change commands. Broader local Qwen/Llama experiments exposed false actions; both candidates remain disabled for live fallback. The Gemma DSPy experiment scored 0/2 on its previously evaluated holdout before and after, so no prompt was promoted. Failed experiments remain in `evals/results`.
+
+The twenty agent scenarios measure bounded orchestration and PostgreSQL checkpoint/resume behavior with controlled synthetic tool responses. They do not measure autonomous reasoning. No carrier messages, external alert delivery, field-validation result or independent challenge result is claimed.
+
 - The voice grammar covers the command set of the simulator, not open conversation. It reads numbers said in words only directly before kg or maund. It does not read English "one and a half" or ordinal numbers. Dialect coverage is limited to what the datasets contain.
 - Verified farmers and buyers can use the workspace call simulator. All enabled demo and showcase roles can also use it. Live carrier calls and carrier speech recognition are not enabled. SMS sign-in codes are built but need a configured SMS provider and operator-verified phone numbers.
 - Photo suggestions are experimental and uncalibrated. A labelled photo dataset is needed to measure them.

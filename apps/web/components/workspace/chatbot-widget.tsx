@@ -5,12 +5,31 @@ import type { Locale } from "../../lib/copy";
 import type { Profile } from "../../lib/workspace-api";
 import { local } from "../../lib/workspace-copy";
 import { WorkspaceIcon } from "./icon";
+import { featureAction } from "../../app/[locale]/workspace/feature-actions";
+
+type ChatRecognition = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onresult:
+    | ((event: {
+        results: ArrayLike<ArrayLike<{ transcript: string }>>;
+      }) => void)
+    | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+};
 
 interface ChatMessage {
   id: string;
   sender: "bot" | "user";
   text: string;
   time: string;
+  sources?: { id: string; title: string; source_url: string }[];
 }
 
 export function ChatbotWidget({
@@ -27,7 +46,7 @@ export function ChatbotWidget({
   const [speechHint, setSpeechHint] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<ChatRecognition | null>(null);
 
   const t = (bn: string, en: string) => local(locale, bn, en);
 
@@ -38,7 +57,7 @@ export function ChatbotWidget({
       "সালাম/নমস্কার! আমি পেঁয়াজফ্লো এআই সহকারী। পেঁয়াজের মোকাম দর, মজুত বা কেনাবেচা সম্পর্কে যেকোনো প্রশ্ন নিচে লিখে জানান, অথবা মাইক্রোফোন আইকনে চাপ দিয়ে মুখে বলুন।",
       "Hello! I am your PeyajFlow AI Assistant. Ask me anything about onion market rates, stock weights, or trading offers. You can type below or tap the microphone icon to speak.",
     ),
-    time: "এখন",
+    time: t("এখন", "Now"),
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>([initialBotMessage]);
@@ -67,7 +86,10 @@ export function ChatbotWidget({
     },
     {
       label: t("পরিবহন সহায়তা", "Logistics & Transport"),
-      prompt: t("পেঁয়াজ পরিবহনের ব্যবস্থা কীভাবে করব?", "How to arrange onion transport and delivery?"),
+      prompt: t(
+        "পেঁয়াজ পরিবহনের ব্যবস্থা কীভাবে করব?",
+        "How to arrange onion transport and delivery?",
+      ),
     },
   ];
 
@@ -107,7 +129,13 @@ export function ChatbotWidget({
       return;
     }
 
-    const browser = typeof window !== "undefined" ? (window as any) : null;
+    const browser =
+      typeof window !== "undefined"
+        ? (window as Window & {
+            SpeechRecognition?: new () => ChatRecognition;
+            webkitSpeechRecognition?: new () => ChatRecognition;
+          })
+        : null;
     const BrowserRecognition =
       browser?.SpeechRecognition || browser?.webkitSpeechRecognition;
 
@@ -130,12 +158,10 @@ export function ChatbotWidget({
 
       recognition.onstart = () => {
         setIsListening(true);
-        setSpeechHint(
-          t("শুনছি... এখন বাংলায় বলুন", "Listening... Speak now"),
-        );
+        setSpeechHint(t("শুনছি... এখন বাংলায় বলুন", "Listening... Speak now"));
       };
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event) => {
         let transcript = "";
         for (let i = 0; i < event.results.length; i++) {
           transcript += event.results[i][0]?.transcript || "";
@@ -164,71 +190,9 @@ export function ChatbotWidget({
     }
   };
 
-  const generateBotReply = (userQuery: string): string => {
-    const q = userQuery.toLowerCase();
-
-    if (
-      q.includes("দর") ||
-      q.includes("রেট") ||
-      q.includes("দাম") ||
-      q.includes("price") ||
-      q.includes("rate")
-    ) {
-      return t(
-        "আজকের পাবনা মোকামে তাহেরপুরী পেঁয়াজ ৩৮.৪০ ৳/কেজি এবং কাওরান বাজার পাইকারি মোকামে ৪৭.৮০ ৳/কেজি দরে লেনদেন হচ্ছে। বিস্তারিত দেখতে 'বাজারদর' পৃষ্ঠায় যান।",
-        "Today's Pabna farmgate benchmark is 38.40 ৳/kg and Karwan Bazar wholesale is 47.80 ৳/kg. Navigate to Market Prices for historical trend charts.",
-      );
-    }
-
-    if (
-      q.includes("মজুত") ||
-      q.includes("স্টক") ||
-      q.includes("stock") ||
-      q.includes("কেজি") ||
-      q.includes("shed")
-    ) {
-      return t(
-        "আপনার সুজানগর মাচায় বর্তমানে ২,২২০ কেজি আনরিজার্ভড তাহেরপুরী পেঁয়াজ সংরক্ষিত রয়েছে। নতুন অফার পাঠাতে 'আমার মজুত' পৃষ্ঠায় যান।",
-        "You currently have 2,220 kg of unreserved Taherpuri onion stored in your Sujanagar shed. Visit 'My Stock' to create new sale offers.",
-      );
-    }
-
-    if (q.includes("পরিবহন") || q.includes("ট্রাক") || q.includes("ডেলিভারি") || q.includes("logistics") || q.includes("delivery") || q.includes("truck")) {
-      return t(
-        "পেঁয়াজ সরবরাহে পরিবহন বুক করতে 'অর্ডার' সেকশন থেকে লজিস্টিক কোটেশন দেখুন এবং ট্রাক নির্বাচন করুন।",
-        "To arrange transport for your onion dispatch, check the 'Orders' section to review logistics quotes and assign trucks.",
-      );
-    }
-
-    if (q.includes("ভয়েস") || q.includes("মাইক") || q.includes("কথা") || q.includes("voice") || q.includes("mic") || q.includes("speak")) {
-      return t(
-        "বার্তা বারের মাইক্রোফোন আইকনে চাপ দিয়ে মুখে বলুন—আপনার কণ্ঠস্বর স্বয়ংক্রিয়ভাবে টেক্সটে রূপান্তরিত হবে।",
-        "Tap the microphone icon next to the message bar below to convert your speech into text directly.",
-      );
-    }
-
-    if (
-      q.includes("সহায়তা") ||
-      q.includes("সাহায্য") ||
-      q.includes("help") ||
-      q.includes("support") ||
-      q.includes("হটলাইন")
-    ) {
-      return t(
-        "আমাদের সাপোর্ট হটলাইন: +880 1711-234567 (সকাল ৮:০০ - রাত ১০:০০)। জরুরি পরিদর্শনে ফিল্ড এজেন্টের সাথে যোগাযোগ করুন।",
-        "PeyajFlow Support Hotline: +880 1711-234567 (Daily 8:00 AM - 10:00 PM). For urgent crop inspection, contact your regional field agent.",
-      );
-    }
-
-    return t(
-      "ধন্যবাদ! আপনার বার্তাটি নথিভুক্ত করা হয়েছে। যেকোনো প্রশ্ন লিখে জানান বা মাইক্রোফোন চেপে সরাসরি মুখে বলুন।",
-      "Thank you! Your inquiry has been noted. Feel free to type your question or tap the microphone icon to speak.",
-    );
-  };
-
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend ?? inputText).trim();
-    if (!text) return;
+    if (!text || isTyping || text.length > 500) return;
 
     if (isListening && recognitionRef.current) {
       try {
@@ -254,20 +218,33 @@ export function ChatbotWidget({
     setInputText("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const replyText = generateBotReply(text);
+    try {
+      const form = new FormData();
+      form.set("question", text);
+      const response = await featureAction(locale, "chat", form);
+      const answer = response.data as
+        { answer: string; citations?: ChatMessage["sources"] } | undefined;
+      const replyText =
+        response.error ??
+        answer?.answer ??
+        t(
+          "উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।",
+          "No answer was available. Please try again.",
+        );
       const botMsg: ChatMessage = {
         id: crypto.randomUUID(),
         sender: "bot",
         text: replyText,
+        sources: answer?.citations,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
       };
       setMessages((prev) => [...prev, botMsg]);
+    } finally {
       setIsTyping(false);
-    }, 600);
+    }
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -307,7 +284,7 @@ export function ChatbotWidget({
         <div
           className="chatbot-window-popover"
           role="dialog"
-          aria-label="PeyajFlow Assistant Chat"
+          aria-label={t("পেঁয়াজফ্লো সহকারী চ্যাট", "PeyajFlow Assistant Chat")}
         >
           {/* Header */}
           <div className="chatbot-window-header">
@@ -323,7 +300,7 @@ export function ChatbotWidget({
                   {t("পেঁয়াজফ্লো এআই সহকারী", "PeyajFlow AI Assistant")}
                 </h3>
                 <span className="chatbot-subtitle">
-                  {t("সক্রিয় · বাংলায় সাহায্য প্রস্তুত", "Always online · Speech-to-text ready")}
+                  {t("উৎসসহ সহায়িকা · শুধু পড়া", "Sourced help · Read-only chat")}
                 </span>
               </div>
             </div>
@@ -369,6 +346,15 @@ export function ChatbotWidget({
                 )}
                 <div className="chatbot-bubble-content">
                   <p className="chatbot-bubble-text">{msg.text}</p>
+                  {msg.sources?.map((source) => (
+                    <a
+                      key={source.id}
+                      className="work-link"
+                      href={`/${locale}/workspace/help?source=${encodeURIComponent(source.id.split(":")[0])}`}
+                    >
+                      {source.title}
+                    </a>
+                  ))}
                   <span className="chatbot-bubble-time">{msg.time}</span>
                 </div>
               </div>
@@ -408,7 +394,10 @@ export function ChatbotWidget({
               title={
                 isListening
                   ? t("রেকর্ডিং বন্ধ করুন", "Stop listening")
-                  : t("কথা বলে লিখুন (স্পিচ-টু-টেক্সট)", "Speak to type (Speech-to-Text)")
+                  : t(
+                      "কথা বলে লিখুন (স্পিচ-টু-টেক্সট)",
+                      "Speak to type (Speech-to-Text)",
+                    )
               }
               aria-label={
                 isListening
@@ -417,7 +406,9 @@ export function ChatbotWidget({
               }
             >
               <WorkspaceIcon name="mic" size={20} />
-              <span className={`chatbot-mic-ring ${isListening ? "pulse-active" : ""}`} />
+              <span
+                className={`chatbot-mic-ring ${isListening ? "pulse-active" : ""}`}
+              />
             </button>
 
             {/* Message Writing Input */}
@@ -430,7 +421,10 @@ export function ChatbotWidget({
               placeholder={
                 isListening
                   ? t("শুনছি... এখন কথা বলুন...", "Listening... Speak now...")
-                  : t("বার্তা লিখুন বা প্রশ্ন করুন...", "Type a message or question...")
+                  : t(
+                      "বার্তা লিখুন বা প্রশ্ন করুন...",
+                      "Type a message or question...",
+                    )
               }
               aria-label={t("বার্তা লিখুন", "Type message")}
             />

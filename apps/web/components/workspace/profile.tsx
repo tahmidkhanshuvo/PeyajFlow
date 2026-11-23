@@ -6,8 +6,9 @@ import { Field } from "./fields";
 import { WorkspaceForm } from "./form";
 import { WorkspaceIcon } from "./icon";
 import { LocationIcon } from "./location-icon";
+import { IntegrationPanel } from "./integrations";
 
-export function ProfilePage({
+export async function ProfilePage({
   locale,
   actor,
   base,
@@ -20,6 +21,7 @@ export function ProfilePage({
 
   return (
     <div className="profile-page-wrap">
+      <IntegrationPanel locale={locale} actor={actor} />
       {/* Profile Overview Card */}
       <section className="work-panel profile-hero-card">
         <div className="profile-hero-top">

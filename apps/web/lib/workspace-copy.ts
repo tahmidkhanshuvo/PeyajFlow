@@ -13,6 +13,39 @@ export const roles: Record<Role, [string, string]> = {
 };
 
 const errors: Record<string, [string, string]> = {
+  knowledge_source_not_found: [
+    "সহায়িকার উৎসটি পাওয়া যায়নি।",
+    "The knowledge source could not be found.",
+  ],
+  token_scope_forbidden: [
+    "এই টোকেনের এই কাজের অনুমতি নেই।",
+    "This token does not permit this operation.",
+  ],
+  token_scope_invalid: [
+    "টোকেনের অনুমতি সঠিক নয়।",
+    "The token scopes are invalid.",
+  ],
+  token_not_found: ["টোকেনটি পাওয়া যায়নি।", "The token could not be found."],
+  knowledge_disabled: [
+    "সহায়িকা এখন বন্ধ আছে।",
+    "The knowledge feature is disabled.",
+  ],
+  automation_series_required: [
+    "সাপ্তাহিক খবরের জন্য বাজার বেছে নিন।",
+    "Choose a market for the weekly digest.",
+  ],
+  series_not_found: [
+    "অনুমোদিত বাজারদর পাওয়া যায়নি।",
+    "The market series could not be found.",
+  ],
+  assistant_run_not_found: [
+    "অনুসন্ধানটি পাওয়া যায়নি।",
+    "The investigation could not be found.",
+  ],
+  local_model_unavailable: [
+    "স্থানীয় মডেল পাওয়া যায়নি।",
+    "The local model is unavailable.",
+  ],
   showcase_access_invalid: [
     "ওয়ার্কস্পেসের প্রবেশ কোডটি মিলেনি।",
     "The workspace access code is incorrect.",

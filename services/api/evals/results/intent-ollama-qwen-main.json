@@ -1,0 +1,301 @@
+{
+  "label": "ollama-qwen-main",
+  "resolver": "rules+ollama:qwen2.5:7b-instruct-q4_K_M",
+  "commit": "24bf88b",
+  "dataset": "evals/data/intent.jsonl",
+  "run_at": "2026-11-21T15:55:56+00:00",
+  "rows": 279,
+  "intent": {
+    "total": 279,
+    "accuracy": 0.996415770609319,
+    "labels": [
+      "abstain",
+      "accept",
+      "advice",
+      "counter",
+      "inspection",
+      "movement",
+      "offers",
+      "orders",
+      "prices",
+      "register",
+      "reject",
+      "send_offer",
+      "stock",
+      "support",
+      "transport"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 1.0,
+        "recall": 0.9850746268656716,
+        "f1": 0.9924812030075187,
+        "support": 67
+      },
+      "accept": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 48
+      },
+      "advice": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "counter": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 14
+      },
+      "offers": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "orders": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "prices": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 18
+      },
+      "register": {
+        "precision": 0.9285714285714286,
+        "recall": 1.0,
+        "f1": 0.962962962962963,
+        "support": 13
+      },
+      "reject": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 14
+      },
+      "send_offer": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 14
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 16
+      },
+      "support": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "transport": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      }
+    },
+    "macro": {
+      "precision": 0.9952380952380953,
+      "recall": 0.9990049751243781,
+      "f1": 0.9970296110646988
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 66,
+        "register": 1
+      },
+      "accept": {
+        "accept": 48
+      },
+      "advice": {
+        "advice": 10
+      },
+      "counter": {
+        "counter": 11
+      },
+      "inspection": {
+        "inspection": 10
+      },
+      "movement": {
+        "movement": 14
+      },
+      "offers": {
+        "offers": 11
+      },
+      "orders": {
+        "orders": 10
+      },
+      "prices": {
+        "prices": 18
+      },
+      "register": {
+        "register": 13
+      },
+      "reject": {
+        "reject": 14
+      },
+      "send_offer": {
+        "send_offer": 14
+      },
+      "stock": {
+        "stock": 16
+      },
+      "support": {
+        "support": 11
+      },
+      "transport": {
+        "transport": 12
+      }
+    }
+  },
+  "status_accuracy": 0.996415770609319,
+  "quantity": {
+    "rows": 49,
+    "exact_accuracy": 1.0,
+    "unit_accuracy": 1.0
+  },
+  "abstention": {
+    "rows": 67,
+    "false_action_rate": 0.014925373134328358,
+    "false_actions": [
+      "invalid-004"
+    ]
+  },
+  "wrong_write_actions": [
+    "invalid-004"
+  ],
+  "accuracy_by": {
+    "split": {
+      "dev": {
+        "rows": 141,
+        "accuracy": 1.0
+      },
+      "test": {
+        "rows": 138,
+        "accuracy": 0.9927536231884058
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 51,
+        "accuracy": 1.0
+      },
+      "bn": {
+        "rows": 132,
+        "accuracy": 0.9924242424242424
+      },
+      "en": {
+        "rows": 82,
+        "accuracy": 1.0
+      },
+      "mixed": {
+        "rows": 14,
+        "accuracy": 1.0
+      }
+    },
+    "category": {
+      "ambiguous": {
+        "rows": 7,
+        "accuracy": 1.0
+      },
+      "banglish": {
+        "rows": 42,
+        "accuracy": 1.0
+      },
+      "canonical": {
+        "rows": 34,
+        "accuracy": 1.0
+      },
+      "clause_negation": {
+        "rows": 12,
+        "accuracy": 1.0
+      },
+      "english": {
+        "rows": 37,
+        "accuracy": 1.0
+      },
+      "invalid": {
+        "rows": 22,
+        "accuracy": 0.9545454545454546
+      },
+      "mixed": {
+        "rows": 14,
+        "accuracy": 1.0
+      },
+      "mixed_crop": {
+        "rows": 2,
+        "accuracy": 1.0
+      },
+      "negation": {
+        "rows": 19,
+        "accuracy": 1.0
+      },
+      "negation_read": {
+        "rows": 2,
+        "accuracy": 1.0
+      },
+      "number_words": {
+        "rows": 20,
+        "accuracy": 1.0
+      },
+      "paraphrase": {
+        "rows": 47,
+        "accuracy": 1.0
+      },
+      "quantity_joiners": {
+        "rows": 6,
+        "accuracy": 1.0
+      },
+      "spelling": {
+        "rows": 15,
+        "accuracy": 1.0
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "invalid-004",
+      "text": "২০০ কেজি",
+      "expected": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "register",
+        "quantity": "200",
+        "unit": "kg",
+        "reason": null
+      }
+    }
+  ],
+  "latency_ms": {
+    "median": 0.249299977440387,
+    "p95": 9.168800024781376
+  }
+}

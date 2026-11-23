@@ -12,6 +12,7 @@ type Inbox = {
   items: {
     id: string;
     kind: string;
+    summary?: string | null;
     resource_type: string;
     resource_id: string;
     created_at: string;
@@ -28,6 +29,11 @@ type Preferences = {
   sms_provider_ready: boolean;
 };
 const titles: Record<string, [string, string]> = {
+  "market.weekly": ["সাপ্তাহিক বাজারদর", "Weekly market digest"],
+  "automation.attention": [
+    "অপারেটরের মনোযোগ প্রয়োজন",
+    "Operator attention needed",
+  ],
   "offer.sent": ["নতুন অফার এসেছে", "New offer received"],
   "offer.countered": ["পাল্টা অফার এসেছে", "Counteroffer received"],
   "offer.rejected": ["অফার প্রত্যাখ্যাত", "Offer declined"],
@@ -98,11 +104,16 @@ export async function AlertsPage({
         <ul className="work-history">
           {data.items.map((item) => {
             const href =
-              item.resource_type === "offer"
-                ? `${base}/offers/${item.resource_id}`
-                : `${base}/orders/${item.resource_id}${item.resource_type === "logistics" ? "/logistics" : ""}`;
+              item.resource_type === "market"
+                ? `${base}/prices`
+                : item.resource_type === "automation"
+                  ? `${base}/insights`
+                  : item.resource_type === "offer"
+                    ? `${base}/offers/${item.resource_id}`
+                    : `${base}/orders/${item.resource_id}${item.resource_type === "logistics" ? "/logistics" : ""}`;
             return (
               <li key={item.id}>
+                {item.summary && <p>{item.summary}</p>}
                 <div className="work-row">
                   <Link className="work-link" href={href}>
                     {t(...(titles[item.kind] ?? [item.kind, item.kind]))}

@@ -280,9 +280,38 @@ def fingerprint(token: str) -> str:
 def actor_for(
     db: DB,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
+    request: Request,
 ) -> Profile:
-    if credentials is None or len(credentials.credentials) != 43:
+    if credentials is None or len(credentials.credentials) not in (43, 46):
         raise HTTPException(401, "sign_in_required")
+    if len(credentials.credentials) == 46 and credentials.credentials.startswith("pf_"):
+        from app.api_tokens import check_scope, tokens
+
+        integration = (
+            db.execute(
+                select(tokens).where(
+                    tokens.c.token_hash == fingerprint(credentials.credentials),
+                    tokens.c.expires_at > func.now(),
+                    tokens.c.revoked_at.is_(None),
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        if integration is None:
+            raise HTTPException(401, "session_expired")
+        check_scope(integration["scopes"], request)
+        enforce(db, "integration-token", str(integration["id"]), limit=60, seconds=60)
+        identity = member_accounts
+        filters = [memberships.c.id == integration["membership_id"]]
+    else:
+        identity = sessions.join(
+            member_accounts, sessions.c.membership_id == memberships.c.id
+        )
+        filters = [
+            sessions.c.token_hash == fingerprint(credentials.credentials),
+            sessions.c.expires_at > func.now(),
+        ]
     row = (
         db.execute(
             select(
@@ -298,15 +327,8 @@ def actor_for(
                 organizations.c.is_demo,
                 users.c.verification_status,
             )
-            .select_from(
-                sessions.join(
-                    member_accounts, sessions.c.membership_id == memberships.c.id
-                )
-            )
-            .where(
-                sessions.c.token_hash == fingerprint(credentials.credentials),
-                sessions.c.expires_at > func.now(),
-            )
+            .select_from(identity)
+            .where(*filters)
         )
         .mappings()
         .one_or_none()

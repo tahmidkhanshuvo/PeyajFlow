@@ -29,6 +29,11 @@ export type NotificationBellProps = {
 };
 
 const titles: Record<string, [string, string]> = {
+  "market.weekly": ["সাপ্তাহিক বাজারদর", "Weekly market digest"],
+  "automation.attention": [
+    "অপারেটরের মনোযোগ প্রয়োজন",
+    "Operator attention needed",
+  ],
   "offer.sent": ["নতুন অফার এসেছে", "New offer received"],
   "offer.countered": ["পাল্টা অফার এসেছে", "Counteroffer received"],
   "offer.rejected": ["অফার প্রত্যাখ্যাত", "Offer declined"],
@@ -337,9 +342,13 @@ export function NotificationBell({
                   item.created_at,
                 );
                 const href =
-                  item.resource_type === "offer"
-                    ? `${base}/offers/${item.resource_id}`
-                    : `${base}/orders/${item.resource_id}${item.resource_type === "logistics" ? "/logistics" : ""}`;
+                  item.resource_type === "market"
+                    ? `${base}/prices`
+                    : item.resource_type === "automation"
+                      ? `${base}/insights`
+                      : item.resource_type === "offer"
+                        ? `${base}/offers/${item.resource_id}`
+                        : `${base}/orders/${item.resource_id}${item.resource_type === "logistics" ? "/logistics" : ""}`;
 
                 return (
                   <div

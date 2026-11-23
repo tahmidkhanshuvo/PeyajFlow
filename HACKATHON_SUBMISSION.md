@@ -2,6 +2,8 @@
 
 These are answers for the submission form's "AI Detail Usage", "Data Lifecycle" and "Build Provenance" pages. They were taken from the repository at commit `efe84a2` on November 20, 2026.
 
+Local implementation update, November 22, 2026: the six previously empty areas below now have code and local evidence on `codex/ai-platform-features`, based on `24bf88b` with uncommitted changes. They are not merged or deployed. Keep their submission boxes unticked until release; the older evaluation table remains dated historical evidence. See `docs/INTEGRATIONS.md` and `WORK_STATUS.md` for current checks and limitations.
+
 - **Who can submit:** only the team leader can edit and submit.
 - **Unticked boxes:** boxes marked ☐ are for things PeyajFlow does not use. Leave them unticked.
 - **[Confirm]:** items marked **[Confirm]** need a team member to check before ticking or submitting.
@@ -64,13 +66,11 @@ No model can change data. Every change still needs a spoken read-back and the us
 
 ### Retrieval & RAG
 
-☐ None.
-
-> No RAG. The product answers from its own PostgreSQL records through authorized, role-scoped queries.
+☐ Pending release: PostgreSQL full-text + pgvector hybrid retrieval over fifteen first-party bilingual help guides, with dated citations, source viewing and abstention. No private records are indexed. The 65-row same-author development evaluation measured hybrid recall@5 1.000, MRR 0.983 and 5/5 out-of-scope abstentions. Independent and human answer-support reviews remain open.
 
 ### MCP (Model Context Protocol) Usage
 
-☐ Leave unticked. No MCP servers were built or used for this project.
+☐ Pending release: official Python SDK server with stdio and authenticated Streamable HTTP, nine read-only tools, two static resources, one resource template and two prompts. Scoped tokens retain API role, owner and demo-isolation checks. Both transports were exercised with the SDK.
 
 ### Open Source Tools & Libraries
 
@@ -85,11 +85,11 @@ No model can change data. Every change still needs a spoken read-back and the us
 
 ### Agent Frameworks & Orchestration
 
-None in the product. Development used coding agents (Claude Code) guided by an `AGENTS.md` specification, with features on branches behind CI gates.
+A bounded LangGraph operator investigation reads authorized data, persists PostgreSQL checkpoints and pauses for human approval of its note. It cannot execute business changes. Twenty controlled synthetic orchestration scenarios passed; this is not a model-reasoning benchmark. Development also used Claude Code and Codex under `AGENTS.md`.
 
 ### Fine-tuning / Adaptation
 
-None. All models are used zero-shot or through prompts. No labelled field data exists yet, so we did not train on unvalidated data.
+No model weights were fine-tuned. A local DSPy bootstrap/random-search prompt experiment used disjoint development, validation and holdout files with previously evaluated wording. Gemma 3 4B scored 0/2 before and after on that holdout, so no prompt was promoted.
 
 ### Evaluation & Quality Measurement
 
@@ -152,15 +152,15 @@ How to read these figures:
 
 ### Workflow Automation
 
-☐ None.
+☐ Pending release: four n8n workflows for weekly price digest, freshness, alert routing and authenticated CSV intake. Local executions passed. Scheduled workflows remain inactive; only the authenticated synthetic intake webhook was published locally. The bounded folder watcher preserves original files. API consent, retry keys, operator approval and existing SMS/STOP controls still apply. No carrier or external messaging was enabled.
 
 ### Local / On-device LLMs
 
-☐ None. The on-device model is CLIP, a vision model, not an LLM.
+☐ Pending release: Ollama supplies local bge-m3 embeddings and optional server-side command inference. Qwen 2.5 7B and Llama 3.1 8B were evaluated; false actions in broader checks kept both out of live command fallback. Previews are read-only. This requires the API connection and does not provide offline phone use.
 
 ### Agentic Frameworks Used
 
-☐ None.
+☐ Pending release: LangGraph for durable, human-reviewed operator notes; DSPy for the unpromoted local prompt experiment described above.
 
 ### AI Development Lifecycle (AI-DLC)
 
@@ -242,9 +242,7 @@ The schema has 36 tables using SQLAlchemy Core, with 21 Alembic revisions and a 
 
 ### 5. Visualization
 
-☐ None. No chart library is used.
-
-Server-rendered ranges, tables and the phone simulator, all bilingual and checked with axe.
+☐ Pending release: Recharts renders historical prices, forecast intervals, replay error, verified weight trends, scenario proceeds and operator evidence counts. Accessible tables accompany charts. Missing values are not converted into zero, synthetic data is labelled, and fitted loss trends use the existing minimum-evidence gate.
 
 ### 6. Insights: AI, ML & Non-AI
 
@@ -374,7 +372,7 @@ The design is evidence-first:
 
 ### MCP Usage
 
-Leave blank. None used.
+Pending release: PeyajFlow MCP, built with the official Python SDK. See `services/mcp/README.md` and `docs/design-reviews/integrations/mcp-inventory.json` for setup and the locally exercised inventory. Read tools call authorized API endpoints and never access the database directly.
 
 ### Prompt Library
 

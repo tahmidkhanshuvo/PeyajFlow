@@ -1,0 +1,343 @@
+{
+  "label": "ollama-llama-main",
+  "resolver": "rules+ollama:llama3.1:8b-instruct-q4_K_M",
+  "commit": "24bf88b",
+  "dataset": "evals/data/intent.jsonl",
+  "run_at": "2026-11-21T16:01:50+00:00",
+  "rows": 283,
+  "intent": {
+    "total": 283,
+    "accuracy": 0.9893992932862191,
+    "labels": [
+      "abstain",
+      "accept",
+      "advice",
+      "counter",
+      "inspection",
+      "movement",
+      "offers",
+      "orders",
+      "prices",
+      "register",
+      "reject",
+      "send_offer",
+      "stock",
+      "support",
+      "transport"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 1.0,
+        "recall": 0.9577464788732394,
+        "f1": 0.9784172661870503,
+        "support": 71
+      },
+      "accept": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 48
+      },
+      "advice": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "counter": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 14
+      },
+      "offers": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "orders": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10
+      },
+      "prices": {
+        "precision": 0.9473684210526315,
+        "recall": 1.0,
+        "f1": 0.972972972972973,
+        "support": 18
+      },
+      "register": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 13
+      },
+      "reject": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 14
+      },
+      "send_offer": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 14
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 16
+      },
+      "support": {
+        "precision": 0.8461538461538461,
+        "recall": 1.0,
+        "f1": 0.9166666666666666,
+        "support": 11
+      },
+      "transport": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      }
+    },
+    "macro": {
+      "precision": 0.9862348178137651,
+      "recall": 0.9971830985915493,
+      "f1": 0.9912037937217792
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 68,
+        "prices": 1,
+        "support": 2
+      },
+      "accept": {
+        "accept": 48
+      },
+      "advice": {
+        "advice": 10
+      },
+      "counter": {
+        "counter": 11
+      },
+      "inspection": {
+        "inspection": 10
+      },
+      "movement": {
+        "movement": 14
+      },
+      "offers": {
+        "offers": 11
+      },
+      "orders": {
+        "orders": 10
+      },
+      "prices": {
+        "prices": 18
+      },
+      "register": {
+        "register": 13
+      },
+      "reject": {
+        "reject": 14
+      },
+      "send_offer": {
+        "send_offer": 14
+      },
+      "stock": {
+        "stock": 16
+      },
+      "support": {
+        "support": 11
+      },
+      "transport": {
+        "transport": 12
+      }
+    }
+  },
+  "status_accuracy": 0.9893992932862191,
+  "quantity": {
+    "rows": 49,
+    "exact_accuracy": 1.0,
+    "unit_accuracy": 1.0
+  },
+  "abstention": {
+    "rows": 71,
+    "false_action_rate": 0.04225352112676056,
+    "false_actions": [
+      "invalid-002",
+      "invalid-009",
+      "invalid-021"
+    ]
+  },
+  "wrong_write_actions": [
+    "invalid-002",
+    "invalid-009"
+  ],
+  "accuracy_by": {
+    "split": {
+      "dev": {
+        "rows": 145,
+        "accuracy": 0.9862068965517241
+      },
+      "test": {
+        "rows": 138,
+        "accuracy": 0.9927536231884058
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 51,
+        "accuracy": 1.0
+      },
+      "bn": {
+        "rows": 133,
+        "accuracy": 0.9849624060150376
+      },
+      "en": {
+        "rows": 85,
+        "accuracy": 0.9882352941176471
+      },
+      "mixed": {
+        "rows": 14,
+        "accuracy": 1.0
+      }
+    },
+    "category": {
+      "ambiguous": {
+        "rows": 7,
+        "accuracy": 1.0
+      },
+      "banglish": {
+        "rows": 42,
+        "accuracy": 1.0
+      },
+      "canonical": {
+        "rows": 34,
+        "accuracy": 1.0
+      },
+      "clause_negation": {
+        "rows": 12,
+        "accuracy": 1.0
+      },
+      "english": {
+        "rows": 37,
+        "accuracy": 1.0
+      },
+      "fragment": {
+        "rows": 4,
+        "accuracy": 1.0
+      },
+      "invalid": {
+        "rows": 22,
+        "accuracy": 0.8636363636363636
+      },
+      "mixed": {
+        "rows": 14,
+        "accuracy": 1.0
+      },
+      "mixed_crop": {
+        "rows": 2,
+        "accuracy": 1.0
+      },
+      "negation": {
+        "rows": 19,
+        "accuracy": 1.0
+      },
+      "negation_read": {
+        "rows": 2,
+        "accuracy": 1.0
+      },
+      "number_words": {
+        "rows": 20,
+        "accuracy": 1.0
+      },
+      "paraphrase": {
+        "rows": 47,
+        "accuracy": 1.0
+      },
+      "quantity_joiners": {
+        "rows": 6,
+        "accuracy": 1.0
+      },
+      "spelling": {
+        "rows": 15,
+        "accuracy": 1.0
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "invalid-002",
+      "text": "আপনি কেমন আছেন",
+      "expected": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    },
+    {
+      "id": "invalid-009",
+      "text": "😀👍",
+      "expected": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    },
+    {
+      "id": "invalid-021",
+      "text": "হ্যাঁ",
+      "expected": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    }
+  ],
+  "latency_ms": {
+    "median": 0.12429995695129037,
+    "p95": 1.4550000196322799
+  }
+}

@@ -14,17 +14,22 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import (
     admin,
     advice,
+    api_tokens,
     auth,
+    automation,
     credentials,
     demand,
     documentation,
     forecast,
     hardening,
     inspection,
+    integrations,
+    knowledge,
     logistics,
     lots,
     market_data,
     notifications,
+    operator_agent,
     phone_sim,
     rate_limits,
     risk,
@@ -145,6 +150,11 @@ app.include_router(notifications.router)
 app.include_router(admin.router)
 app.include_router(settlement.router)
 app.include_router(documentation.router)
+app.include_router(api_tokens.router)
+app.include_router(knowledge.router)
+app.include_router(automation.router)
+app.include_router(operator_agent.router)
+app.include_router(integrations.router)
 
 
 @app.get("/health/live", response_model=Liveness, tags=["Health"])

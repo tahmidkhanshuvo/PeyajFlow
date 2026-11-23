@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: pgvector/pgvector:0.8.1-pg16
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-peyajflow}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-peyajflow-local}
@@ -32,6 +32,12 @@ services:
       DEMO_MODE: "true"
       PHOTO_STORAGE: local
       PHOTO_DIR: /var/lib/peyajflow/photos
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b-instruct-q4_K_M}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-bge-m3}
+      KNOWLEDGE_PROVIDER: ${KNOWLEDGE_PROVIDER:-extractive}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-none}
+      MCP_API_BASE_URL: http://api:8000
     volumes:
       - inspection-photos:/var/lib/peyajflow/photos
     ports:
@@ -40,6 +46,41 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  ollama:
+    image: ollama/ollama@sha256:b88c73ace3e115f8ec53dc8761ae1c0aabfa675406e3681786b98757ce050f42
+    profiles: [ai]
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n@sha256:fabce3e9678a07d2dde83bd8f5124017f3ec457d0a3fc6b63bb4cec465d63861
+    profiles: [automation]
+    environment:
+      GENERIC_TIMEZONE: Asia/Dhaka
+      TZ: Asia/Dhaka
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_SECURE_COOKIE: "false"
+      PEYAJFLOW_API_URL: http://api:8000
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./automation/n8n:/workflows:ro
+    ports:
+      - "127.0.0.1:${N8N_PORT:-5678}:5678"
+
+  mcp:
+    build: ./services/api
+    profiles: [integrations]
+    command: [python, -m, app.mcp_server, --http]
+    environment:
+      MCP_API_BASE_URL: http://api:8000
+      MCP_HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:${MCP_PORT:-8002}:8002"
+
 volumes:
   postgres-data:
   inspection-photos:
+  ollama-data:
+  n8n-data:

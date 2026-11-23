@@ -11,6 +11,7 @@ import { WorkspaceForm } from "./form";
 import { priceType } from "./prices";
 import { SettlementQueue } from "./settlement";
 import { kg } from "./stock";
+import { DataChart } from "./data-chart";
 
 type Overview = {
   unverified_accounts: number;
@@ -405,20 +406,43 @@ async function PhotoModel({ locale }: Page) {
         )}
       </p>
       {review.cells.length > 0 && (
-        <ul className="work-history">
-          {review.cells.map((cell) => (
-            <li key={`${cell.predicted}-${cell.reviewed.join("+")}`}>
-              <strong>
-                {local(locale, "মডেল", "Model")} · {flag(cell.predicted)}
-              </strong>
-              <span>
-                {local(locale, "পর্যালোচক", "Reviewer")} ·{" "}
-                {cell.reviewed.map(flag).join(", ")} ·{" "}
-                {numberLabel(locale, cell.count)}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <>
+          {review.agreement_pct !== null && (
+            <DataChart
+              locale={locale}
+              title={local(
+                locale,
+                "মডেল ও পর্যালোচনার জোড়া",
+                "Model and review pairs",
+              )}
+              summary={local(
+                locale,
+                "শুধু প্রকৃত তুলনাযোগ্য জোড়া দেখানো হয়। পূর্বের পরামর্শ পর্যালোচককে প্রভাবিত করতে পারে।",
+                "Only actual comparable pairs are shown. Earlier suggestions may influence reviewers.",
+              )}
+              points={review.cells.map((cell) => ({
+                name: `${flag(cell.predicted)} → ${cell.reviewed.map(flag).join(", ")}`,
+                value: cell.count,
+              }))}
+              unit={local(locale, "জোড়া", "Pairs")}
+              bars
+            />
+          )}
+          <ul className="work-history">
+            {review.cells.map((cell) => (
+              <li key={`${cell.predicted}-${cell.reviewed.join("+")}`}>
+                <strong>
+                  {local(locale, "মডেল", "Model")} · {flag(cell.predicted)}
+                </strong>
+                <span>
+                  {local(locale, "পর্যালোচক", "Reviewer")} ·{" "}
+                  {cell.reviewed.map(flag).join(", ")} ·{" "}
+                  {numberLabel(locale, cell.count)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
       <small>
         {review.model} · {review.rule}

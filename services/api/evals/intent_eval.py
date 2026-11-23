@@ -291,13 +291,31 @@ def main(argv: list[str] | None = None) -> int:
 
     name, predict = fallback_resolver() if args.fallback else resolver()
     rows = load(args.dataset)
+    from statistics import median
+    from time import perf_counter
+
+    timings = []
+
+    def timed_predict(text):
+        start = perf_counter()
+        result = predict(text)
+        timings.append((perf_counter() - start) * 1000)
+        return result
+
+    measured = evaluate(rows, timed_predict)
     result = {
         "label": args.label or "check",
         "resolver": name,
         "commit": commit(),
         "dataset": args.dataset.resolve().relative_to(HERE.parent.resolve()).as_posix(),
         "run_at": datetime.now(UTC).isoformat(timespec="seconds"),
-        **evaluate(rows, predict),
+        **measured,
+        "latency_ms": {
+            "median": median(timings) if timings else None,
+            "p95": sorted(timings)[min(len(timings) - 1, int(len(timings) * 0.95))]
+            if timings
+            else None,
+        },
     }
     intent = result["intent"]
     print(

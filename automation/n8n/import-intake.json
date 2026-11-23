@@ -1,0 +1,77 @@
+{
+  "id": "peyajflow-import-intake",
+  "name": "PeyajFlow report intake",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "peyajflow-import",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Authenticated report intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "peyajflow-import-intake",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "peyajflow-intake",
+          "name": "PeyajFlow intake webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/v1/automation/imports",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({request_key: $json.body.request_key, label: $json.body.label, synthetic: $json.body.synthetic, csv: $json.body.csv}) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "stage",
+      "name": "Stage for human review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "peyajflow-imports",
+          "name": "PeyajFlow import staging token"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Authenticated report intake": {
+      "main": [
+        [
+          {
+            "node": "Stage for human review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Dhaka"
+  },
+  "tags": []
+}

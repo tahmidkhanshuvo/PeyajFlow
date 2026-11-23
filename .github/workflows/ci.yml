@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:0.8.1-pg16
         env:
           POSTGRES_USER: peyajflow
           POSTGRES_PASSWORD: test
@@ -58,6 +58,7 @@ jobs:
           uv --directory services/api sync --locked
           uv --directory services/api run --locked python -m app.migrate
           uv --directory services/api run --locked python -m app.seed
+          uv --directory services/api run --locked python -m app.knowledge_seed
           uv --directory services/api run --locked uvicorn app.main:app --host 127.0.0.1 --port 8000 &
           api_pid=$!
           pnpm --filter @peyajflow/web start --hostname 127.0.0.1 --port 3000 &
@@ -82,7 +83,7 @@ jobs:
       TEST_DATABASE_URL: postgresql+psycopg://peyajflow:test@127.0.0.1:5432/peyajflow_test
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:0.8.1-pg16
         env:
           POSTGRES_USER: peyajflow
           POSTGRES_PASSWORD: test
@@ -113,6 +114,10 @@ jobs:
           uv run --locked python -m evals.intent_eval --check
           uv run --locked python -m evals.intent_eval --check --min-accuracy 0.9 \
             --dataset evals/data/intent-challenge.jsonl
+      - name: Evaluate public help retrieval
+        run: |
+          uv run --locked python -m app.knowledge_seed
+          uv run --locked python -m evals.rag_eval --check --min-recall 0.95 --label ci
 
   container:
     runs-on: ubuntu-latest

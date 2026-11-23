@@ -35,14 +35,25 @@ async function signIn(browser, identity, viewport) {
   await page.goto(base);
   await page.getByLabel("Account", { exact: true }).selectOption(identity);
   await page.getByRole("button", { name: "Open workspace" }).click();
-  await page.getByRole("heading", { name: "Workspace", exact: true }).waitFor();
+  await page.getByRole("heading", { name: "Overview", exact: true }).waitFor();
   return page;
 }
 
 async function open(scope, title) {
   const summary = scope.locator("summary").filter({ hasText: title });
-  await summary.click();
-  return summary.locator("xpath=..");
+  await summary
+    .or(scope.getByRole("button", { name: title, exact: true }))
+    .first()
+    .waitFor();
+  if (await summary.count()) {
+    await summary.click();
+    return summary.locator("xpath=..");
+  }
+  await scope.getByRole("button", { name: title, exact: true }).click();
+  const page = typeof scope.page === "function" ? scope.page() : scope;
+  return page
+    .getByRole("dialog")
+    .filter({ has: page.getByRole("heading", { name: title, exact: true }) });
 }
 
 async function evidence(page, name) {
@@ -103,19 +114,17 @@ test(
         signIn(browser, "buyer", { width: 1280, height: 900 }),
         signIn(browser, "admin", { width: 1280, height: 900 }),
       ]);
+      await buyer.goto(`${web}/en/call-simulator`);
+      await buyer.getByRole("button", { name: "Place Call" }).click();
       await buyer
-        .locator(".workspace-nav, nav")
-        .getByRole("link", { name: "Bangla assistant" })
-        .click();
-      await buyer.getByRole("button", { name: "Start simulated call" }).click();
-      await buyer.getByRole("heading", { name: "Enter a command" }).waitFor();
+        .getByRole("heading", { name: "Enter or Select a Command" })
+        .waitFor();
       await buyer.getByRole("button", { name: "End call" }).click();
+      await admin.goto(`${web}/en/call-simulator`);
+      await admin.getByRole("button", { name: "Place Call" }).click();
       await admin
-        .locator(".workspace-nav, nav")
-        .getByRole("link", { name: "Bangla assistant" })
-        .click();
-      await admin.getByRole("button", { name: "Start simulated call" }).click();
-      await admin.getByRole("heading", { name: "Enter a command" }).waitFor();
+        .getByRole("heading", { name: "Enter or Select a Command" })
+        .waitFor();
       await admin.getByRole("button", { name: "End call" }).click();
       const [farmerLogin, buyerLogin] = await Promise.all([
         request("/v1/auth/demo", { identity: "farmer" }),
@@ -151,10 +160,7 @@ test(
         buyerLogin.token,
       );
 
-      await admin
-        .getByRole("navigation")
-        .getByRole("link", { name: "Market imports" })
-        .click();
+      await admin.goto(`${base}/imports`);
       const upload = await open(admin, "Upload CSV");
       await upload.getByLabel("Import label").fill(market);
       await upload.getByLabel("CSV file").setInputFiles({
@@ -176,7 +182,9 @@ test(
       await buyer.goto(`${base}/prices?series=${series.series}&horizon=14`);
       await buyer.getByRole("heading", { name: "Price outlook" }).waitFor();
       await buyer
-        .getByRole("heading", { name: "Price model preview" })
+        .getByText(
+          "Experimental candidate; not promoted to the primary forecast",
+        )
         .waitFor();
       await open(buyer, "Historical backtest");
       await buyer.getByText("WAPE", { exact: true }).waitFor();
@@ -212,42 +220,63 @@ test(
         };
       });
       await farmer.goto(`${base}/voice`);
+      await farmer.getByRole("button", { name: "Place Call" }).click();
       await farmer
-        .getByRole("button", { name: "Start simulated call" })
-        .click();
-      await farmer.getByRole("heading", { name: "Enter a command" }).waitFor();
+        .getByRole("heading", { name: "Enter or Select a Command" })
+        .waitFor();
       await farmer
         .getByLabel("Typed Bangla utterance")
         .fill("offer accept korbo na");
       await farmer.getByRole("button", { name: "Check command" }).click();
       await farmer
-        .getByText("The command contained a negation, so nothing was staged.", {
-          exact: false,
+        .getByRole("alert")
+        .filter({
+          hasText: "The command contained a negation, so nothing was staged.",
         })
         .waitFor();
-      await farmer.getByRole("button", { name: "Speak Bangla" }).click();
-      await farmer.getByText("Review the transcript before sending.").waitFor();
-      await farmer.getByText("Understood: Accept offer · 200 kg.").waitFor();
+      await farmer
+        .getByRole("button", {
+          name: "Speak Bangla (Tap to speak)",
+          exact: true,
+        })
+        .click();
+      await farmer
+        .getByRole("status")
+        .filter({ hasText: "Check the form before sending." })
+        .waitFor();
+      await farmer
+        .getByRole("status")
+        .filter({ hasText: "Understood: Accept offer · 200 kg." })
+        .waitFor();
       assert.equal(
         await farmer.getByLabel("Typed Bangla utterance").inputValue(),
         "অফার গ্রহণ ২০০ কেজি",
       );
       assert.equal(
-        await farmer.locator("select[name=tool]").inputValue(),
+        await farmer.locator("input[name=tool]").inputValue(),
         "accept",
       );
-      const offered = farmer
-        .locator("select[name=offer] option")
-        .filter({ hasText: lotName });
-      await farmer
-        .locator("select[name=offer]")
-        .selectOption(await offered.getAttribute("value"));
+      const chooseOffer = async () => {
+        await farmer
+          .locator(".workspace-dropdown-wrap")
+          .filter({ has: farmer.locator("input[name=offer]") })
+          .getByRole("button")
+          .click();
+        await farmer.getByRole("option").filter({ hasText: lotName }).click();
+        assert.equal(
+          await farmer.locator("input[name=offer]").inputValue(),
+          `${setupOffer.id}/${lot.id}/${setupOffer.version}`,
+        );
+      };
+      await chooseOffer();
       await farmer.getByRole("button", { name: "Send utterance" }).click();
       await farmer
         .getByRole("heading", { name: "Confirm the read-back" })
         .waitFor();
       await farmer.getByRole("button", { name: "Cancel this action" }).click();
-      await farmer.getByRole("heading", { name: "Enter a command" }).waitFor();
+      await farmer
+        .getByRole("heading", { name: "Enter or Select a Command" })
+        .waitFor();
       assert.equal(
         (await request(`/v1/lots/${lot.id}`, undefined, farmerLogin.token))
           .reserved_kg,
@@ -257,10 +286,11 @@ test(
         .getByLabel("Typed Bangla utterance")
         .fill("200 kg offer accept koro");
       await farmer.getByRole("button", { name: "Check command" }).click();
-      await farmer.getByText("Understood: Accept offer · 200 kg.").waitFor();
       await farmer
-        .locator("select[name=offer]")
-        .selectOption(await offered.getAttribute("value"));
+        .getByRole("status")
+        .filter({ hasText: "Understood: Accept offer · 200 kg." })
+        .waitFor();
+      await chooseOffer();
       await farmer.getByRole("button", { name: "Send utterance" }).click();
       await farmer
         .getByRole("heading", { name: "Confirm the read-back" })
@@ -287,13 +317,20 @@ test(
       const orderPath = await receipt.getAttribute("href");
       await evidence(farmer, "pilot-voice-mobile.png");
       await buyer.goto(`${web}${orderPath}`);
-      await buyer.getByRole("heading", { name: "Order receipt" }).waitFor();
-      await buyer.getByRole("link", { name: "Transport and quotes" }).click();
+      await buyer.getByRole("heading", { name: "Order details" }).waitFor();
+      await buyer
+        .getByRole("button", { name: "Transport and quotes", exact: true })
+        .click();
+      await buyer
+        .getByRole("link", { name: "Manage quotes and booking" })
+        .click();
       const transport = await open(buyer, "Request transport quotes");
       await transport.getByLabel("Handling instructions").fill("Bagged onions");
       await transport
         .getByRole("button", { name: "Submit quote request" })
         .click();
+      await buyer.waitForURL(`${web}${orderPath}`);
+      await buyer.goto(`${web}${orderPath}/logistics`);
       await buyer.getByText("Quote requested", { exact: true }).waitFor();
       await admin.goto(`${web}${orderPath}/logistics`);
       const quote = await open(admin, "Record transporter quote");
@@ -304,6 +341,7 @@ test(
       await quote.getByLabel("Freight (BDT)").fill("450");
       await quote.getByLabel("Handling (BDT)").fill("50");
       await quote.getByRole("button", { name: "Save quote" }).click();
+      await admin.waitForURL(`${web}${orderPath}/logistics`);
       await admin.getByText("৳9,500.00", { exact: true }).waitFor();
       await buyer.reload();
       const book = await open(buyer, "Choose this quote");
@@ -311,8 +349,20 @@ test(
         .getByLabel("I checked the quoted price and pickup date.")
         .check();
       await book.getByRole("button", { name: "Confirm booking" }).click();
+      await buyer.waitForURL(`${web}${orderPath}/logistics`);
       await buyer.getByText("Booked", { exact: true }).first().waitFor();
       await evidence(buyer, "pilot-transport-quotes.png");
+    } catch (error) {
+      for (const context of browser.contexts()) {
+        for (const page of context.pages()) {
+          console.error(
+            "Workflow failure",
+            page.url(),
+            await page.getByRole("alert").allTextContents(),
+          );
+        }
+      }
+      throw error;
     } finally {
       await browser.close();
     }

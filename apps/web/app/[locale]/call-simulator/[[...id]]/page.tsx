@@ -8,7 +8,12 @@ import { ThemeToggle } from "../../../../components/theme-toggle";
 import { WorkspaceIcon } from "../../../../components/workspace/icon";
 import { PhoneDialer } from "../../../../components/workspace/phone-dialer";
 import { VoiceDesk } from "../../../../components/workspace/voice-desk";
-import { api, type Profile, sessionCookie } from "../../../../lib/workspace-api";
+import { KnowledgePanel } from "../../../../components/workspace/knowledge";
+import {
+  api,
+  type Profile,
+  sessionCookie,
+} from "../../../../lib/workspace-api";
 import type { VoiceCall, PriceSeries } from "../../../../lib/pilot-types";
 import type {
   Lot,
@@ -38,7 +43,7 @@ export default async function CallSimulatorPage({
   let actor: Profile | null = null;
   if (token) {
     try {
-      actor = await api<Profile>("/v1/auth/me");
+      actor = await api<Profile>("/v1/me");
     } catch {
       actor = null;
     }
@@ -65,7 +70,10 @@ export default async function CallSimulatorPage({
             href={`/${locale}/workspace`}
             className="call-simulator-workspace-link"
             prefetch={true}
-            title={t("ওয়ার্কস্পেস ড্যাশবোর্ডে ফিরুন", "Return to Workspace Dashboard")}
+            title={t(
+              "ওয়ার্কস্পেস ড্যাশবোর্ডে ফিরুন",
+              "Return to Workspace Dashboard",
+            )}
           >
             <WorkspaceIcon name="logout" size={15} />
             <span>{t("ড্যাশবোর্ড", "Dashboard")}</span>
@@ -91,14 +99,16 @@ export default async function CallSimulatorPage({
       {/* Main Simulator Stage */}
       <main className="call-simulator-main">
         {callId && actor ? (
-          <VoiceActiveSession
-            locale={locale}
-            callId={callId}
-            actor={actor}
-          />
+          <VoiceActiveSession locale={locale} callId={callId} actor={actor} />
         ) : (
           <div className="call-simulator-dialer-wrap">
-            <PhoneDialer locale={locale} />
+            <PhoneDialer
+              locale={locale}
+              initialTime={new Date().toLocaleTimeString(
+                locale === "bn" ? "bn-BD" : "en-US",
+                { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dhaka" },
+              )}
+            />
           </div>
         )}
       </main>
@@ -138,7 +148,7 @@ async function VoiceActiveSession({
       </Link>
       <VoiceDesk
         locale={locale}
-        base={`/${locale}/call-simulator`}
+        base={`/${locale}/workspace`}
         initial={call}
         actor={actor}
         lots={lots}
@@ -147,6 +157,7 @@ async function VoiceActiveSession({
         supply={supply}
         series={series}
       />
+      <KnowledgePanel locale={locale} />
     </div>
   );
 }

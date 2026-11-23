@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, type ReactNode } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
 import { mutate } from "../../app/[locale]/workspace/actions";
 import { pilotMutate } from "../../app/[locale]/workspace/pilot-actions";
@@ -947,6 +948,12 @@ export function OrderLogisticsModal({
                         "Transport Requests & Quotes",
                       )}
                     </h3>
+                    <Link
+                      className="work-link"
+                      href={`/${locale}/workspace/orders/${orderId}/logistics`}
+                    >
+                      {t("দর ও বুকিং পরিচালনা করুন", "Manage quotes and booking")}
+                    </Link>
                     {canRequestQuotes && !showRequestForm && (
                       <button
                         type="button"
