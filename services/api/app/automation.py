@@ -21,7 +21,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import insert as upsert
 
-from app import admin, auth, forecast, market_data, notifications
+from app import admin, auth, features, forecast, market_data, notifications
 from app.auth import Actor, Input, Role, audit, require_role
 from app.database import DB, metadata
 from app.rate_limits import enforce
@@ -73,6 +73,9 @@ def get_subscription(actor: Actor, db: DB):
 
 @router.put("/subscription")
 def subscribe(body: Subscription, actor: Actor, db: DB):
+    # Opt-out remains available even when all scheduled jobs are disabled.
+    if body.enabled:
+        features.require("AUTOMATION_ENABLED", "automation_disabled")
     if body.enabled and not body.series:
         raise HTTPException(422, "automation_series_required")
     if body.series and body.series not in {
@@ -105,6 +108,7 @@ def begin_job(db, actor, job, body):
     require_role(actor, Role.ADMIN)
     if not actor.verified:
         raise HTTPException(403, "role_forbidden")
+    features.require("AUTOMATION_ENABLED", "automation_disabled")
     enforce(db, "automation-run", str(actor.membership_id), limit=60, seconds=3600)
     # Serialize by owner + job + request key across API workers.
     digest = market_data.digest(str(actor.membership_id), job, str(body.request_key))

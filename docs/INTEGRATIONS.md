@@ -105,3 +105,9 @@ The LangGraph assistant is a bounded investigation, not autonomous causal reason
 - Carrier/provider delivery and STOP acceptance before live channels are enabled.
 - Operator schedule activation and rotation of the expiring local demo credentials.
 - Optional reranking or a separate BI dashboard only after a measured need and a suitable authorization design.
+
+## Public knowledge and cost controls (November 23, 2026)
+
+PDF/Markdown manifest ingestion, token-budget chunking, per-worker answer caching and independent automation, operator-assistant and local-preview switches are implemented. Context generation uses Ollama independently of extractive answering. See [configuration and import commands](KNOWLEDGE_OPERATIONS.md) for limits, strict context generation, cloud connectivity and automation setup. External agronomy sources, hosting changes and external alert delivery remain deferred.
+
+The November 23 token-budget index now has 15/15 Ollama-generated contexts and 15/15 embeddings. Hybrid retrieval measured 60/60 expected passages and 5/5 unsupported abstentions on the 65-question same-author development set. See the saved [coverage](../services/api/evals/results/knowledge-context-20261123.json) and [retrieval report](../services/api/evals/results/rag-token-context-20261123.json). These do not replace independent factual/citation review. The new local Docker image could not be built because registry metadata requests failed; the running container has not yet adopted these source changes.

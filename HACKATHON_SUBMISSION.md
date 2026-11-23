@@ -386,3 +386,7 @@ Entries you can add:
    - "Implement the complete AI features section; make sure there are no bugs."
    - "Complete these things, then do a complete platform hard test."
    - "Make a total simulator system; we will not use any real phone device for calling."
+
+## Public knowledge and cost controls (November 23, 2026)
+
+PDF/Markdown manifest ingestion, token-budget chunking, per-worker answer caching and independent automation, operator-assistant and local-preview switches are implemented. Context generation uses Ollama independently of extractive answering. See [configuration and import commands](docs/KNOWLEDGE_OPERATIONS.md) for limits, strict context generation, cloud connectivity and automation setup. External agronomy sources, hosting changes and external alert delivery remain deferred.

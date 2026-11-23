@@ -26,6 +26,15 @@ const errors: Record<string, [string, string]> = {
     "The token scopes are invalid.",
   ],
   token_not_found: ["টোকেনটি পাওয়া যায়নি।", "The token could not be found."],
+  automation_disabled: ["স্বয়ংক্রিয় কাজ এখন বন্ধ আছে।", "Automation is disabled."],
+  operator_assistant_disabled: [
+    "পরিচালকের সহায়ক এখন বন্ধ আছে।",
+    "The operator assistant is disabled.",
+  ],
+  local_model_preview_disabled: [
+    "স্থানীয় মডেল পরীক্ষা এখন বন্ধ আছে।",
+    "Local model preview is disabled.",
+  ],
   knowledge_disabled: [
     "সহায়িকা এখন বন্ধ আছে।",
     "The knowledge feature is disabled.",

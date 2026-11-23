@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      test: ["CMD-SHELL", 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
       interval: 3s
       timeout: 3s
       retries: 20
@@ -36,6 +36,16 @@ services:
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b-instruct-q4_K_M}
       OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-bge-m3}
       KNOWLEDGE_PROVIDER: ${KNOWLEDGE_PROVIDER:-extractive}
+      KNOWLEDGE_ENABLED: ${KNOWLEDGE_ENABLED:-true}
+      AUTOMATION_ENABLED: ${AUTOMATION_ENABLED:-true}
+      OPERATOR_ASSISTANT_ENABLED: ${OPERATOR_ASSISTANT_ENABLED:-true}
+      LOCAL_MODEL_PREVIEW_ENABLED: ${LOCAL_MODEL_PREVIEW_ENABLED:-true}
+      KNOWLEDGE_CACHE_ENABLED: ${KNOWLEDGE_CACHE_ENABLED:-true}
+      KNOWLEDGE_CACHE_TTL_SECONDS: ${KNOWLEDGE_CACHE_TTL_SECONDS:-300}
+      KNOWLEDGE_CACHE_MAX_ENTRIES: ${KNOWLEDGE_CACHE_MAX_ENTRIES:-128}
+      KNOWLEDGE_CHUNK_TOKENS: ${KNOWLEDGE_CHUNK_TOKENS:-512}
+      OLLAMA_CONTEXT_MODEL: ${OLLAMA_CONTEXT_MODEL:-qwen2.5:7b-instruct-q4_K_M}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-none}
       MCP_API_BASE_URL: http://api:8000
     volumes:

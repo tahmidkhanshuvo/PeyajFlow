@@ -1,14 +1,12 @@
-import json
 import os
 from typing import Annotated
 from urllib.error import URLError
-from urllib.request import urlopen
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import Field
 
-from app import intent_model, lots, model_providers
+from app import features, intent_model, lots, model_providers
 from app.auth import Actor, Input, Role, require_role
 from app.database import DB
 from app.rate_limits import enforce
@@ -47,10 +45,7 @@ def chat(
 def models(actor: Actor):
     require_role(actor, Role.ADMIN)
     try:
-        with urlopen(
-            model_providers.ollama_base() + "/api/tags", timeout=2
-        ) as response:
-            data = json.loads(response.read(65536))
+        data = model_providers.ollama_json("/api/tags") or {}
         installed = [
             {"name": row["name"], "size": row.get("size"), "digest": row.get("digest")}
             for row in data.get("models", [])
@@ -78,6 +73,7 @@ class Preview(Input):
 @router.post("/integrations/local-preview")
 def preview(body: Preview, actor: Actor, db: DB):
     require_role(actor, Role.ADMIN)
+    features.require("LOCAL_MODEL_PREVIEW_ENABLED", "local_model_preview_disabled")
     enforce(db, "local-preview", str(actor.membership_id), limit=20, seconds=3600)
     runtime = models(actor)
     if not runtime["available"] or (

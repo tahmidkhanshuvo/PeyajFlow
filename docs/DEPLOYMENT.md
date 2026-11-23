@@ -70,3 +70,7 @@ Verify the restored revision, representative inventory balances and order histor
 ## Review settlement evidence
 
 After receipt, the buyer can report a reference for the full goods total. A reported payment stays unverified until an operator checks independent evidence of the amount and receipt, such as an authorized statement or separately confirmed receipt. Enter an internal evidence reference under **Operations → Settlements**. Reference fields should contain opaque identifiers. Keep bank account details and statements in the authorized evidence system. A rejected report stays in history, and the buyer can submit a corrected reference. Verification records the operator’s decision and alerts both parties. Automated settlement and transfers require a separate provider integration.
+
+## Public knowledge and cost controls (November 23, 2026)
+
+PDF/Markdown manifest ingestion, token-budget chunking, per-worker answer caching and independent automation, operator-assistant and local-preview switches are implemented. Context generation uses Ollama independently of extractive answering. See [configuration and import commands](KNOWLEDGE_OPERATIONS.md) for limits, strict context generation, cloud connectivity and automation setup. External agronomy sources, hosting changes and external alert delivery remain deferred.

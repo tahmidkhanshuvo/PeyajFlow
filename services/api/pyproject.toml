@@ -11,8 +11,10 @@ dependencies = [
     "pgvector>=0.4,<1",
     "pillow>=12.2,<14",
     "psycopg[binary]>=3.2,<4",
+    "pypdf>=6,<7",
     "python-multipart>=0.0.22,<1",
     "sqlalchemy>=2.0,<2.1",
+    "tiktoken>=0.12,<1",
     "tzdata>=2025.2",
     "uvicorn>=0.40,<1",
 ]

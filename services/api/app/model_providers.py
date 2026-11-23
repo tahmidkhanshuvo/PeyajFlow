@@ -5,7 +5,32 @@ import math
 import os
 import re
 from urllib.error import URLError
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
+
+
+class NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        # An authenticated inference endpoint must never forward its secret to
+        # a redirected host. Configure the final HTTPS proxy origin directly.
+        return None
+
+
+def ollama_json(path: str, body: dict | None = None, *, timeout: int = 2):
+    headers = {"Content-Type": "application/json"}
+    if os.getenv("OLLAMA_API_KEY"):
+        headers["Authorization"] = "Bearer " + os.environ["OLLAMA_API_KEY"]
+    try:
+        request = Request(
+            ollama_base() + path,
+            headers=headers,
+            data=json.dumps(body).encode() if body is not None else None,
+        )
+        with build_opener(NoRedirect()).open(request, timeout=timeout) as response:
+            raw = response.read(2_000_001)
+        value = json.loads(raw) if len(raw) <= 2_000_000 else None
+        return value if isinstance(value, dict) else None
+    except (URLError, OSError, ValueError, TimeoutError):
+        return None
 
 
 def post(url: str, body: dict, headers: dict | None = None, timeout: int = 30):
@@ -33,8 +58,8 @@ def ask(
     if len(system) > 24000 or len(question) > 2000:
         return None
     if provider == "ollama":
-        result = post(
-            ollama_base() + "/api/chat",
+        result = ollama_json(
+            "/api/chat",
             {
                 "model": model
                 or os.getenv("OLLAMA_MODEL", "qwen2.5:7b-instruct-q4_K_M"),
@@ -101,8 +126,7 @@ def embedding_identity() -> str | None:
     if provider == "ollama":
         model = os.getenv("OLLAMA_EMBED_MODEL", "bge-m3")
         try:
-            with urlopen(ollama_base() + "/api/tags", timeout=2) as response:
-                installed = json.loads(response.read(65536)).get("models", [])
+            installed = (ollama_json("/api/tags") or {}).get("models", [])
             digest = next(
                 item["digest"]
                 for item in installed
@@ -125,8 +149,8 @@ def embed(text: str) -> tuple[str, list[float]] | None:
     provider, model = identity.split("/", 1)
     if provider == "ollama":
         model = model.split("@", 1)[0]
-        data = post(
-            ollama_base() + "/api/embed",
+        data = ollama_json(
+            "/api/embed",
             {"model": model, "input": text[:12000]},
             timeout=60,
         )

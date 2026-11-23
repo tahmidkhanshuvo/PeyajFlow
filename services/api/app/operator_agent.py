@@ -33,6 +33,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.orm import Session
 
+from app import features
 from app.auth import Actor, Input, Role, audit, require_role
 from app.database import DB, metadata
 from app.integration_reads import read_tool
@@ -333,10 +334,12 @@ class Decision(Input):
     decision: Literal["approve", "dismiss"]
 
 
-def gate(actor):
+def gate(actor, *, mutation=False):
     require_role(actor, Role.ADMIN)
     if not actor.verified:
         raise HTTPException(403, "role_forbidden")
+    if mutation:
+        features.require("OPERATOR_ASSISTANT_ENABLED", "operator_assistant_disabled")
 
 
 @router.get("/runs")
@@ -354,7 +357,7 @@ def history(actor: Actor, db: DB):
 
 @router.post("/runs", status_code=201)
 def investigate(body: Investigation, actor: Actor, db: DB, request: Request):
-    gate(actor)
+    gate(actor, mutation=True)
     enforce(db, "assistant", str(actor.membership_id), limit=15, seconds=3600)
     run_id = uuid4()
     db.execute(
@@ -389,7 +392,7 @@ def investigate(body: Investigation, actor: Actor, db: DB, request: Request):
 
 @router.post("/runs/{run_id}/review")
 def review(run_id: UUID, body: Decision, actor: Actor, db: DB, request: Request):
-    gate(actor)
+    gate(actor, mutation=True)
     row = (
         db.execute(
             select(runs)

@@ -184,3 +184,7 @@ The twenty agent scenarios measure bounded orchestration and PostgreSQL checkpoi
 - Verified farmers and buyers can use the workspace call simulator. All enabled demo and showcase roles can also use it. Live carrier calls and carrier speech recognition are not enabled. SMS sign-in codes are built but need a configured SMS provider and operator-verified phone numbers.
 - Photo suggestions are experimental and uncalibrated. A labelled photo dataset is needed to measure them.
 - Field validation with real farmers, market series and storage measurements remains open for every feature.
+
+## Public knowledge and cost controls (November 23, 2026)
+
+PDF/Markdown manifest ingestion, token-budget chunking, per-worker answer caching and independent automation, operator-assistant and local-preview switches are implemented. Context generation uses Ollama independently of extractive answering. See [configuration and import commands](KNOWLEDGE_OPERATIONS.md) for limits, strict context generation, cloud connectivity and automation setup. External agronomy sources, hosting changes and external alert delivery remain deferred.

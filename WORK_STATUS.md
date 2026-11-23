@@ -2,6 +2,24 @@
 
 Last updated November 23, 2026 (Asia/Dhaka).
 
+## Merge knowledge controls into main (November 23, 2026)
+
+- Owner requested merging the completed knowledge-controls work into local `main`. Included PDF/Markdown ingestion, BPE chunking, Ollama context/cloud configuration, caching, feature switches, documentation corrections and recorded evaluation evidence.
+- Reused the completed 218-test API run, 11 web tests, TypeScript, Ruff, migration metadata and retrieval/intent evaluations; implementation is unchanged. Unrelated untracked Boraq media stays untouched. No push or hosted deployment is included; the documented local Docker registry connectivity blocker remains open.
+
+## Public knowledge controls and Ollama context (November 23, 2026)
+
+- Implemented on `codex/knowledge-controls`: validated offline PDF/Markdown manifests with explicit public-source/licence/date metadata, page/heading citations, bounded PDF subprocess extraction and refusal of encrypted/scanned/empty content. No public upload endpoint or OCR is claimed.
+- Replaced character-only splitting with configurable cl100k_base BPE budgets (default 512), preserving Unicode and retaining a secondary provider character cap. Added locked pypdf/tiktoken dependencies and build-time tokenizer vocabulary prefetch.
+- Context generation always uses Ollama independently of extractive answering. Strict imports roll back on generation failure; unchanged contexts are reused, explicit refresh is available, and source/context changes invalidate embeddings.
+- Generated and committed to the local knowledge database all **15/15** first-party contexts using `qwen2.5:7b-instruct-q4_K_M`, then generated **15/15** embeddings using `bge-m3`, sequentially. The first strict attempt failed without committing; the subsequent run completed with zero failures. Coverage and installed digests are recorded in `services/api/evals/results/knowledge-context-20261123.json` against base commit `6066b49` with a dirty worktree. This measures coverage, not factual accuracy.
+- Added bounded per-worker answer caching with account/cohort, locale, source/context revision and model separation. Authorization and rate limits remain active on hits; abstentions and private workspace reads are not cached. Separate API switches gate automation, operator investigations/review and local previews; consent opt-out and history remain available.
+- Added server-side Bearer proxy authentication for Ollama tags/chat/embed and refused authenticated redirects. Documented cloud/private-network connectivity, secrets, strict ingestion, tokenizer limitations, cache scope and automation setup in [knowledge operations](docs/KNOWLEDGE_OPERATIONS.md). Corrected submission claims about external sources, HyDE, MCP reuse, offline access and external delivery.
+- Checks: Ruff lint/format, Alembic metadata check, **218 API tests**, TypeScript, **11 web unit tests**, both deterministic intent evaluation gates (accuracy 1.000, zero false actions), and `git diff --check` passed. The first full API run found a repeated-test fixture value collision; the fixture now uses unique content and the full suite passed on rerun.
+- Retrieval on the 65-question same-author development dataset: keyword recall@5 **59/60**, vector **48/60**, hybrid **60/60**, hybrid MRR **0.98056**; all three modes abstained on **5/5** unsupported queries. Saved in `services/api/evals/results/rag-token-context-20261123.json`; independent questions and human citation-support review remain pending.
+- **Local container activation blocked:** two normal Compose builds failed fetching base-image metadata (first Docker DNS for `ghcr.io`, then Docker Hub TLS handshake timeout). The running API container remains on the previous image. No hosted deployment, hosting/provider setting change, push or merge was performed. API source tests passed; the new image build remains unverified until registry connectivity recovers.
+- External agronomy sources and hosting are deferred by the owner. n8n templates remain supplied; schedule/credential activation and external email/Telegram/SMS delivery still need the chosen channel, recipients and credentials. No external message was sent.
+
 ## Integrate upstream fixes for publication (November 23, 2026)
 
 - Integrated GitHub `main` through `0309129` with the platform feature merge. Retained upstream Operations contrast, responsive layout, query-preserving routing, receipt links and shared dictation types. Kept cited chat, approved-price data and feature-aware browser coverage when resolving overlaps.

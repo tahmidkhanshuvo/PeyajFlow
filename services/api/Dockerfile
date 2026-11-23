@@ -4,10 +4,12 @@ FROM python:3.13-slim
 COPY --from=uv /uv /usr/local/bin/uv
 WORKDIR /app
 ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    TIKTOKEN_CACHE_DIR=/app/.tokenizers
 
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project
+RUN python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
 COPY alembic.ini ./
 COPY migrations migrations
 COPY app app

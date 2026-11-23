@@ -105,12 +105,22 @@ def corpus():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--contextual", action="store_true")
+    parser.add_argument("--require-context", action="store_true")
+    parser.add_argument("--refresh-context", action="store_true")
     args = parser.parse_args()
     engine = database_engine()
     if engine is None:
         raise SystemExit("DATABASE_URL is required")
     with Session(engine) as db:
-        print(ingest(db, corpus(), args.contextual))
+        print(
+            ingest(
+                db,
+                corpus(),
+                args.contextual,
+                require_context=args.require_context,
+                refresh_context=args.refresh_context,
+            )
+        )
     engine.dispose()
 
 
