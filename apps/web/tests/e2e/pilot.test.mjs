@@ -15,7 +15,7 @@ async function signIn(browser, identity, viewport) {
   await page.goto(base);
   await page.getByLabel("Account", { exact: true }).selectOption(identity);
   await page.getByRole("button", { name: "Open workspace" }).click();
-  await page.getByRole("heading", { name: "Workspace", exact: true }).waitFor();
+  await page.getByRole("heading", { name: "Overview", exact: true }).waitFor();
   assert.equal(
     (await page.context().cookies()).find(
       (cookie) => cookie.name === "peyajflow_session",
@@ -27,8 +27,19 @@ async function signIn(browser, identity, viewport) {
 
 async function open(scope, text) {
   const summary = scope.locator("summary").filter({ hasText: text });
-  await summary.click();
-  return summary.locator("xpath=..");
+  await summary
+    .or(scope.getByRole("button", { name: text, exact: true }))
+    .first()
+    .waitFor();
+  if (await summary.count()) {
+    await summary.click();
+    return summary.locator("xpath=..");
+  }
+  await scope.getByRole("button", { name: text, exact: true }).click();
+  const page = typeof scope.page === "function" ? scope.page() : scope;
+  return page
+    .getByRole("dialog")
+    .filter({ has: page.getByRole("heading", { name: text }) });
 }
 
 async function checkViewport(page, filename) {
@@ -103,10 +114,14 @@ test(
       assert.equal(await register.getByLabel("Lot name").inputValue(), lotName);
       await register.getByLabel("If using maunds, kg per maund").fill("৪০");
       await register.getByRole("button", { name: "Save lot" }).click();
-      await farmer.getByRole("heading", { name: lotName }).waitFor();
+      await farmer.getByRole("cell", { name: lotName, exact: true }).waitFor();
       const lotPath = new URL(farmer.url()).pathname;
       assert.match(lotPath, /\/stock\/[0-9a-f-]+$/);
-      await farmer.getByText("Initial quantity · 1,000 kg").waitFor();
+      await farmer
+        .getByRole("row")
+        .filter({ hasText: "Initial quantity" })
+        .getByText("1,000 kg", { exact: true })
+        .waitFor();
 
       await agent.goto(`${origin}${lotPath}`);
       const verify = await open(agent, "Verify measured stock");
@@ -129,7 +144,7 @@ test(
       await demand.getByLabel("Maximum price (BDT/kg), optional").fill("50");
       await demand.getByRole("button", { name: "Save demand" }).click();
       await buyer
-        .getByRole("heading", { name: `${variety} · 200 kg` })
+        .getByRole("heading", { name: variety, exact: true })
         .waitFor();
       await buyer
         .locator("article")
@@ -157,10 +172,24 @@ test(
       await buyer
         .locator("article")
         .filter({ hasText: lotName })
-        .getByRole("link", { name: "Offer history" })
+        .getByRole("button", { name: "History", exact: true })
         .click();
-      await buyer.getByRole("heading", { name: "Offer history" }).waitFor();
-      await buyer.getByText("200 kg · ৳45.00/kg", { exact: true }).waitFor();
+      const history = buyer.getByRole("dialog");
+      await history
+        .getByRole("heading", { name: "Negotiation & Activity History" })
+        .waitFor();
+      await history
+        .locator(".offer-history-terms-chip")
+        .getByText("200 kg", { exact: true })
+        .waitFor();
+      await history
+        .locator(".offer-history-terms-chip")
+        .getByText("৳45.00 / kg", { exact: true })
+        .waitFor();
+      await history
+        .getByRole("button", { name: "Close", exact: true })
+        .first()
+        .click();
 
       await farmer
         .getByRole("navigation")
@@ -172,12 +201,21 @@ test(
         .getByLabel("I reviewed the terms and confirm the stock reservation.")
         .check();
       await accept.getByRole("button", { name: "Accept offer" }).click();
-      await farmer.getByRole("heading", { name: "Order receipt" }).waitFor();
+      await farmer.getByRole("heading", { name: "Order details" }).waitFor();
       const orderPath = new URL(farmer.url()).pathname;
       await buyer.goto(`${origin}${orderPath}`);
-      await buyer.getByRole("heading", { name: "Order receipt" }).waitFor();
+      await buyer.getByRole("heading", { name: "Order details" }).waitFor();
       assert.equal(
-        await buyer.getByText("৳9,000.00", { exact: true }).count(),
+        await buyer
+          .getByRole("row")
+          .filter({
+            has: buyer.getByRole("rowheader", {
+              name: "Total value",
+              exact: true,
+            }),
+          })
+          .getByRole("cell", { name: "৳9,000.00", exact: true })
+          .count(),
         1,
       );
       await checkViewport(buyer, "pilot-order-desktop.png");
@@ -369,7 +407,7 @@ test(
         await hinted.getByLabel("Sprouting", { exact: true }).isChecked(),
         false,
       );
-      await farmer.goto(base);
+      await farmer.goto(`${base}/profile`);
       await farmer.getByRole("button", { name: "Sign out" }).click();
       await farmer
         .getByRole("heading", { name: "Sign in", exact: true })

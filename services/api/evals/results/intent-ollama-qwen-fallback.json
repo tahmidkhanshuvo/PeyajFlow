@@ -1,0 +1,243 @@
+{
+  "label": "ollama-qwen-fallback",
+  "resolver": "rules+ollama:qwen2.5:7b-instruct-q4_K_M",
+  "commit": "24bf88b",
+  "dataset": "evals/data/intent-fallback.jsonl",
+  "run_at": "2026-11-21T15:50:50+00:00",
+  "rows": 20,
+  "intent": {
+    "total": 20,
+    "accuracy": 0.8,
+    "labels": [
+      "abstain",
+      "accept",
+      "inspection",
+      "movement",
+      "offers",
+      "orders",
+      "prices",
+      "register",
+      "reject",
+      "stock",
+      "support"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 0.7,
+        "recall": 1.0,
+        "f1": 0.8235294117647058,
+        "support": 7
+      },
+      "accept": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1": 0.5,
+        "support": 3
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "offers": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "orders": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "prices": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "support": 3
+      },
+      "register": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "reject": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "support": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      }
+    },
+    "macro": {
+      "precision": 0.7909090909090909,
+      "recall": 0.7272727272727273,
+      "f1": 0.7385026737967914
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 7
+      },
+      "accept": {
+        "abstain": 1,
+        "accept": 1,
+        "orders": 1
+      },
+      "inspection": {
+        "inspection": 1
+      },
+      "movement": {
+        "movement": 1
+      },
+      "offers": {
+        "offers": 1
+      },
+      "prices": {
+        "abstain": 1,
+        "prices": 2
+      },
+      "register": {
+        "register": 1
+      },
+      "reject": {
+        "reject": 1
+      },
+      "stock": {
+        "stock": 1
+      },
+      "support": {
+        "abstain": 1
+      }
+    }
+  },
+  "status_accuracy": 0.85,
+  "quantity": {
+    "rows": 1,
+    "exact_accuracy": 1.0,
+    "unit_accuracy": 1.0
+  },
+  "abstention": {
+    "rows": 7,
+    "false_action_rate": 0.0,
+    "false_actions": []
+  },
+  "wrong_write_actions": [],
+  "accuracy_by": {
+    "split": {
+      "fallback": {
+        "rows": 20,
+        "accuracy": 0.8
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 2,
+        "accuracy": 0.0
+      },
+      "bn": {
+        "rows": 15,
+        "accuracy": 0.8666666666666667
+      },
+      "en": {
+        "rows": 3,
+        "accuracy": 1.0
+      }
+    },
+    "category": {
+      "fallback": {
+        "rows": 20,
+        "accuracy": 0.8
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "fallback-001",
+      "text": "ওরা যা দিতে চাইল ওটাই রেখে দেন",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-011",
+      "text": "আমি আর পারছি না, অফিসের কারো সাথে আলাপ করিয়ে দিন",
+      "expected": {
+        "status": "resolved",
+        "tool": "support",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    },
+    {
+      "id": "fallback-012",
+      "text": "oder dewa ta mene nilam",
+      "expected": {
+        "status": "resolved",
+        "tool": "accept",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "orders",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    },
+    {
+      "id": "fallback-013",
+      "text": "haat e aj ki rokom jacche",
+      "expected": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null,
+        "reason": "no_match"
+      }
+    }
+  ]
+}

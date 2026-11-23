@@ -1,0 +1,51 @@
+{
+  "dataset": "rag-development.jsonl",
+  "dataset_sha256": "8c74f5ec99f897aaf35f8e9d70c8608a04dcaf044ed528bea68aa8048ace2c72",
+  "commit": "24bf88b914c92b26fdceec3afd4e1668f1175290",
+  "worktree_dirty": true,
+  "run_at": "2026-11-21T16:08:37.637922+00:00",
+  "provenance": "Questions and retrieval implementation share an author. Independent challenge and human answer-support review pending.",
+  "embedding_identity": "ollama/bge-m3@7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+  "metrics": {
+    "keyword": {
+      "answerable": 60,
+      "recall_at_5": 0.9833333333333333,
+      "mrr": 0.975,
+      "unanswerable": 5,
+      "retrieval_abstention_rate": 1.0,
+      "failures": [
+        "rag-dev-048"
+      ]
+    },
+    "vector": {
+      "answerable": 60,
+      "recall_at_5": 0.7833333333333333,
+      "mrr": 0.7833333333333333,
+      "unanswerable": 5,
+      "retrieval_abstention_rate": 1.0,
+      "failures": [
+        "rag-dev-004",
+        "rag-dev-007",
+        "rag-dev-008",
+        "rag-dev-012",
+        "rag-dev-019",
+        "rag-dev-020",
+        "rag-dev-028",
+        "rag-dev-032",
+        "rag-dev-035",
+        "rag-dev-040",
+        "rag-dev-044",
+        "rag-dev-055",
+        "rag-dev-056"
+      ]
+    },
+    "hybrid": {
+      "answerable": 60,
+      "recall_at_5": 1.0,
+      "mrr": 0.9833333333333333,
+      "unanswerable": 5,
+      "retrieval_abstention_rate": 1.0,
+      "failures": []
+    }
+  }
+}

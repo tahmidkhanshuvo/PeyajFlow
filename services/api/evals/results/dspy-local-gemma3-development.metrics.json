@@ -1,0 +1,23 @@
+{
+  "commit": "24bf88b914c92b26fdceec3afd4e1668f1175290",
+  "run_at": "2026-11-21T07:02:53.965664+00:00",
+  "model": "gemma3:4b",
+  "datasets": {
+    "train": "evals\\data\\dspy-development.jsonl",
+    "validation": "evals\\data\\dspy-validation.jsonl",
+    "holdout": "evals\\data\\dspy-holdout.jsonl"
+  },
+  "before": {
+    "rows": 2,
+    "accuracy": 0.0,
+    "wrong_change_commands": 0
+  },
+  "after": {
+    "rows": 2,
+    "accuracy": 0.0,
+    "wrong_change_commands": 0
+  },
+  "eligible_for_manual_review": false,
+  "promoted": false,
+  "independent_validation": "not_claimed"
+}

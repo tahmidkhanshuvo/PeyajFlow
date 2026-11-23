@@ -1,0 +1,239 @@
+{
+  "label": "ollama-qwen-challenge",
+  "resolver": "rules+ollama:qwen2.5:7b-instruct-q4_K_M",
+  "commit": "24bf88b",
+  "dataset": "evals/data/intent-challenge.jsonl",
+  "run_at": "2026-11-21T15:56:37+00:00",
+  "rows": 58,
+  "intent": {
+    "total": 58,
+    "accuracy": 0.9827586206896551,
+    "labels": [
+      "abstain",
+      "accept",
+      "advice",
+      "counter",
+      "inspection",
+      "movement",
+      "offers",
+      "orders",
+      "prices",
+      "register",
+      "reject",
+      "send_offer",
+      "stock",
+      "support",
+      "transport"
+    ],
+    "per_label": {
+      "abstain": {
+        "precision": 1.0,
+        "recall": 0.9444444444444444,
+        "f1": 0.9714285714285714,
+        "support": 18
+      },
+      "accept": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      },
+      "advice": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "counter": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "inspection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "movement": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "offers": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "orders": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "prices": {
+        "precision": 0.8333333333333334,
+        "recall": 1.0,
+        "f1": 0.9090909090909091,
+        "support": 5
+      },
+      "register": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "reject": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "send_offer": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "stock": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 3
+      },
+      "support": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "transport": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      }
+    },
+    "macro": {
+      "precision": 0.9888888888888889,
+      "recall": 0.9962962962962963,
+      "f1": 0.9920346320346319
+    },
+    "confusion": {
+      "abstain": {
+        "abstain": 17,
+        "prices": 1
+      },
+      "accept": {
+        "accept": 7
+      },
+      "advice": {
+        "advice": 3
+      },
+      "counter": {
+        "counter": 2
+      },
+      "inspection": {
+        "inspection": 2
+      },
+      "movement": {
+        "movement": 3
+      },
+      "offers": {
+        "offers": 3
+      },
+      "orders": {
+        "orders": 2
+      },
+      "prices": {
+        "prices": 5
+      },
+      "register": {
+        "register": 2
+      },
+      "reject": {
+        "reject": 2
+      },
+      "send_offer": {
+        "send_offer": 2
+      },
+      "stock": {
+        "stock": 3
+      },
+      "support": {
+        "support": 2
+      },
+      "transport": {
+        "transport": 2
+      }
+    }
+  },
+  "status_accuracy": 0.9827586206896551,
+  "quantity": {
+    "rows": 9,
+    "exact_accuracy": 1.0,
+    "unit_accuracy": 1.0
+  },
+  "abstention": {
+    "rows": 18,
+    "false_action_rate": 0.05555555555555555,
+    "false_actions": [
+      "challenge-049"
+    ]
+  },
+  "wrong_write_actions": [],
+  "accuracy_by": {
+    "split": {
+      "challenge": {
+        "rows": 58,
+        "accuracy": 0.9827586206896551
+      }
+    },
+    "lang": {
+      "banglish": {
+        "rows": 5,
+        "accuracy": 1.0
+      },
+      "bn": {
+        "rows": 29,
+        "accuracy": 0.9655172413793104
+      },
+      "en": {
+        "rows": 24,
+        "accuracy": 1.0
+      }
+    },
+    "category": {
+      "challenge": {
+        "rows": 58,
+        "accuracy": 0.9827586206896551
+      }
+    }
+  },
+  "failures": [
+    {
+      "id": "challenge-049",
+      "text": "পেঁয়াজ",
+      "expected": {
+        "status": "unknown",
+        "tool": null,
+        "quantity": null,
+        "unit": null
+      },
+      "predicted": {
+        "status": "resolved",
+        "tool": "prices",
+        "quantity": null,
+        "unit": null,
+        "reason": null
+      }
+    }
+  ],
+  "latency_ms": {
+    "median": 0.17395001486875117,
+    "p95": 9261.42890000483
+  }
+}

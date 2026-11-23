@@ -271,6 +271,10 @@ def import_history(actor: Actor, db: DB, offset: Annotated[int, Query(ge=0)] = 0
 
 @router.post("/admin/data-imports", response_model=Batch, status_code=201)
 def import_csv(body: ImportInput, actor: Actor, db: DB):
+    return stage_csv(body, actor, db, commit=True)
+
+
+def stage_csv(body: ImportInput, actor: Profile, db: Session, *, commit: bool):
     require_role(actor, Role.ADMIN)
     rows, issues = parse_csv(body.csv)
     batch_id = uuid4()
@@ -346,7 +350,8 @@ def import_csv(body: ImportInput, actor: Actor, db: DB):
         .one()
     )
     audit(db, actor, "market.imported", batch_id, synthetic=str(body.synthetic))
-    db.commit()
+    if commit:
+        db.commit()
     return row
 
 

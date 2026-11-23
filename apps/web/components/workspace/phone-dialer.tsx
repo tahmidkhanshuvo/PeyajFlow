@@ -1,14 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import type { Locale } from "../../lib/copy";
 import { local } from "../../lib/workspace-copy";
 import { WorkspaceIcon } from "./icon";
+import { useRouter } from "next/navigation";
+import { simWorkspaceCallStart } from "../../app/[locale]/workspace/simulator-actions";
+import { errorText } from "../../lib/workspace-copy";
 
 interface DialKey {
   digit: string;
   sub?: string;
 }
+
+const subscribeToHydration = () => () => {};
+const hydratedSnapshot = () => true;
+const serverHydratedSnapshot = () => false;
 
 const dialKeys: DialKey[] = [
   { digit: "1" },
@@ -27,13 +34,37 @@ const dialKeys: DialKey[] = [
 
 export function PhoneDialer({
   locale,
-  initialNumber = "09612 73925",
+  initialNumber = "7392",
+  initialTime = "",
 }: {
   locale: Locale;
   initialNumber?: string;
+  initialTime?: string;
 }) {
   const [number, setNumber] = useState(initialNumber);
+  const hydrated = useSyncExternalStore(
+    subscribeToHydration,
+    hydratedSnapshot,
+    serverHydratedSnapshot,
+  );
+  const [clock, setClock] = useState(initialTime);
+  useEffect(() => {
+    const clockTimer = setInterval(
+      () =>
+        setClock(
+          new Date().toLocaleTimeString(locale === "bn" ? "bn-BD" : "en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "Asia/Dhaka",
+          }),
+        ),
+      30_000,
+    );
+    return () => clearInterval(clockTimer);
+  }, [locale]);
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const router = useRouter();
+  const [connectionError, setConnectionError] = useState("");
 
   // In-place calling interface state
   const [callState, setCallState] = useState<
@@ -44,8 +75,6 @@ export function PhoneDialer({
   const [isSpeaker, setIsSpeaker] = useState(false);
   const [showKeypad, setShowKeypad] = useState(false);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const ringTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const endTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const t = (bn: string, en: string) => local(locale, bn, en);
@@ -53,27 +82,9 @@ export function PhoneDialer({
   const quickNumbers = [
     {
       id: "ai",
-      label: t("এআই ভয়েস সাপোর্ট", "AI Voice Support"),
-      number: "09612 73925",
+      label: t("পেঁয়াজফ্লো সিমুলেটর", "PeyajFlow simulator"),
+      number: "7392",
       icon: "bot",
-    },
-    {
-      id: "hotline",
-      label: t("হেল্পলাইন হটলাইন", "Helpline Hotline"),
-      number: "01711 234567",
-      icon: "phone",
-    },
-    {
-      id: "pabna",
-      label: t("পাবনা মোকাম ডেস্ক", "Pabna Market Desk"),
-      number: "01712 345678",
-      icon: "pin",
-    },
-    {
-      id: "dhaka",
-      label: t("ঢাকা পাইকারি আড়ত", "Dhaka Wholesale Hub"),
-      number: "01713 987654",
-      icon: "pin",
     },
   ];
 
@@ -120,48 +131,35 @@ export function PhoneDialer({
     : number
       ? t("বহির্গামী কল", "Outbound Call")
       : t("পেঁয়াজফ্লো হটলাইন", "PeyajFlow Hotline");
-  const activeCallerNumber = number || "09612 73925";
+  const activeCallerNumber = number || "7392";
 
-  // Start call in place without redirect
-  const handleStartCall = () => {
+  // Create the authorized session before opening its command interface.
+  const handleStartCall = async () => {
     if (callState !== "idle") return;
+    setConnectionError("");
+    if (cleanNum !== "7392") {
+      setConnectionError(
+        t(
+          "শুধু সিমুলেটরের 7392 নম্বর ব্যবহার করুন। কোনো ক্যারিয়ারে কল যায় না।",
+          "Use simulator number 7392. No carrier call is placed.",
+        ),
+      );
+      return;
+    }
     setCallState("ringing");
-    setCallSeconds(0);
-    setIsMuted(false);
-    setIsSpeaker(false);
-    setShowKeypad(false);
-
-    // After 1.5s, connect call
-    ringTimeoutRef.current = setTimeout(() => {
-      setCallState("connected");
-      // Start duration counter
-      timerRef.current = setInterval(() => {
-        setCallSeconds((s) => s + 1);
-      }, 1000);
-
-      // Play short voice simulation if browser speech synthesis available
-      try {
-        if (typeof window !== "undefined" && "speechSynthesis" in window) {
-          window.speechSynthesis.cancel();
-          const greeting =
-            locale === "bn"
-              ? "পেঁয়াজফ্লো ভয়েস সহকারী সেবায় স্বাগতম।"
-              : "Welcome to PeyajFlow Voice Support. How can we help you today?";
-          const utterance = new SpeechSynthesisUtterance(greeting);
-          utterance.rate = 1.0;
-          if (locale === "bn") utterance.lang = "bn-BD";
-          window.speechSynthesis.speak(utterance);
-        }
-      } catch {
-        // Ignore speech synthesis failures
-      }
-    }, 1500);
+    const result = await simWorkspaceCallStart();
+    if (result.error || !result.data) {
+      setConnectionError(
+        errorText(locale, result.error ?? "service_unavailable"),
+      );
+      setCallState("idle");
+      return;
+    }
+    router.push(`/${locale}/call-simulator/${result.data.id}`);
   };
 
   // End call and return to dialpad
   const handleEndCall = () => {
-    if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
-    if (timerRef.current) clearInterval(timerRef.current);
     try {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -189,8 +187,6 @@ export function PhoneDialer({
   // Clean up timers on unmount
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
       if (endTimeoutRef.current) clearTimeout(endTimeoutRef.current);
       try {
         if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -228,10 +224,15 @@ export function PhoneDialer({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [callState]);
+  });
 
   return (
     <div className="phone-simulation-container">
+      {connectionError && (
+        <p className="work-panel" role="alert">
+          {connectionError}
+        </p>
+      )}
       {/* Smartphone Chassis Mockup */}
       <div className="phone-chassis">
         {/* Hardware details: Speaker notch & camera */}
@@ -244,16 +245,10 @@ export function PhoneDialer({
         <div className="phone-screen">
           {/* Top Status Strip */}
           <div className="phone-status-strip">
-            <span className="phone-carrier">PeyajFlow 5G</span>
-            <span className="phone-time">
-              {new Date().toLocaleTimeString(
-                locale === "bn" ? "bn-BD" : "en-US",
-                {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                },
-              )}
+            <span className="phone-carrier">
+              {t("পেঁয়াজফ্লো · সিমুলেটর", "PeyajFlow · Simulator")}
             </span>
+            <span className="phone-time">{clock || "—"}</span>
             <div className="phone-battery-wrap">
               <span className="phone-battery-level" />
             </div>
@@ -280,7 +275,7 @@ export function PhoneDialer({
               <div
                 className="phone-keypad-grid"
                 role="group"
-                aria-label="Phone keypad"
+                aria-label={t("ফোনের কীপ্যাড", "Phone keypad")}
               >
                 {dialKeys.map(({ digit, sub }) => (
                   <button
@@ -315,6 +310,8 @@ export function PhoneDialer({
                 <button
                   type="button"
                   className="phone-call-btn"
+                  disabled={!hydrated}
+                  aria-busy={!hydrated}
                   onClick={handleStartCall}
                   title={t("কল শুরু করুন", "Place Call")}
                   aria-label={t("কল শুরু করুন", "Place Call")}
@@ -474,7 +471,7 @@ export function PhoneDialer({
                   type="button"
                   className="phone-end-call-btn"
                   onClick={handleEndCall}
-                  disabled={callState === "ended"}
+                  disabled={callState === "ended" || callState === "ringing"}
                   title={t("কল শেষ করুন", "End Call")}
                   aria-label={t("কল শেষ করুন", "End Call")}
                 >

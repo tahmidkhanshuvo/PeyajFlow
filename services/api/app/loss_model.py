@@ -66,9 +66,9 @@ def estimate_loss(
     )
 
 
-def lot_loss(
-    db: Session, lot_id: UUID, stored_on: date, as_of: date, horizon: int
-) -> LossEstimate | None:
+def comparable_weights(
+    db: Session, lot_id: UUID, stored_on: date, as_of: date
+) -> dict[date, Decimal]:
     # Scope is checked by the caller. Restart the trend after stock additions,
     # corrections or dispatch so those movements cannot look like spoilage.
     boundary = db.scalar(
@@ -96,4 +96,12 @@ def lot_loss(
         day = recorded_at.astimezone(DHAKA).date()
         if day >= stored_on:
             weights.setdefault(day, Decimal(context["verified_kg"]))
-    return estimate_loss(weights, as_of, horizon)
+    return weights
+
+
+def lot_loss(
+    db: Session, lot_id: UUID, stored_on: date, as_of: date, horizon: int
+) -> LossEstimate | None:
+    return estimate_loss(
+        comparable_weights(db, lot_id, stored_on, as_of), as_of, horizon
+    )

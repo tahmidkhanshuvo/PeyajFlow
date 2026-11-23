@@ -1,0 +1,40 @@
+{
+  "run_at": "2026-11-21T22:12:46.700845+00:00",
+  "http": {
+    "tools": [
+      "get_market_prices",
+      "get_price_outlook",
+      "list_my_lots",
+      "get_lot_risk",
+      "get_hold_or_sell",
+      "list_offers",
+      "list_orders",
+      "market_data_health",
+      "ask_peyajflow"
+    ],
+    "static_resources": 2,
+    "resource_templates": 1,
+    "prompts": 2,
+    "price_read": "passed",
+    "role_denial": "passed"
+  },
+  "stdio": {
+    "tools": [
+      "get_market_prices",
+      "get_price_outlook",
+      "list_my_lots",
+      "get_lot_risk",
+      "get_hold_or_sell",
+      "list_offers",
+      "list_orders",
+      "market_data_health",
+      "ask_peyajflow"
+    ],
+    "static_resources": 2,
+    "resource_templates": 1,
+    "prompts": 2,
+    "price_read": "passed",
+    "role_denial": "passed"
+  },
+  "anonymous_http_denial": "passed"
+}

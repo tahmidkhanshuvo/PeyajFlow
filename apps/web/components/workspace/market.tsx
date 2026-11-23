@@ -257,6 +257,14 @@ export async function DemandPage({
 
               {/* Card Footer: Close demand button or status notification */}
               <div className="demand-card-footer">
+                {isOpen && (
+                  <Link
+                    className="work-link"
+                    href={`${base}/supply?request_id=${item.id}`}
+                  >
+                    {t("মিল থাকা মজুত খুঁজুন", "Find matching supply")}
+                  </Link>
+                )}
                 {isOpen ? (
                   <WorkspaceForm
                     locale={locale}

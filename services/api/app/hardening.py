@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from time import perf_counter
 from uuid import uuid4
 
@@ -72,7 +73,32 @@ def configure(app: FastAPI) -> None:
         request_id = uuid4().hex
         started = perf_counter()
         try:
-            response = await call_next(request)
+            scheme, _, credential = request.headers.get("authorization", "").partition(
+                " "
+            )
+            integration = (
+                scheme.casefold() == "bearer"
+                and len(credential) == 46
+                and credential.startswith("pf_")
+            )
+            from app.api_tokens import WRITE_ROUTES
+
+            # Public auth/provider endpoints do not depend on Actor. An
+            # integration credential must not bypass its scope via those routes.
+            allowed_job = request.method == "POST" and any(
+                re.fullmatch(pattern, request.url.path.rstrip("/"))
+                for pattern in WRITE_ROUTES.values()
+            )
+            if (
+                integration
+                and request.method not in {"GET", "HEAD", "OPTIONS"}
+                and not allowed_job
+            ):
+                response = JSONResponse(
+                    {"detail": "token_scope_forbidden"}, status_code=403
+                )
+            else:
+                response = await call_next(request)
         except Exception as error:
             logger.error(
                 "unexpected_request_failure %s (%s)", request_id, type(error).__name__

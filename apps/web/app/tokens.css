@@ -7,7 +7,7 @@
   /* Ink / Text */
   --ink: #22121a;
   --ink-2: #5e4a53;
-  --ink-3: #8d7a82;
+  --ink-3: #705962;
 
   /* Onion ramp — cool wine-crimson primary */
   --onion-50: #fdf3f6;
@@ -133,7 +133,7 @@ html[data-theme="light"],
   --canvas-2: #fafafa;
   --ink: #22121a;
   --ink-2: #5e4a53;
-  --ink-3: #8d7a82;
+  --ink-3: #705962;
   --surface: #ffffff;
   --surface-raised: #ffffff;
   --border: rgba(168, 42, 85, 0.12);
@@ -178,7 +178,7 @@ html[data-theme="light"],
     --canvas-2: #0a0407;
     --ink: #f8eaee;
     --ink-2: #c9a8b4;
-    --ink-3: #8d6b78;
+    --ink-3: #b59aa5;
     --surface: #120509;
     --surface-raised: #1c0b10;
     --border: rgba(222, 106, 143, 0.15);
@@ -225,7 +225,7 @@ html[data-theme="dark"],
   --canvas-2: #0a0407;
   --ink: #f8eaee;
   --ink-2: #c9a8b4;
-  --ink-3: #8d6b78;
+  --ink-3: #b59aa5;
   --surface: #120509;
   --surface-raised: #1c0b10;
   --border: rgba(222, 106, 143, 0.15);

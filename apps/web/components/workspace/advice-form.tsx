@@ -5,6 +5,8 @@ import { runAdvice } from "../../app/[locale]/workspace/pilot-actions";
 import type { Locale } from "../../lib/copy";
 import { errorText, local } from "../../lib/workspace-copy";
 import { numberLabel } from "../../lib/workspace-values";
+import { scenarioPoints } from "../../lib/chart-data";
+import { DataChart } from "./data-chart";
 
 const labels: Record<string, [string, string]> = {
   experimental_loss_model: [
@@ -115,6 +117,23 @@ export function AdviceForm({
       </form>
       {result && (
         <section className="work-panel" aria-live="polite">
+          <DataChart
+            locale={locale}
+            title={local(locale, "নিট আয়ের পরিস্থিতি", "Net proceeds scenarios")}
+            summary={local(
+              locale,
+              "আপনার খরচ ও ক্ষতির ধারণার ভিত্তিতে একই পরিমাণের তুলনা; নিশ্চিত আয় নয়।",
+              "Same-quantity comparison using your cost and loss assumptions; proceeds are not guaranteed.",
+            )}
+            points={scenarioPoints(result, [
+              local(locale, "এখন", "Now"),
+              local(locale, "পরে · নিম্ন", "Later · low"),
+              local(locale, "পরে · মধ্য", "Later · middle"),
+              local(locale, "পরে · উচ্চ", "Later · high"),
+            ])}
+            unit={local(locale, "টাকা", "BDT")}
+            bars
+          />
           <h2>{label(result.recommendation)}</h2>
           <p>
             {local(locale, "প্রমাণের আস্থা", "Evidence confidence")} ·{" "}

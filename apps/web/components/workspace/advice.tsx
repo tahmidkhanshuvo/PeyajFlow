@@ -10,6 +10,7 @@ import { DecimalField, Details, Field } from "./fields";
 import { taka } from "./market";
 import { seriesName } from "./prices";
 import { kg } from "./stock";
+import { DataChart } from "./data-chart";
 
 export async function AdvicePage({
   locale,
@@ -22,10 +23,18 @@ export async function AdvicePage({
   id: string;
   actor: Profile;
 }) {
-  const [lot, series, offers] = await Promise.all([
+  const [lot, series, offers, weights] = await Promise.all([
     api<Lot>(`/v1/lots/${id}`),
     api<PriceSeries[]>("/v1/market/series"),
     actor.role === "farmer" ? api<Offer[]>("/v1/offers") : Promise.resolve([]),
+    api<{
+      status: string;
+      readings: {
+        recorded_at: string;
+        verified_kg: string;
+        fitted_kg: number | null;
+      }[];
+    }>(`/v1/lots/${id}/weight-history`),
   ]);
   const availableSeries = series.filter(
     (item) =>
@@ -50,6 +59,21 @@ export async function AdvicePage({
   ];
   return (
     <>
+      <DataChart
+        locale={locale}
+        title={local(locale, "যাচাইকৃত ওজনের ইতিহাস", "Verified weight history")}
+        summary={local(
+          locale,
+          "শুধু তুলনাযোগ্য যাচাইকৃত ওজন। যথেষ্ট প্রমাণ থাকলে ড্যাশ রেখায় পরীক্ষামূলক প্রবণতা দেখানো হয়।",
+          "Comparable verified weights only. The dashed line shows an experimental historical fit when evidence supports it.",
+        )}
+        points={weights.readings.map((row) => ({
+          name: row.recorded_at.slice(0, 10),
+          value: Number(row.verified_kg),
+          fitted: row.fitted_kg,
+        }))}
+        unit={local(locale, "কেজি", "kg")}
+      />
       <Link className="work-link" href={`${base}/stock/${id}`}>
         {lot.label}
       </Link>

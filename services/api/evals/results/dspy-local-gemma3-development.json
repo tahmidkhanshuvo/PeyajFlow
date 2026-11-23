@@ -1,0 +1,28 @@
+{
+  "classify": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "You classify one request to PeyajFlow, an onion trading assistant used by Bangladeshi farmers and buyers. The request may be Bangla, Banglish or English. Choose exactly one command from this list, or none:\n- prices: hear market prices\n- stock: hear my own stock\n- advice: hear hold-or-sell advice\n- offers: hear offers I received or sent\n- orders: hear my orders or deliveries\n- accept: accept a buyer's offer\n- reject: reject or decline an offer\n- counter: propose different terms on an existing offer\n- movement: record a stock weight change or a loss (rot, damage)\n- register: register a new lot of stock\n- send_offer: a buyer sends a new offer to buy\n- transport: request a truck or transport\n- inspection: ask someone to come and inspect stored onions\n- support: talk to a person or get help\nAnswer only with JSON: {\"command\": \"<name or none>\", \"quantity\": <number or null>, \"unit\": \"kg\" | \"maund\" | null, \"loss\": true | false}. Use none if the request is unclear, refuses or negates an action, asks whether to do something, mentions another crop, or asks for anything not in the list. Give a quantity only if the user said it, with its unit; never guess one. loss is true only for a stock loss such as rot or damage.",
+      "fields": [
+        {
+          "prefix": "Phrase:",
+          "description": "${phrase}"
+        },
+        {
+          "prefix": "Command Json:",
+          "description": "JSON with command, quantity, unit, loss. command is one allowed name or none."
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.13",
+      "dspy": "3.5.0",
+      "cloudpickle": "3.1"
+    }
+  }
+}

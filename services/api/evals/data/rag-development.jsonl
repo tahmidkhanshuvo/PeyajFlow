@@ -1,0 +1,65 @@
+{"id": "rag-dev-001", "question": "মণে কত কেজি conversion", "passage": "units:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-002", "question": "How many kg in a maund?", "passage": "units:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-003", "question": "mon kg conversion", "passage": "units:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-004", "question": "Does PeyajFlow assume a universal maund?", "passage": "units:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-005", "question": "অফার কিভাবে গ্রহণ করব?", "passage": "accept:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-006", "question": "How do I accept an offer?", "passage": "accept:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-007", "question": "offer accept kivabe", "passage": "accept:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-008", "question": "When does acceptance reserve stock?", "passage": "accept:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-009", "question": "পূর্বাভাস নেই কেন?", "passage": "forecast:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-010", "question": "Why is my forecast missing?", "passage": "forecast:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-011", "question": "forecast stale observations", "passage": "forecast:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-012", "question": "Which forecast horizons are supported?", "passage": "forecast:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-013", "question": "ছবিতে পচা দেখা গেলে কী করব?", "passage": "inspection:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-014", "question": "Are photo suggestions verified diagnoses?", "passage": "inspection:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-015", "question": "photo inspection blurry", "passage": "inspection:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-016", "question": "Who can view private inspection photos?", "passage": "inspection:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-017", "question": "কতদিন পেঁয়াজ সংরক্ষণ করা যায়?", "passage": "storage:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-018", "question": "How long is safe storage duration?", "passage": "storage:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-019", "question": "storage ventilation humidity", "passage": "storage:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-020", "question": "Which storage measurements should I record?", "passage": "storage:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-021", "question": "এখন বিক্রি না অপেক্ষা হিসাব", "passage": "hold:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-022", "question": "How does hold or sell compare proceeds?", "passage": "hold:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-023", "question": "hold sell finance fees", "passage": "hold:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-024", "question": "Are hold scenarios guaranteed prices?", "passage": "hold:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-025", "question": "ক্ষয়ের জন্য কয়টি যাচাইকৃত ওজন লাগে?", "passage": "loss:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-026", "question": "How many verified weight measurements are needed?", "passage": "loss:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-027", "question": "weight loss comparison period", "passage": "loss:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-028", "question": "When does the loss model abstain?", "passage": "loss:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-029", "question": "ভয়েস পিন ভুল হলে কী হয়?", "passage": "pin:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-030", "question": "How many wrong PIN attempts cause lockout?", "passage": "pin:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-031", "question": "voice PIN expires confirmation", "passage": "pin:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-032", "question": "How long is a pending change valid?", "passage": "pin:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-033", "question": "পেমেন্ট যাচাই কিভাবে হয়?", "passage": "settlement:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-034", "question": "Does PeyajFlow transfer money or provide escrow?", "passage": "settlement:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-035", "question": "settlement independent evidence", "passage": "settlement:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-036", "question": "Is reported payment verified payment?", "passage": "settlement:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-037", "question": "পরিবহনের দর কে লেখে?", "passage": "transport:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-038", "question": "Who records a transporter quote?", "passage": "transport:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-039", "question": "transport quote booking", "passage": "transport:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-040", "question": "Does a local booking confirm carrier tracking?", "passage": "transport:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-041", "question": "মাঠকর্মীর অনুমতি ফিরিয়ে নিতে চাই", "passage": "agent:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-042", "question": "How do farmers revoke agent access?", "passage": "agent:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-043", "question": "agent unlisted lot registration", "passage": "agent:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-044", "question": "Who decides listing and offers after delegation?", "passage": "agent:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-045", "question": "জাতীয় পরিচয়পত্র কত অঙ্কের?", "passage": "signup:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-046", "question": "When can new registrations sign in?", "passage": "signup:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-047", "question": "signup NID approval", "passage": "signup:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-048", "question": "Who reviews farmer registration?", "passage": "signup:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-049", "question": "সিমুলেটর কল ক্যারিয়ারে যায় কি?", "passage": "sms:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-050", "question": "Does simulated SMS reach a carrier?", "passage": "sms:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-051", "question": "USSD 7392 simulator", "passage": "sms:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-052", "question": "What checks are required before live SMS?", "passage": "sms:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-053", "question": "বাজারদরের CSV অনুমোদন কে দেয়?", "passage": "imports:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-054", "question": "Can automation approve market imports?", "passage": "imports:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-055", "question": "CSV publication date provenance", "passage": "imports:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-056", "question": "When are staged market reports published?", "passage": "imports:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-057", "question": "ইন্টিগ্রেশন টোকেন বাতিল কিভাবে করব?", "passage": "tokens:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-058", "question": "Can an MCP token accept offers?", "passage": "tokens:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-059", "question": "integration token expiry scopes", "passage": "tokens:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-060", "question": "Is a secret token displayed again?", "passage": "tokens:0:0", "provenance": "same-author development"}
+{"id": "rag-dev-061", "question": "quantum zebra galaxy", "passage": null, "provenance": "same-author development"}
+{"id": "rag-dev-062", "question": "capital of Argentina", "passage": null, "provenance": "same-author development"}
+{"id": "rag-dev-063", "question": "tomorrow exact lottery numbers", "passage": null, "provenance": "same-author development"}
+{"id": "rag-dev-064", "question": "giraffe migration routes", "passage": null, "provenance": "same-author development"}
+{"id": "rag-dev-065", "question": "neutron star rotation", "passage": null, "provenance": "same-author development"}

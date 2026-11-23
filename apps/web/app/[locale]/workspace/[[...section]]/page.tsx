@@ -7,6 +7,7 @@ import { AgentsPage } from "../../../../components/workspace/agents";
 import { AlertsPage } from "../../../../components/workspace/alerts";
 import { AssistancePage } from "../../../../components/workspace/assistance";
 import { Dashboard } from "../../../../components/workspace/dashboard";
+import { InsightsPage } from "../../../../components/workspace/insights";
 import { WorkspaceIcon } from "../../../../components/workspace/icon";
 import { ChatbotWidget } from "../../../../components/workspace/chatbot-widget";
 import { LogisticsPage } from "../../../../components/workspace/logistics";
@@ -107,6 +108,7 @@ function destinations(locale: Locale, actor: Profile) {
     pages.push(["imports", local(locale, "দর আমদানি", "Market imports")]);
   pages.push(["profile", local(locale, "প্রোফাইল", "Profile")]);
   pages.push(["help", local(locale, "সহায়তা", "Help")]);
+  pages.push(["insights", local(locale, "সহায়ক টুল", "Workspace tools")]);
   return pages;
 }
 
@@ -184,7 +186,12 @@ async function panel(
     if (page === "orders") return OrdersPage(context);
     if (page === "prices") return PricePage({ ...context, filters });
     if (page === "alerts") return AlertsPage(context);
-    if (page === "help") return AssistancePage(context);
+    if (page === "help")
+      return AssistancePage({
+        ...context,
+        source: typeof filters.source === "string" ? filters.source : undefined,
+      });
+    if (page === "insights") return InsightsPage(context);
     if (page === "agents") return AgentsPage(context);
     if (page === "operations") return OperationsPage({ ...context, filters });
     if (page === "verifications") return VerificationsPage(context);
@@ -214,7 +221,13 @@ export default async function WorkspacePage({
   const base = `/${locale}/workspace`;
   if (section[0] === "operations") {
     const filters = await searchParams;
-    redirect(`${base}${filters.view ? `?view=${filters.view}` : ""}`);
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (typeof value === "string") query.set(key, value);
+      else if (Array.isArray(value))
+        value.forEach((item) => query.append(key, item));
+    }
+    redirect(`${base}${query.size ? `?${query}` : ""}`);
   }
   if (section[0] === "voice" || section[0] === "simulator") {
     const id = section[1];

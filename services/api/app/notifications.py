@@ -63,6 +63,7 @@ notifications = Table(
     Column("recipient_id", ForeignKey("memberships.id"), nullable=False, index=True),
     Column("event_key", String(150), nullable=False),
     Column("kind", String(40), nullable=False),
+    Column("summary", String(700)),
     Column("resource_type", String(12), nullable=False),
     Column("resource_id", Uuid, nullable=False),
     Column("read_at", DateTime(timezone=True)),
@@ -86,6 +87,7 @@ deliveries = Table(
 class Alert(BaseModel):
     id: UUID
     kind: str
+    summary: str | None = None
     resource_type: str
     resource_id: UUID
     created_at: datetime
@@ -138,6 +140,7 @@ def publish(
     resource_type: str,
     resource_id: UUID,
     version: str = "",
+    summary: str | None = None,
 ):
     for recipient_id in sorted(set(recipients)):
         alert_id = db.scalar(
@@ -145,6 +148,7 @@ def publish(
             .values(
                 recipient_id=recipient_id,
                 kind=kind,
+                summary=summary,
                 resource_type=resource_type,
                 resource_id=resource_id,
                 event_key=f"{kind}:{resource_id}:{version}",
@@ -375,7 +379,12 @@ def process_deliveries(engine, sender_fn=None, limit=8):
             instant = utc_now()
             row = (
                 db.execute(
-                    select(deliveries, notifications.c.recipient_id)
+                    select(
+                        deliveries,
+                        notifications.c.recipient_id,
+                        notifications.c.summary,
+                        notifications.c.kind,
+                    )
                     .select_from(deliveries.join(notifications))
                     .where(
                         deliveries.c.status == "queued", deliveries.c.next_at <= instant
@@ -414,7 +423,10 @@ def process_deliveries(engine, sender_fn=None, limit=8):
             db.execute(
                 current.values(status="sending", claimed_at=instant, attempts=attempts)
             )
-        result, ref = sender_fn(*provider, phone)
+        if row["kind"] == "market.weekly" and row["summary"]:
+            result, ref = sender_fn(*provider, phone, row["summary"])
+        else:
+            result, ref = sender_fn(*provider, phone)
         with Session(engine) as db, db.begin():
             if result == "retry":
                 result = "queued" if attempts < 4 else "failed"

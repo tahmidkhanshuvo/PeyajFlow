@@ -17,6 +17,8 @@ import { WorkspaceIcon } from "./icon";
 import { taka } from "./market";
 import { kg } from "./stock";
 import { OperationsNav, OperationsView } from "./operations";
+import { DataChart } from "./data-chart";
+import { pricePoints } from "../../lib/chart-data";
 
 type Alerts = {
   unread: number;
@@ -110,144 +112,31 @@ export async function Dashboard({
     totalStockKg > 0 ? (verifiedPercent / 100) * donutCircumference : 0;
   const unverifiedArc = totalStockKg > 0 ? donutCircumference - verifiedArc : 0;
 
-  // Real-time Market Price Comparison (100% database driven from market_prices & offers)
-  const pabnaByMonth: Record<string, number[]> = {};
-  for (const obs of marketPrices) {
-    if (obs.district === "Pabna" && obs.observed_on) {
-      const monthKey = obs.observed_on.slice(0, 7); // YYYY-MM
-      if (!pabnaByMonth[monthKey]) pabnaByMonth[monthKey] = [];
-      const mid = (Number(obs.low_bdt_kg) + Number(obs.high_bdt_kg)) / 2;
-      pabnaByMonth[monthKey].push(mid);
-    }
-  }
-
-  const sortedObservedMonths = Object.keys(pabnaByMonth).sort().slice(-6);
-  const fallbackMonths = [
-    "2026-06",
-    "2026-07",
-    "2026-08",
-    "2026-09",
-    "2026-10",
-    "2026-11",
-  ];
-  const displayMonths =
-    sortedObservedMonths.length >= 4 ? sortedObservedMonths : fallbackMonths;
-
-  const dhakaOffers = offers.filter(
-    (o) =>
-      o.delivery_district &&
-      o.delivery_district.toLowerCase().includes("dhaka"),
-  );
-  const currentDhakaAvg =
-    dhakaOffers.length > 0
-      ? dhakaOffers.reduce((sum, o) => sum + Number(o.price_bdt_kg), 0) /
-        dhakaOffers.length
-      : 46.5;
-
-  const monthNamesEn: Record<string, string> = {
-    "01": "Jan",
-    "02": "Feb",
-    "03": "Mar",
-    "04": "Apr",
-    "05": "May",
-    "06": "Jun",
-    "07": "Jul",
-    "08": "Aug",
-    "09": "Sep",
-    "10": "Oct",
-    "11": "Nov",
-    "12": "Dec",
-  };
-  const monthNamesBn: Record<string, string> = {
-    "01": "জানু",
-    "02": "ফেব",
-    "03": "মার্চ",
-    "04": "এপ্রিল",
-    "05": "মে",
-    "06": "জুন",
-    "07": "জুলাই",
-    "08": "আগস্ট",
-    "09": "সেপ্টে",
-    "10": "অক্টো",
-    "11": "নভে",
-    "12": "ডিসে",
-  };
-
-  const trendData = displayMonths.map((m, idx) => {
-    const isLast = idx === displayMonths.length - 1;
-    const pVals = pabnaByMonth[m] ?? [];
-    const pAvg =
-      pVals.length > 0 ? pVals.reduce((a, b) => a + b, 0) / pVals.length : 40;
-    const dAvg = isLast ? currentDhakaAvg : pAvg + 6.5;
-    const monthNum = m.split("-")[1] || "01";
-    const label = isLast
-      ? t("বর্তমান", "Current")
-      : locale === "bn"
-        ? (monthNamesBn[monthNum] ?? monthNum)
-        : (monthNamesEn[monthNum] ?? monthNum);
-
+  const observedSeries = [
+    {
+      district: "Pabna",
+      type: "farmgate",
+      title: t("পাবনা খামারদর", "Pabna farmgate"),
+    },
+    {
+      district: "Dhaka",
+      type: "wholesale",
+      title: t("ঢাকা পাইকারি দর", "Dhaka wholesale"),
+    },
+  ].map((item) => {
+    const latest = marketPrices
+      .filter(
+        (row) => row.district === item.district && row.price_type === item.type,
+      )
+      .sort((a, b) => b.observed_on.localeCompare(a.observed_on))[0];
     return {
-      month: m,
-      label,
-      pabna: Math.round(pAvg * 10) / 10,
-      dhaka: Math.round(dAvg * 10) / 10,
+      ...item,
+      latest,
+      rows: latest
+        ? marketPrices.filter((row) => row.series === latest.series)
+        : [],
     };
   });
-
-  const latestPabna = trendData[trendData.length - 1]?.pabna ?? 38.1;
-  const latestDhaka = trendData[trendData.length - 1]?.dhaka ?? 45.6;
-
-  // Compute SVG coordinates (viewBox 0 0 800 220)
-  const numPts = trendData.length;
-  const xStep = numPts > 1 ? 700 / (numPts - 1) : 700;
-  const minP = 30;
-  const maxP = 58;
-  const pRange = maxP - minP;
-
-  const getY = (val: number) => {
-    const clamped = Math.max(minP, Math.min(maxP, val));
-    return 195 - ((clamped - minP) / pRange) * 145;
-  };
-
-  const pabnaPoints = trendData.map((d, i) => ({
-    x: Math.round(50 + i * xStep),
-    y: Math.round(getY(d.pabna) * 10) / 10,
-    val: d.pabna,
-  }));
-
-  const dhakaPoints = trendData.map((d, i) => ({
-    x: Math.round(50 + i * xStep),
-    y: Math.round(getY(d.dhaka) * 10) / 10,
-    val: d.dhaka,
-  }));
-
-  function buildSmoothCurve(pts: { x: number; y: number }[]) {
-    if (pts.length < 2) return "";
-    let path = `M ${pts[0].x} ${pts[0].y}`;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i === 0 ? 0 : i - 1];
-      const p1 = pts[i];
-      const p2 = pts[i + 1];
-      const p3 = pts[i + 2 < pts.length ? i + 2 : i + 1];
-
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
-
-      path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x} ${p2.y.toFixed(1)}`;
-    }
-    return path;
-  }
-
-  const pabnaCurve = buildSmoothCurve(pabnaPoints);
-  const dhakaCurve = buildSmoothCurve(dhakaPoints);
-
-  const firstX = pabnaPoints[0]?.x ?? 50;
-  const lastX = pabnaPoints[pabnaPoints.length - 1]?.x ?? 750;
-
-  const pabnaArea = `${pabnaCurve} L ${lastX} 195 L ${firstX} 195 Z`;
-  const dhakaArea = `${dhakaCurve} L ${lastX} 195 L ${firstX} 195 Z`;
 
   const activeOffers = offers.filter((item) =>
     ["sent", "countered"].includes(item.status),
@@ -599,225 +488,29 @@ export async function Dashboard({
         </section>
       )}
 
-      {/* ─── REAL-TIME MARKET PRICE COMPARISON ANALYTICS (100% Database Driven) ─── */}
       <section className="dash-analysis-section glass-1">
-        <div className="dash-analysis-header">
-          <div>
-            <div
-              className="dash-quality-eyebrow"
-              style={{ marginBottom: "6px" }}
-            >
-              <span className="dash-pulse-dot" aria-hidden="true" />
-              <span>
-                {t("বাজারদর ও পর্যবেক্ষণ", "Market Outlook & Analytics")}
-              </span>
-            </div>
-            <h2 className="dash-analysis-title">
-              {t(
-                "পাবনা ও কাওরান বাজার দর তুলনা",
-                "Pabna Farmgate vs. Dhaka Wholesale",
-              )}
-            </h2>
-          </div>
-          <div className="dash-analysis-legend">
-            <span className="dash-legend-item">
-              <span className="dash-dot-pabna" aria-hidden="true" />
-              <span>
-                {t("পাবনা মোকাম", "Pabna Mokam")}:{" "}
-                <strong
-                  className="stat-num"
-                  style={{ color: "var(--onion-600)", marginLeft: "4px" }}
-                >
-                  ৳{numberLabel(locale, latestPabna)}/
-                  {local(locale, "কেজি", "kg")}
-                </strong>
-              </span>
-            </span>
-            <span className="dash-legend-item">
-              <span className="dash-dot-dhaka" aria-hidden="true" />
-              <span>
-                {t("কাওরান বাজার", "Karwan Bazar")}:{" "}
-                <strong
-                  className="stat-num"
-                  style={{ color: "var(--skin-500)", marginLeft: "4px" }}
-                >
-                  ৳{numberLabel(locale, latestDhaka)}/
-                  {local(locale, "কেজি", "kg")}
-                </strong>
-              </span>
-            </span>
-            <Link className="work-link" href={`${base}/prices`} prefetch={true}>
-              <span>{t("বিস্তারিত দরদরজা", "Explore prices")}</span>
-              <span className="work-link-circle-arrow" aria-hidden="true">
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14m-6-6 6 6-6 6" />
-                </svg>
-              </span>
-            </Link>
-          </div>
+        <h2 className="dash-analysis-title">
+          {t("বাজারদরের পর্যবেক্ষণ", "Market price observations")}
+        </h2>
+        <div className="work-grid">
+          {observedSeries.map((item) => (
+            <DataChart
+              key={item.district}
+              locale={locale}
+              title={item.title}
+              summary={
+                item.latest
+                  ? `${item.latest.market} · ${item.latest.grade} · ${item.latest.synthetic ? t("কাল্পনিক নমুনা", "Synthetic sample") : t("অনুমোদিত উৎস", "Approved source")}`
+                  : t("পর্যবেক্ষণ পাওয়া যায়নি।", "No observations available.")
+              }
+              points={pricePoints(item.rows, null)}
+              unit={t("টাকা/কেজি", "BDT/kg")}
+            />
+          ))}
         </div>
-
-        {/* Pure CSS/SVG Financial Chart in Onion Crimson & Gold */}
-        <div
-          className="dash-chart-wrap"
-          aria-label={t("বাজারদর চার্ট", "Market price trends chart")}
-        >
-          <svg
-            viewBox="0 0 800 220"
-            className="dash-chart-svg"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="onionGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="0%"
-                  stopColor="var(--onion-500)"
-                  stopOpacity="0.32"
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--onion-600)"
-                  stopOpacity="0.0"
-                />
-              </linearGradient>
-              <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="0%"
-                  stopColor="var(--skin-500)"
-                  stopOpacity="0.28"
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--skin-500)"
-                  stopOpacity="0.0"
-                />
-              </linearGradient>
-            </defs>
-
-            {/* Horizontal Guide Grid Lines */}
-            <line
-              x1="40"
-              y1="65"
-              x2="760"
-              y2="65"
-              className="dash-chart-grid-line"
-            />
-            <line
-              x1="40"
-              y1="110"
-              x2="760"
-              y2="110"
-              className="dash-chart-grid-line"
-            />
-            <line
-              x1="40"
-              y1="155"
-              x2="760"
-              y2="155"
-              className="dash-chart-grid-line"
-            />
-
-            {/* Dhaka Wholesale curve (Skin ramp) */}
-            <path d={dhakaArea} fill="url(#skinGrad)" />
-            <path
-              d={dhakaCurve}
-              fill="none"
-              stroke="var(--skin-500)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-
-            {/* Pabna Farmgate curve (Onion ramp) */}
-            <path d={pabnaArea} fill="url(#onionGrad)" />
-            <path
-              d={pabnaCurve}
-              fill="none"
-              stroke="var(--onion-600)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-
-            {/* Data Points - Dhaka */}
-            {dhakaPoints.map((pt, i) => {
-              const isLast = i === dhakaPoints.length - 1;
-              return (
-                <g key={`dhaka-${i}`}>
-                  {isLast ? (
-                    <>
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="11"
-                        fill="none"
-                        stroke="var(--skin-500)"
-                        strokeWidth="1.5"
-                        className="dash-pulse-ring"
-                      />
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="6"
-                        fill="var(--skin-500)"
-                        stroke="#FFFFFF"
-                        strokeWidth="2.5"
-                      />
-                    </>
-                  ) : (
-                    <circle cx={pt.x} cy={pt.y} r="4" fill="var(--skin-500)" />
-                  )}
-                </g>
-              );
-            })}
-
-            {/* Data Points - Pabna */}
-            {pabnaPoints.map((pt, i) => {
-              const isLast = i === pabnaPoints.length - 1;
-              return (
-                <g key={`pabna-${i}`}>
-                  {isLast ? (
-                    <>
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="11"
-                        fill="none"
-                        stroke="var(--onion-600)"
-                        strokeWidth="1.5"
-                        className="dash-pulse-ring"
-                      />
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="6"
-                        fill="var(--onion-600)"
-                        stroke="#FFFFFF"
-                        strokeWidth="2.5"
-                      />
-                    </>
-                  ) : (
-                    <circle cx={pt.x} cy={pt.y} r="4" fill="var(--onion-600)" />
-                  )}
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* Month labels along x-axis */}
-          <div className="dash-chart-labels">
-            {trendData.map((d) => (
-              <span key={d.month}>{d.label}</span>
-            ))}
-          </div>
-        </div>
+        <Link className="work-link" href={`${base}/prices`}>
+          {t("উৎস ও দরের বিস্তারিত দেখুন", "Review prices and source details")}
+        </Link>
       </section>
 
       {/* ─── LOWER GRID: REAL-TIME ANALYTICS, RECENT ACTIVITY & QUICK ACTIONS ─── */}

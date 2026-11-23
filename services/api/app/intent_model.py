@@ -28,6 +28,8 @@ import re
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal, InvalidOperation
+from hashlib import sha256
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -71,11 +73,38 @@ SYSTEM = (
 Ask = Callable[[str], dict | None]
 
 
+def system_prompt() -> str:
+    """Use a DSPy artifact only when enabled and its measured gate passed."""
+    filename = os.getenv("VOICE_DSPY_PROMPT_FILE")
+    if not filename:
+        return SYSTEM
+    try:
+        raw = Path(filename).read_text(encoding="utf-8")
+        if len(raw) > 20000:
+            return SYSTEM
+        artifact = json.loads(raw)
+        evaluation = artifact["evaluation"]
+        prompt = artifact["system"]
+        if (
+            artifact["base_prompt_sha256"] == sha256(SYSTEM.encode()).hexdigest()
+            and evaluation["after"]["accuracy"] > evaluation["before"]["accuracy"]
+            and evaluation["after"]["wrong_change_commands"] == 0
+            and isinstance(prompt, str)
+            and len(prompt) <= 12000
+        ):
+            return prompt
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return SYSTEM
+
+
 def provider() -> str:
     return os.getenv("VOICE_MODEL_PROVIDER", "meta")
 
 
 def configured(name: str) -> bool:
+    if name == "ollama":
+        return bool(os.getenv("OLLAMA_BASE_URL"))
     if name == "meta":
         return bool(os.getenv("MODEL_API_KEY") and os.getenv("META_MODEL"))
     if name == "gemini":
@@ -95,6 +124,7 @@ def enabled() -> bool:
 def model_name() -> str:
     choice = provider()
     names = {
+        "ollama": os.getenv("OLLAMA_MODEL", "qwen2.5:7b-instruct-q4_K_M"),
         "meta": os.getenv("META_MODEL", ""),
         "gemini": os.getenv("GEMINI_MODEL", GEMINI_DEFAULT),
     }
@@ -139,7 +169,7 @@ def ask_meta(phrase: str) -> dict | None:
         {
             "model": os.environ["META_MODEL"],
             "messages": [
-                {"role": "system", "content": SYSTEM},
+                {"role": "system", "content": system_prompt()},
                 {"role": "user", "content": phrase},
             ],
             "max_completion_tokens": 600,
@@ -160,7 +190,7 @@ def ask_gemini(phrase: str) -> dict | None:
     data = post(
         f"{GEMINI_ENDPOINT}/{model}:generateContent",
         {
-            "systemInstruction": {"parts": [{"text": SYSTEM}]},
+            "systemInstruction": {"parts": [{"text": system_prompt()}]},
             "contents": [{"role": "user", "parts": [{"text": phrase}]}],
             "generationConfig": {
                 "responseMimeType": "application/json",
@@ -190,6 +220,10 @@ def same(first: dict | None, second: dict | None) -> dict | None:
 def ask_model(phrase: str) -> dict | None:
     """Ask the configured provider; any failure returns None."""
     choice = provider()
+    if choice == "ollama":
+        from app.model_providers import ask
+
+        return ask("ollama", system_prompt(), phrase)
     if choice == "meta":
         return ask_meta(phrase)
     if choice == "gemini":
@@ -224,6 +258,20 @@ def understand(phrase: str, ask: Ask | None = None) -> grammar.Interpretation:
         return result
     # Defence in depth: never send a phrase with a negation or doubt.
     if grammar.NEGATION.search(normalized) or grammar.UNCERTAIN.search(normalized):
+        return result
+    # A crop name or amount alone supplies no requested action. A model must
+    # never turn a fragment such as "200 kg" into stock registration.
+    neutral = (
+        set(grammar.UNITS)
+        | set(grammar.JOINERS)
+        | {"onion", "onions", grammar.normalize("পেঁয়াজ"), grammar.normalize("পেঁয়াজ")}
+    )
+    if all(
+        token in neutral
+        or grammar.NUMBER.fullmatch(token)
+        or grammar.numeral(token) is not None
+        for token in normalized.split()
+    ):
         return result
     answer = ask(phrase)
     tool = answer.get("command") if answer else None

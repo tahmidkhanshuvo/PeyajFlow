@@ -16,6 +16,8 @@ import { WorkspaceForm } from "./form";
 import { WorkspaceIcon } from "./icon";
 import { LocationIcon } from "./location-icon";
 import { taka } from "./market";
+import { DataChart } from "./data-chart";
+import { pricePoints } from "../../lib/chart-data";
 
 const DAM = "https://market.dam.gov.bd/";
 const CSV_HEADER =
@@ -162,6 +164,11 @@ function Observations({
                       {row.market} · {dist}
                     </strong>
                     <div className="price-pill-row">
+                      {row.synthetic && (
+                        <span className="work-tag">
+                          {t("কাল্পনিক নমুনা", "Synthetic sample")}
+                        </span>
+                      )}
                       <span className="price-type-pill">
                         {priceType(locale, row.price_type)}
                       </span>
@@ -576,7 +583,7 @@ function ForecastRange({
   variant?: "primary" | "preview";
 }) {
   const t = (bn: string, en: string) => local(locale, bn, en);
-  const isPreview = variant === "preview";
+  void variant;
 
   const cards = [
     {
@@ -654,11 +661,7 @@ function ForecastPanel({
   const t = (bn: string, en: string) => local(locale, bn, en);
 
   // Requirement 2: Just keep the pattern matching model preview
-  const preview = result.model_preview ?? {
-    low_bdt_kg: result.low_bdt_kg ?? "38.85",
-    middle_bdt_kg: result.middle_bdt_kg ?? "41.40",
-    high_bdt_kg: result.high_bdt_kg ?? "43.15",
-  };
+  const preview = result.model_preview ?? result;
 
   return (
     <section className="work-panel price-forecast-card glass-1">
@@ -670,15 +673,12 @@ function ForecastPanel({
             <span>{t("মূল্য পূর্বাভাস ও পরিসর", "PRICE OUTLOOK")}</span>
           </div>
           <h2 className="dash-analysis-title price-forecast-title">
-            {t(
-              "দরের অনুরূপ প্রবণতার মডেল পূর্বাভাস",
-              "Pattern Matching Model Outlook",
-            )}
+            {t("বাজারদরের পূর্বাভাস", "Price outlook")}
           </h2>
           <p className="price-preview-desc">
             {t(
-              "নমুনা ইতিহাসে অনুরূপ দরের প্রবণতা ও ঐতিহাসিক মৌসুমী চাহিদার ভিত্তিতে তৈরি সম্ভাব্য মূল্য পরিসর।",
-              "Price range forecast learned from similar historical price patterns and seasonal demand cycles.",
+              "পর্যবেক্ষণভিত্তিক পরিস্থিতির পরিসর; ভবিষ্যৎ দরের নিশ্চয়তা নয়। অপর্যাপ্ত প্রমাণে দর দেখানো হয় না।",
+              "An evidence-based scenario range, not a guaranteed future price. Insufficient evidence stays missing.",
             )}
           </p>
         </div>
@@ -700,7 +700,30 @@ function ForecastPanel({
         </div>
       </div>
 
-      {/* Pattern Matching Model 3-Metric Bounds Cards */}
+      {result.synthetic && (
+        <p className="work-muted">
+          {t(
+            "কাল্পনিক নমুনা; মাঠে যাচাইকৃত ফল নয়।",
+            "Synthetic sample; not field-validated results.",
+          )}
+        </p>
+      )}
+      <p>
+        {t("পদ্ধতি", "Method")}:{" "}
+        {result.model_preview
+          ? t(
+              "পরীক্ষামূলক মডেল; মূল পূর্বাভাসে উন্নীত নয়",
+              "Experimental candidate; not promoted to the primary forecast",
+            )
+          : local(
+              locale,
+              ...(methods[result.method ?? ""] ?? [
+                "প্রমাণ অপর্যাপ্ত",
+                "Insufficient evidence",
+              ]),
+            )}
+      </p>
+      {/* Only API-derived ranges are rendered. */}
       <ForecastRange locale={locale} result={preview} variant="preview" />
 
       {/* Observation Meta Strip */}
@@ -729,7 +752,52 @@ function ForecastPanel({
         )}
       </div>
 
-      {/* Requirement 3: Historical backtest evaluation is REMOVED */}
+      <Details label={t("ঐতিহাসিক যাচাই", "Historical backtest")}>
+        <div
+          className="price-table-wrapper"
+          role="region"
+          tabIndex={0}
+          aria-label={t("যাচাইয়ের পরিমাপ", "Replay metrics")}
+        >
+          <table className="price-table">
+            <thead>
+              <tr>
+                {[
+                  t("পদ্ধতি", "Method"),
+                  "MAE",
+                  "WAPE",
+                  t("কভারেজ", "Coverage"),
+                  t("নমুনা", "Samples"),
+                ].map((label) => (
+                  <th key={label} scope="col">
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {result.backtest.map((row) => (
+                <tr key={row.method}>
+                  <td>
+                    {local(
+                      locale,
+                      ...(methods[row.method] ?? [row.method, row.method]),
+                    )}
+                  </td>
+                  <td>{numberLabel(locale, row.mae_bdt_kg)}</td>
+                  <td>
+                    {row.wape_pct === null
+                      ? "—"
+                      : `${numberLabel(locale, row.wape_pct)}%`}
+                  </td>
+                  <td>{numberLabel(locale, row.interval_coverage_pct)}%</td>
+                  <td>{numberLabel(locale, row.observations)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Details>
     </section>
   );
 }
@@ -739,304 +807,27 @@ function ForecastPanel({
    ───────────────────────────────────────────────────────────── */
 function MarketBenchmarksTable({
   locale,
-  activeDistrict,
+  rows,
 }: {
   locale: Locale;
-  activeDistrict?: string;
+  rows: Observation[];
 }) {
-  const t = (bn: string, en: string) => local(locale, bn, en);
-
-  const benchmarks = [
-    {
-      id: "sujanagar",
-      market: "Sujanagar Hub",
-      marketBn: "সুজানগর মোকাম",
-      district: "Pabna",
-      districtBn: "পাবনা",
-      type: "farmgate",
-      variety: "Taherpuri",
-      varietyBn: "তাহেরপুরী",
-      grade: "A",
-      low: "38.5",
-      high: "42.5",
-      median: "40.5",
-      outlook: "+৳2.50 (Bullish demand)",
-      outlookBn: "+৳২.৫০ (চাহিদা ঊর্ধ্বমুখী)",
-      arrow: "↗",
-      trend: "up",
-      status: "Active Trading",
-      statusBn: "চলতি মোকাম",
-    },
-    {
-      id: "santhia",
-      market: "Santhia Shed",
-      marketBn: "সাঁথিয়া শেড",
-      district: "Pabna",
-      districtBn: "পাবনা",
-      type: "farmgate",
-      variety: "Taherpuri",
-      varietyBn: "তাহেরপুরী",
-      grade: "B",
-      low: "36",
-      high: "39.5",
-      median: "37.75",
-      outlook: "Steady (Balanced supply)",
-      outlookBn: "স্থিতিশীল (ভারসাম্যপূর্ণ সরবরাহ)",
-      arrow: "–",
-      trend: "steady",
-      status: "Active Trading",
-      statusBn: "চলতি মোকাম",
-    },
-    {
-      id: "shyambazar",
-      market: "Shyambazar Arat",
-      marketBn: "শ্যামবাজার আড়ত",
-      district: "Dhaka",
-      districtBn: "ঢাকা",
-      type: "wholesale",
-      variety: "Taherpuri",
-      varietyBn: "তাহেরপুরী",
-      grade: "A",
-      low: "46",
-      high: "49.5",
-      median: "47.75",
-      outlook: "+৳3.00 (City wholesale pull)",
-      outlookBn: "+৳৩.০০ (নগরের পাইকারি চাপ)",
-      arrow: "↗",
-      trend: "up",
-      status: "High Volume",
-      statusBn: "উচ্চ লেনদেন",
-    },
-    {
-      id: "karwanbazar",
-      market: "Karwan Bazar",
-      marketBn: "কারওয়ান বাজার",
-      district: "Dhaka",
-      districtBn: "ঢাকা",
-      type: "wholesale",
-      variety: "Local Balam",
-      varietyBn: "দেশি বালাম",
-      grade: "A",
-      low: "48",
-      high: "52",
-      median: "50",
-      outlook: "+৳2.00 (Steady inflow)",
-      outlookBn: "+৳২.০০ (নিয়মিত সরবরাহ)",
-      arrow: "↗",
-      trend: "up",
-      status: "High Volume",
-      statusBn: "উচ্চ লেনদেন",
-    },
-    {
-      id: "taherpur",
-      market: "Taherpur Market",
-      marketBn: "তাহেরপুর হাট",
-      district: "Rajshahi",
-      districtBn: "রাজশাহী",
-      type: "farmgate",
-      variety: "Taherpuri",
-      varietyBn: "তাহেরপুরী",
-      grade: "A",
-      low: "39",
-      high: "43",
-      median: "41",
-      outlook: "+৳2.00 (Quality premium)",
-      outlookBn: "+৳২.০০ (মানসম্মত প্রিমিয়াম)",
-      arrow: "↗",
-      trend: "up",
-      status: "Active Trading",
-      statusBn: "চলতি মোকাম",
-    },
-    {
-      id: "boalmari",
-      market: "Boalmari Center",
-      marketBn: "বোয়ালমারী মোকাম",
-      district: "Faridpur",
-      districtBn: "ফরিদপুর",
-      type: "farmgate",
-      variety: "Faridpuri",
-      varietyBn: "ফরিদপুরী",
-      grade: "A",
-      low: "37.5",
-      high: "41",
-      median: "39.25",
-      outlook: "Steady (Storage safe)",
-      outlookBn: "স্থিতিশীল (সংরক্ষণ নিরাপদ)",
-      arrow: "–",
-      trend: "steady",
-      status: "Active Trading",
-      statusBn: "চলতি মোকাম",
-    },
-    {
-      id: "kawnia",
-      market: "Kawnia Bazar",
-      marketBn: "কাউনিয়া বাজার",
-      district: "Rangpur",
-      districtBn: "রংপুর",
-      type: "farmgate",
-      variety: "Local Balam",
-      varietyBn: "দেশি বালাম",
-      grade: "B",
-      low: "35",
-      high: "38.5",
-      median: "36.75",
-      outlook: "Steady (Harvest ramp-up)",
-      outlookBn: "স্থিতিশীল (ফলন বৃদ্ধি)",
-      arrow: "–",
-      trend: "steady",
-      status: "Active Trading",
-      statusBn: "চলতি মোকাম",
-    },
-    {
-      id: "khatunganj",
-      market: "Khatunganj Hub",
-      marketBn: "খাতুনগঞ্জ মোকাম",
-      district: "Chattogram",
-      districtBn: "চট্টগ্রাম",
-      type: "wholesale",
-      variety: "Taherpuri",
-      varietyBn: "তাহেরপুরী",
-      grade: "A",
-      low: "44",
-      high: "47.5",
-      median: "45.75",
-      outlook: "+৳1.50 (Transit demand)",
-      outlookBn: "+৳১.৫০ (ট্রানজিট চাহিদা)",
-      arrow: "↗",
-      trend: "up",
-      status: "Active Trading",
-      statusBn: "চলতি মোকাম",
-    },
-  ];
-
+  const latest = new Map<string, Observation>();
+  for (const row of rows) {
+    const previous = latest.get(row.series);
+    if (!previous || row.observed_on > previous.observed_on)
+      latest.set(row.series, row);
+  }
   return (
     <section className="work-panel price-benchmarks-card glass-1">
-      <div className="price-section-header">
-        <div>
-          <div className="dash-quality-eyebrow">
-            <span className="dash-pulse-dot" aria-hidden="true" />
-            <span>
-              {t(
-                "আঞ্চলিক মোকাম ও পাইকারি মানদণ্ড",
-                "MARKET BENCHMARKS & OUTLOOK",
-              )}
-            </span>
-          </div>
-          <h2 className="dash-analysis-title price-section-title">
-            {t(
-              "বাজারের মানদণ্ড ও তুলনামূলক চিত্র",
-              "Market Benchmarks & Regional Outlook",
-            )}
-          </h2>
-        </div>
-        <div className="price-section-count">
-          <span className="price-count-chip">
-            {numberLabel(locale, benchmarks.length)}{" "}
-            {t("টি মোকাম", "regional hubs")}
-          </span>
-        </div>
-      </div>
-
-      <div className="benchmarks-table-responsive">
-        <table className="price-table price-benchmarks-table">
-          <thead>
-            <tr>
-              <th scope="col" style={{ width: "22%" }}>
-                {t("মোকাম ও জেলা", "Market & District")}
-              </th>
-              <th scope="col" style={{ width: "20%" }}>
-                {t("বাণিজ্য স্তর ও জাত", "Trade Level & Variety")}
-              </th>
-              <th scope="col" className="text-right" style={{ width: "17%" }}>
-                {t("দর পরিসর (৳/কেজি)", "Benchmark Range")}
-              </th>
-              <th scope="col" className="text-right" style={{ width: "13%" }}>
-                {t("মধ্যক দর", "Median Rate")}
-              </th>
-              <th scope="col" style={{ width: "16%" }}>
-                {t("১৪ দিনের পূর্বাভাস", "14-Day Outlook")}
-              </th>
-              <th scope="col" style={{ width: "12%" }}>
-                {t("অবস্থা", "Status")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {benchmarks.map((item) => {
-              const isSelectedDistrict =
-                activeDistrict &&
-                item.district.toLowerCase() === activeDistrict.toLowerCase();
-              return (
-                <tr
-                  key={item.id}
-                  className={isSelectedDistrict ? "row-highlight" : ""}
-                >
-                  {/* Column 1: Market & District */}
-                  <td>
-                    <div className="benchmark-cell-market">
-                      <strong className="benchmark-market-name">
-                        {local(locale, item.marketBn, item.market)}
-                      </strong>
-                      <span className="benchmark-market-district">
-                        <LocationIcon size={12} />
-                        <span>
-                          {local(locale, item.districtBn, item.district)}
-                        </span>
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Column 2: Trade Level & Variety */}
-                  <td>
-                    <div className="benchmark-cell-type">
-                      <span className="price-type-pill">
-                        {priceType(locale, item.type)}
-                      </span>
-                      <span className="benchmark-variety-text">
-                        {local(locale, item.varietyBn, item.variety)} ·{" "}
-                        {t("গ্রেড", "Grade")} {item.grade}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Column 3: Benchmark Range */}
-                  <td className="text-right tabular-nums">
-                    <span className="benchmark-range-val">
-                      ৳{numberLabel(locale, item.low)} – ৳
-                      {numberLabel(locale, item.high)}
-                    </span>
-                    <span className="price-unit"> / {t("কেজি", "kg")}</span>
-                  </td>
-
-                  {/* Column 4: Median Rate */}
-                  <td className="text-right tabular-nums">
-                    <strong className="benchmark-median-val">
-                      ৳{numberLabel(locale, item.median)}
-                    </strong>
-                  </td>
-
-                  {/* Column 5: 14-Day Outlook */}
-                  <td>
-                    <span className={`benchmark-trend-tag trend-${item.trend}`}>
-                      {item.arrow} {local(locale, item.outlookBn, item.outlook)}
-                    </span>
-                  </td>
-
-                  {/* Column 6: Status */}
-                  <td>
-                    <span
-                      className={`trade-status-pill ${item.status === "High Volume" ? "high-volume" : "verified"}`}
-                    >
-                      <span className="trade-status-dot" aria-hidden="true" />
-                      {local(locale, item.statusBn, item.status)}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <h2>
+        {local(
+          locale,
+          "অনুমোদিত দরের সর্বশেষ পর্যবেক্ষণ",
+          "Latest approved price observations",
+        )}
+      </h2>
+      <Observations locale={locale} rows={[...latest.values()]} />
     </section>
   );
 }
@@ -1146,7 +937,46 @@ export async function PricePage({
 
       {/* ─── 3. QUANTITATIVE FORECAST OUTLOOK (Pattern Matching Model Preview only) ─── */}
       {forecast && (
-        <ForecastPanel locale={locale} result={forecast} horizon={horizon} />
+        <>
+          <DataChart
+            locale={locale}
+            title={local(
+              locale,
+              "দর ও পূর্বাভাসের পরিসর",
+              "Prices and forecast range",
+            )}
+            summary={local(
+              locale,
+              "পর্যবেক্ষণের নিম্ন ও উচ্চ দর; শেষ বিন্দুতে নির্বাচিত মেয়াদের পূর্বাভাস, প্রমাণ থাকলে।",
+              "Observed low and high prices; the final point is the selected forecast horizon when evidence supports it.",
+            )}
+            points={pricePoints(rows, forecast)}
+            unit={local(locale, "টাকা/কেজি", "BDT/kg")}
+          />
+          <ForecastPanel locale={locale} result={forecast} horizon={horizon} />
+          <DataChart
+            locale={locale}
+            title={local(
+              locale,
+              "ঐতিহাসিক যাচাইয়ের ত্রুটি",
+              "Historical replay error",
+            )}
+            summary={local(
+              locale,
+              "কম MAE ভালো। কভারেজ ও নমুনা সংখ্যা নিচের যাচাই তালিকায় আছে।",
+              "Lower MAE is better. Coverage and sample counts remain in the replay table.",
+            )}
+            points={forecast.backtest.map((row) => ({
+              name: local(
+                locale,
+                ...(methods[row.method] ?? [row.method, row.method]),
+              ),
+              value: Number(row.mae_bdt_kg),
+            }))}
+            unit={local(locale, "MAE টাকা/কেজি", "MAE BDT/kg")}
+            bars
+          />
+        </>
       )}
 
       {/* ─── 4. HISTORICAL DATA (SPIKE GRAPH VIEW) ─── */}
@@ -1178,10 +1008,7 @@ export async function PricePage({
       )}
 
       {/* ─── 5. MARKET BENCHMARKS & REGIONAL OUTLOOK TABLE ─── */}
-      <MarketBenchmarksTable
-        locale={locale}
-        activeDistrict={choice?.district}
-      />
+      <MarketBenchmarksTable locale={locale} rows={rows} />
 
       {/* ─── 5. OFFICIAL DAM GOVERNMENT PORTAL BANNER ─── */}
       <aside className="work-panel price-dam-banner glass-1">
@@ -1239,7 +1066,8 @@ export async function ImportsPage({
           {local(locale, "আমদানিতে ফিরুন", "Back to imports")}
         </Link>
         <section className="work-panel">
-          <h2>{local(locale, "পর্যালোচনা", "Review")}</h2>
+          <h2>{batch.label}</h2>
+          <h3>{local(locale, "পর্যালোচনা", "Review")}</h3>
           <p>
             {batchStatus(locale, batch.status)} ·{" "}
             {numberLabel(locale, batch.accepted_rows)}{" "}

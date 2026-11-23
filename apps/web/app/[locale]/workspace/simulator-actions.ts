@@ -79,6 +79,12 @@ export async function simCallStart(): Promise<Result<SimReply>> {
   );
 }
 
+export async function simWorkspaceCallStart(): Promise<Result<{ id: string }>> {
+  return attempt(() =>
+    api<{ id: string }>("/v1/voice/calls", { method: "POST" }),
+  );
+}
+
 export async function simCallTurn(body: string): Promise<Result<SimReply>> {
   const text = body.trim().slice(0, 300);
   if (!text) return { error: "voice_repeat" };

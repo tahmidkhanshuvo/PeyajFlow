@@ -306,6 +306,16 @@ def handle(
             awaiting="code" if actor.is_demo else "pin",
         )
 
+    question = re.match(r"^(?:প্রশ্ন|ask|question)\s*[:：]?\s+(.+)$", text, re.I)
+    if question:
+        from app.knowledge import read_answer
+
+        result = read_answer(actor, db, question.group(1), "bn")
+        sources = " ".join(
+            f"[{item['id']}] {item['source_url']}" for item in result["citations"][:1]
+        )
+        return Reply(text=(result["answer"][:450] + " " + sources)[:690])
+
     if channel == "sms" and text in ("1", "2") and offer_id is not None:
         offer = next(
             (o for o in actionable_offers(db, actor) if o.id == offer_id), None
@@ -380,6 +390,8 @@ def handle(
 # --------------------------------------------------------------------- SMS
 def render(db: Session, actor: Profile, alert) -> tuple[str, UUID | None]:
     kind = alert["kind"]
+    if kind == "market.weekly" and alert.get("summary"):
+        return alert["summary"], None
     if alert["resource_type"] == "offer":
         try:
             offer = trade.offer_view(
