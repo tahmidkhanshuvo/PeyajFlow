@@ -15120,7 +15120,7 @@ html[data-theme="dark"] .supply-lot-card:hover {
   font-weight: 600;
   color: var(--ink-2);
   text-decoration: none;
-  transition: all var(--dur-fast);
+  transition: box-shadow var(--dur-fast);
 }
 
 .ops-nav .work-link:hover {
